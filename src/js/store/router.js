@@ -108,7 +108,6 @@ async function setNavigationHistory(navigationHistory) {
         configs.navigationHistoryLimit - 1
       );
     }
-    console.log(navigationHistory);
     updateStoreKey(store, { navigationHistory });
     await saveMode();
   }
@@ -126,7 +125,6 @@ async function popNavigationHistory() {
   if (navigationHistory.length == 0) {
     return false;
   }
-  console.log(navigationHistory);
   const navObj = { ...navigationHistory[0] };
   await setNavigationHistory(navigationHistory.slice(1));
   return navObj;
