@@ -2,7 +2,7 @@ import cloneDeep from "lodash/cloneDeep";
 import { isBefore, addMilliseconds } from "date-fns";
 
 const LS = localStorage;
-const PREFIX_KEY = SCR_ROUTER_PREFIX || "SCR_ROUTER_";
+const PREFIX_KEY = "SCR_ROUTER_";
 const EXPIRE_KEYS = `${PREFIX_KEY}EXPIRE_KEYS`;
 
 export const getItem = (key) => {

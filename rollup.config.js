@@ -44,8 +44,6 @@ export default {
   plugins: [
     replace({
 			preventAssignment: true,
-      SCR_ROUTER_STORAGE_KEY: JSON.stringify(process.env.SCR_ROUTER_STORAGE_KEY || "SRC_ROUTER_STORE"),
-			SCR_ROUTER_PREFIX: JSON.stringify(process.env.SCR_ROUTER_PREFIX || "SCR_ROUTER_"),
     }),
     svelte({
       compilerOptions: {

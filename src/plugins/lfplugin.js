@@ -2,7 +2,7 @@ import cloneDeep from "lodash/cloneDeep";
 import { isBefore, addMilliseconds } from "date-fns";
 import localforage from "localforage";
 
-const PREFIX_KEY = SCR_ROUTER_PREFIX || "SCR_ROUTER_";
+const PREFIX_KEY = "SCR_ROUTER_";
 const IDX_DB_NAME = PREFIX_KEY;
 const IDX_DB_STORE = PREFIX_KEY;
 const EXPIRE_KEYS = `${PREFIX_KEY}IDX_DB_P_EXPIRE_KEYS`;

@@ -1,5 +1,5 @@
 <script>
-  import { pushRoute } from "../index.js";
+  import navigateStore from "../js/store/navigate.js";
 
   export let props = {};
   export let onError;
@@ -11,7 +11,7 @@
       alert("SCR_ROUTERLINK Component\n- to property is not defined");
       return;
     }
-    pushRoute(to, props, onError);
+    navigateStore.pushRoute(to, props, onError);
   }
 </script>
 

@@ -1,8 +1,9 @@
 {
   "name": "svelte-client-router",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "author": "Arthur José Germano",
   "license": "MIT",
+  "main": "src/index.js",
   "keywords": [
     "svelte",
     "router",
@@ -33,7 +34,6 @@
   },
   "dependencies": {
     "@rollup/plugin-replace": "^2.4.2",
-    "crypto-js": "^4.0.0",
     "date-fns": "^2.21.1",
     "localforage": "^1.9.0",
     "lodash": "^4.17.21",

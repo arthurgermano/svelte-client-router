@@ -10,7 +10,7 @@ import * as lfPlugin from "../../plugins/lfplugin.js";
 
 import configStore from "./config.js";
 
-const STORAGE_KEY = SCR_ROUTER_STORAGE_KEY || "SRC_ROUTER_STORE";
+const STORAGE_KEY = "SRC_ROUTER_STORE";
 
 const storeTemplate = {
   routes: [],
