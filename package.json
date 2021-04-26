@@ -1,0 +1,42 @@
+{
+  "name": "svelte-client-router",
+  "version": "1.0.0",
+  "author": "Arthur José Germano",
+  "license": "MIT",
+  "keywords": [
+    "svelte",
+    "router",
+    "spa",
+    "client"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arthurgermano/svelte-client-router"
+  },
+  "bugs": {
+    "url": "https://github.com/arthurgermano/svelte-client-router/issues"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "start": "sirv public --no-clear --single"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.0.0",
+    "rollup": "^2.3.4",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-svelte": "^7.0.0",
+    "rollup-plugin-terser": "^7.0.0",
+    "svelte": "^3.0.0"
+  },
+  "dependencies": {
+    "@rollup/plugin-replace": "^2.4.2",
+    "crypto-js": "^4.0.0",
+    "date-fns": "^2.21.1",
+    "localforage": "^1.9.0",
+    "lodash": "^4.17.21",
+    "sirv-cli": "^1.0.0"
+  }
+}
