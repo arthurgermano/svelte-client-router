@@ -1,6 +1,6 @@
 {
   "name": "svelte-client-router",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "author": "Arthur José Germano",
   "license": "MIT",
   "main": "src/index.js",
@@ -8,7 +8,8 @@
     "svelte",
     "router",
     "spa",
-    "client"
+    "client",
+    "route"
   ],
   "repository": {
     "type": "git",

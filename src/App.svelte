@@ -1,5 +1,5 @@
 <script>
-  import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "./index.js";
+  import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "svelte-client-router";
 
   import SCR_C1 from "./testComponents/SCR_C1.svelte";
   import SCR_C3 from "./testComponents/SCR_C3.svelte";
@@ -9,20 +9,20 @@
   SCR_CONFIG_STORE.setConsoleLogStores(false);
   SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
   SCR_CONFIG_STORE.setHashMode(false);
-  // SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
-  //   console.log("GLOBAL ERROR CONFIG", routeObjParams);
-  // });
-  // SCR_CONFIG_STORE.setBeforeEnter([
-  //   (resolve, rFrom, rTo, p) => {
-  //     console.log(rFrom);
-  //     console.log(rTo);
-  //     resolve(true);
-  //   },
-  //   (resolve) => {
-  //     console.log("GBER-2");
-  //     resolve(true);
-  //   },
-  // ]);
+  SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
+    console.log("GLOBAL ERROR CONFIG", routeObjParams);
+  });
+  SCR_CONFIG_STORE.setBeforeEnter([
+    (resolve, rFrom, rTo, p) => {
+      console.log(rFrom);
+      console.log(rTo);
+      resolve(true);
+    },
+    (resolve) => {
+      console.log("GBER-2");
+      resolve(true);
+    },
+  ]);
 
   let routes = [
     {
@@ -89,9 +89,9 @@
       title: "I SHOUT",
       lazyLoadComponent: () => import('./testComponents/SCR_C3.svelte'),
       lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
-      afterBeforeEnter: (t, e) => {
+      afterBeforeEnter: (routeObjParams) => {
         console.log("After BE")
-        console.log(t, e);
+        console.log(routeObjParams);
       },
       loadingProps: { loadingText: "Carregando 4..." },
     },
@@ -119,43 +119,6 @@
     },
   ];
 
-  // {
-  //     name: "1",
-  //     path: "/test1",
-  //     component: SCR_C1,
-  //     lazyLoadComponent: () => import("./testComponents/SCR_C1.svelte"),
-  //     lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
-  //     layoutComponent: SRC_Layout,
-  //     ignoreLayout: false,
-  //     beforeEnter: [
-  //       (resolve, routeFrom, routeTo, routeCustomParams) => {
-  //         alert("alarm");
-  //         console.log("beforeEnter Executed");
-  //         resolve(true);
-  //       },
-  //       (resolve, routeFrom, routeTo, routeCustomParams) => {
-  //         alert("alarm2");
-  //         console.log("beforeEnter Executed2");
-  //         resolve({ redirect: "/test2" });
-  //       },
-  //     ],
-  //     title: "First Route Title",
-  //     params: {
-  //       myCustomParam: "OK THEN SHALL WE!",
-  //     },
-  //     onError: (err, params) => {
-  //       console.log("ERROR DEFINED ROUTER C1", err);
-  //       console.log(params)
-  //     },
-  //     afterBeforeEnter: (t, e) => { console.log(t, e);  },
-  //     ignoreGlobalBeforeFunction: false,
-  //     executeRouteBEFBeforeGlobalBEF: false,
-  //     loadingProps: { loadingText: "Carregando..." },
-  //   },
-
-  /*
-// TODO LIST
-*/
 </script>
 
 <SCR_ROUTER_COMPONENT bind:routes defaultLayoutComponent={SCR_Layout_Global} />

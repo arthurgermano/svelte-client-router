@@ -78,13 +78,13 @@ In a default Svelte installation you need to edit your package.json and add _-s_
   });
 
   SCR_CONFIG_STORE.setBeforeEnter([
-    (resolve, rFrom, rTo, p) => {
-      console.log(rFrom);
-      console.log(rTo);
+    (resolve, routeFrom, routeTo, routeObjParams) => {
+      console.log(routeFrom);
+      console.log(routeTo);
       resolve(true);
     },
     (resolve) => {
-      console.log("GBER-2");
+      console.log("GBEF-2");
       resolve(true);
     },
   ]);
@@ -118,9 +118,9 @@ In a default Svelte installation you need to edit your package.json and add _-s_
       lazyLoadComponent: () => import("./testComponents/SCR_C2.svelte"),
       title: "Second Route Title",
       beforeEnter: [
-        (resolve, rFrom, rTo, params) => {
+        (resolve, routeFrom, routeTo, routeObjParams) => {
           console.log("beforeEnter Executed");
-          console.log(params);
+          console.log(routeObjParams);
           setTimeout(() => resolve(true), 1000);
         },
       ],
@@ -140,9 +140,9 @@ In a default Svelte installation you need to edit your package.json and add _-s_
           resolve(true);
         },
       ],
-      onError: (err, params) => {
+      onError: (err, routeObjParams) => {
         console.log("ERROR DEFINED ROUTER C1", err);
-        console.log(params);
+        console.log(routeObjParams);
       },
     },
     {
