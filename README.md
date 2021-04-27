@@ -46,7 +46,7 @@ To install Svelte Router on your svelte app:
 with npm
 
 ```bash
-npm i svelte-router-spa
+npm i svelte-client-router
 ```
 
 ## Usage
