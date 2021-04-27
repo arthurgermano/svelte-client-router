@@ -26,14 +26,14 @@
   let routes = [
     {
       name: "rootRoute",
-      path: "/",
+      path: "/svelte-client-router",
       lazyLoadComponent: () => import("./testComponents/SCR_Root.svelte"),
       lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
       title: "SCR - Root Route",
     },
     {
       name: "routeOne",
-      path: "/test1",
+      path: "/svelte-client-router/test1",
       component: SCR_C1,
       beforeEnter: [
         (resolve) => {
@@ -42,7 +42,7 @@
         },
         (resolve) => {
           console.log("beforeEnter Executed2");
-          setTimeout(() => resolve({ redirect: "/" }), 1000);
+          setTimeout(() => resolve({ redirect: "/svelte-client-router" }), 1000);
         },
       ],
       title: "First Route Title",
@@ -50,7 +50,7 @@
     },
     {
       name: "routeTwo",
-      path: "/test2",
+      path: "/svelte-client-router/test2",
       lazyLoadComponent: () => import("./testComponents/SCR_C2.svelte"),
       title: "Second Route Title",
       beforeEnter: [
@@ -64,7 +64,7 @@
     },
     {
       name: "routeThree",
-      path: "/test3",
+      path: "/svelte-client-router/test3",
       component: SCR_C4,
       title: "Third Route Title",
       beforeEnter: [
@@ -80,7 +80,7 @@
     },
     {
       name: "routeFour",
-      path: "/test4",
+      path: "/svelte-client-router/test4",
       params: {
         myCustomParam: "This Param was set in the Router Definition",
       },
@@ -95,7 +95,7 @@
     },
     {
       name: "routeFive",
-      path: "/test5",
+      path: "/svelte-client-router/test5",
       title: "Five Route Title",
       lazyLoadComponent: () => import('./testComponents/SCR_C5.svelte'),
       loadingProps: { loadingText: "Carregando 5..." },

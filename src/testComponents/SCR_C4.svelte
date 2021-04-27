@@ -53,7 +53,7 @@
   <button
     class="scr-button"
     on:click={() => {
-      pushRoute({ path: "/test5" });
+      pushRoute({ name: "routeFive" });
     }}>Route Five - GO!</button
   >
 </main>
