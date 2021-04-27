@@ -8,7 +8,7 @@
   SCR_CONFIG_STORE.setNotFoundRoute("/myCustomNotFound");
   SCR_CONFIG_STORE.setConsoleLogStores(false);
   SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
-  SCR_CONFIG_STORE.setHashMode(false);
+  SCR_CONFIG_STORE.setHashMode(true);
   SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   });

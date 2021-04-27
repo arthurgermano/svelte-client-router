@@ -14,6 +14,7 @@ const storeTemplate = {
   consoleLogErrorMessages: true,
   consoleLogStores: true,
   usesRouteLayout: true,
+  considerTrailingSlashOnMatchingRoute: true
 };
 
 const ENUM_SAVE_MODE = ["localstorage", "indexeddb", "none"];
@@ -33,6 +34,7 @@ function setConfig(config) {
   setConsoleLogErrorMessages(config.consoleLogErrorMessages);
   setConsoleLogStores(config.consoleLogStores);
   setUsesRouteLayout(config.usesRouteLayout);
+  setConsiderTrailingSlashOnMatchingRoute(config.considerTrailingSlashOnMatchingRoute);
   setOnError(config.onError);
   setBeforeEnter(config.beforeEnter);
 }
@@ -146,6 +148,19 @@ function getUsesRouteLayout() {
 }
 
 // --------------------------------------------------------------------------------------
+// --------------  considerTrailingSlashOnMachingRoute Property  ------------------------
+
+function setConsiderTrailingSlashOnMachingRoute(considerTrailingSlashOnMachingRoute) {
+  if (typeof considerTrailingSlashOnMachingRoute == "boolean") {
+    updateStoreKey(store, { considerTrailingSlashOnMachingRoute });
+  }
+}
+
+function getConsiderTrailingSlashOnMachingRoute() {
+  return getStoreKey(store, "considerTrailingSlashOnMachingRoute");
+}
+
+// --------------------------------------------------------------------------------------
 // --------------  onError Function  ----------------------------------------------------
 
 function setOnError(onErrorParam) {
@@ -207,6 +222,8 @@ export default {
   getConsoleLogStores,
   setUsesRouteLayout,
   getUsesRouteLayout,
+  setConsiderTrailingSlashOnMachingRoute,
+  getConsiderTrailingSlashOnMachingRoute,
   setOnError,
   getOnError,
   setBeforeEnter,

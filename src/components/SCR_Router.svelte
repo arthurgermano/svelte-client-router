@@ -146,7 +146,10 @@
       // searching route from routes definition if not defined
       if (!routeObj) {
         routeObj = $routerStore.routes.find(
-          (routeItem) => routeItem.path == currentLocation.pathname
+          (routeItem) =>
+            routeItem.path == currentLocation.pathname ||
+            ($configStore.considerTrailingSlashOnMatchingRoute &&
+              routeItem.path + "/" == currentLocation.pathname)
         );
       } else {
         if (routeObj.notFound) {

@@ -1,6 +1,6 @@
 {
   "name": "svelte-client-router",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": "Arthur José Germano",
   "license": "MIT",
   "main": "src/index.js",

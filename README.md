@@ -226,6 +226,11 @@ Let's see the options we have here:
   // ## Boolean
   usesRouteLayout: true, // ## Default is true
 
+  // ## Consider Trailing Slash On Matching Route
+  // ## add an slash in the end of the route path to search in the route definitions
+  // ## Boolean
+  considerTrailingSlashOnMatchingRoute: true // ## Default is true
+
   // ## Before Enter defines a function or array of Functions
   // ## that must execute before each route
   // ## Function or Array - of Functions
