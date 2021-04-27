@@ -14,7 +14,7 @@ Designed to help make you in control of the routing of your Single Page Applicat
   - [Features](#features)
   - [Install](#install)
   - [Usage](#usage)
-  - [Example](#example)
+    - [SCR - Example](#scr---example)
     - [SCR - Configuration Store](#scr---configuration-store)
     - [SCR - Route Object Definition](#scr---route-object-definition)
     - [SCR - Router Svelte Component](#scr---router-svelte-component)
@@ -59,7 +59,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 "start": "sirv public -s"
 ```
 
-## Example
+### SCR - Example
 
 ```javascript
 <script>
@@ -76,7 +76,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
   SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   });
-  
+
   SCR_CONFIG_STORE.setBeforeEnter([
     (resolve, rFrom, rTo, p) => {
       console.log(rFrom);
