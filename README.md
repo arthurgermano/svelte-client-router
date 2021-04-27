@@ -264,20 +264,6 @@ SCR_CONFIG_STORE.setErrorRoute("/myCustomErrorRoute");
 SCR_CONFIG_STORE.setConsoleLogErrorMessages(true);
 SCR_CONFIG_STORE.setConsoleLogStores(true);
 SCR_CONFIG_STORE.setUsesRouteLayout(true);
-SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
-  console.log(routeObjParams)
-  console.log("GLOBAL ERROR CONFIG", err);
-});
-SCR_CONFIG_STORE.setBeforeEnter([
-  (resolve, routeFrom, routeTo, routeObjParams) => {
-    console.log("Global Before Enter Route - 1");
-    resolve(true);
-  },
-  (resolve, routeFrom, routeTo, routeObjParams) => {
-    console.log("Global Before Enter Route - 2");
-    resolve(true);
-  },
-]);
 
 // ## Callback receives 2 params 
 // ## 1) Error 
@@ -381,6 +367,19 @@ SCR_CONFIG_STORE.setConfig({
   consoleLogErrorMessages: true,
   consoleLogStores: true,
   usesRouteLayout: true,
+  onError: (err, routeObjParams) => {
+    console.log("GLOBAL ERROR CONFIG", routeObjParams);
+  },
+  beforeEnter: [
+    (resolve, routeFrom, routeTo, routeObjParams) => {
+      console.log("Global Before Enter Route - 1");
+      resolve(true);
+    },
+    (resolve, routeFrom, routeTo, routeObjParams) => {
+      console.log("Global Before Enter Route - 2");
+      resolve(true);
+    }
+  ]
 })
 ```
 
