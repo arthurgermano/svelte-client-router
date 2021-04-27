@@ -19,7 +19,7 @@ Designed to help make you in control of the routing of your Single Page Applicat
     - [SCR - Route Object Definition](#scr---route-object-definition)
     - [SCR - Router Svelte Component](#scr---router-svelte-component)
     - [SCR - Navigation](#scr---navigation)
-    - [SCR - RouterLink Component](#scr---routerlink-component)
+    - [SCR - Router Link Component](#scr---router-link-component)
     - [SCR - Router Store Component](#scr---router-store-component)
 
 ## Features
@@ -726,7 +726,7 @@ backRoute()
 
 ```
 
-### SCR - RouterLink Component
+### SCR - Router Link Component
 
 <abbr title="Svelte Client Router">SCR</abbr> RouterLink Component is a component to make easy clickable go to route.
 
