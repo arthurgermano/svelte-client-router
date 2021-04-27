@@ -154,9 +154,9 @@ In a default Svelte installation you need to edit your package.json and add _-s_
       title: "I SHOUT",
       lazyLoadComponent: () => import('./testComponents/SCR_C3.svelte'),
       lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
-      afterBeforeEnter: (t, e) => {
+      afterBeforeEnter: (routeObjParams) => {
         console.log("After BE")
-        console.log(t, e);
+        console.log(routeObjParams);
       },
       loadingProps: { loadingText: "Carregando 4..." },
     },
@@ -484,13 +484,13 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   // ##      port: "5000",
   // ##      protocol: "http:",
   // ##   }
-  // ##   params:
+  // ##   routeObjParams:
   // ##   {
   // ##     myCustomParams: "Route Defined Param!"
   // ##   }
   // ## } 
   // ## Function 
-  afterBeforeEnter: (param) => { console.log("AFTER ENTER", param);  },
+  afterBeforeEnter: (routeObjParams) => { console.log("AFTER ENTER", routeObjParams);  },
 
   // ## Before Enter - a function or array of Functions
   // ## defining all functions that must be executed for this specific route
@@ -572,9 +572,9 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   // ##     }
   // ##   }
   // ## Function
-  onError: (err, params) => {
+  onError: (err, routeObjParams) => {
     console.log("ERROR DEFINED ROUTER C1", err);
-    console.log(params)
+    console.log(routeObjParams)
   },
 },
 
