@@ -14,6 +14,7 @@ Designed to help make you in control of the routing of your Single Page Applicat
   - [Features](#features)
   - [Install](#install)
   - [Usage](#usage)
+    - [SCR - Test It](#scr---test-it)
     - [SCR - Example](#scr---example)
     - [SCR - Configuration Store](#scr---configuration-store)
     - [SCR - Route Object Definition](#scr---route-object-definition)
@@ -58,6 +59,10 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 ```javascript
 "start": "sirv public -s"
 ```
+
+### SCR - Test It
+[Click here to see Svelte Client Router - In Action!](https://arthurgermano.github.io/svelte-client-router/)
+
 
 ### SCR - Example
 
