@@ -103,12 +103,16 @@
   function getRouteParams(routeObj, customParams) {
     props = {};
     if (routeObj && routeObj.params) {
-      props = { params: routeObj.params, ...assign({}, allProps) };
+      props = { params: { ...routeObj.params, ...assign({}, allProps) } };
     }
     props = {
       ...props,
       ...customParams,
-      currentRoute: { ...currentLocation, name: routeObj.name },
+      currentRoute: {
+        ...currentLocation,
+        name: routeObj.name,
+        pathname: routeObj.path,
+      },
       fromRoute: $routerStore.fromRoute,
     };
     return props;
@@ -129,7 +133,7 @@
   // -----------------------------------------------------------------------------------
   // -----------------  function loadRoute  --------------------------------------------
 
-  async function loadRoute(routeObj) {
+  async function loadRoute(routeObj, isLoading = true) {
     try {
       getLocation();
       layoutComponent = false;
@@ -166,13 +170,13 @@
       // setting loading property
       loadingPromise = loadingController.startLoading();
       loadingProps = {
-        ...assign({}, allLoadingProps)
+        ...assign({}, allLoadingProps),
       };
       if (routeObj.loadingProps) {
-        loadingProps = { 
+        loadingProps = {
           ...loadingProps,
-          ...routeObj.loadingProps
-        }
+          ...routeObj.loadingProps,
+        };
       }
 
       // no component were defined by the user
@@ -190,7 +194,7 @@
         !routeObj.beforeEnter &&
         (!configBERs || routeObj.ignoreGlobalBeforeFunction)
       ) {
-        return await finalizeRoute(routeObj);
+        return await finalizeRoute(routeObj, isLoading);
       }
 
       const beforeEnterRoute = getBeforeEnterAsArray(routeObj.beforeEnter);
@@ -198,7 +202,11 @@
       // execute each beforeEnter function before finalizeRoute
       // if is set to ignore global before functions
       if (routeObj.ignoreGlobalBeforeFunction) {
-        await executeBeforeEnterFunctions(routeObj, beforeEnterRoute);
+        await executeBeforeEnterFunctions(
+          routeObj,
+          beforeEnterRoute,
+          isLoading
+        );
       } else {
         // if executeRouteBEFBeforeGlobalBEF is set then must run routeBeforeEnter
         // before globalBeforeEnter
@@ -207,7 +215,7 @@
           ? [...beforeEnterRoute, ...beforeEnterGlobal]
           : [...beforeEnterGlobal, ...beforeEnterRoute];
 
-        await executeBeforeEnterFunctions(routeObj, beforeEnterArr);
+        await executeBeforeEnterFunctions(routeObj, beforeEnterArr, isLoading);
       }
     } catch (error) {
       loadingController.resolveLoading();
@@ -223,7 +231,11 @@
   // -----------------------------------------------------------------------------------
   // -----------------  function executeBeforeEnterFunctions  --------------------------
 
-  async function executeBeforeEnterFunctions(routeObj, beforeEnterArr) {
+  async function executeBeforeEnterFunctions(
+    routeObj,
+    beforeEnterArr,
+    isLoading
+  ) {
     // params passed down to the components and before execute functions
     const routeFrom = assign({}, $routerStore.currentRoute);
     const routeTo = assign({ name: routeObj.name }, currentLocation);
@@ -278,10 +290,16 @@
         // each route can define an error function and if it is defined... execute it
         if (routeObj.onError && typeof routeObj.onError === "function") {
           routeObj.onError(resFunc.error, getRouteParams(routeObj));
-          return setErrorComponent(`SCR_ROUTER - ${resFunc.error}!`, resFunc.error, routeObj);          
+          return setErrorComponent(
+            `SCR_ROUTER - ${resFunc.error}!`,
+            resFunc.error,
+            routeObj
+          );
         } else {
           // this will execute, if defined, global error of the router
-          throw new Error(`Error on route (${routeObj.name} - ${routeObj.path}) - ${error}!`);
+          throw new Error(
+            `Error on route (${routeObj.name} - ${routeObj.path}) - ${error}!`
+          );
         }
       }
 
@@ -313,28 +331,43 @@
     }
 
     // finalizeRoute definitions
-    return await finalizeRoute(routeObj);
+    return await finalizeRoute(routeObj, isLoading);
   }
 
   // -----------------------------------------------------------------------------------
   // -----------------  function finalizeRoute  ----------------------------------------
 
-  async function finalizeRoute(routeObj) {
+  async function finalizeRoute(routeObj, isLoading = false) {
     // setting route title if defined
     if (routeObj.title) {
       document.title = routeObj.title;
     }
 
-    // setting component params
-    const routeParams = getRouteParams(routeObj);
-
     // updating store info
     await routerStore.setFromRoute($routerStore.currentRoute);
     await routerStore.pushNavigationHistory($routerStore.currentRoute);
-    await routerStore.setCurrentRoute({
-      ...currentLocation,
-      name: routeObj.name,
-    });
+    if (!isLoading) {
+      await routerStore.setCurrentRoute({
+        pathname: routeObj.path,
+        params: {
+          ...routeObj.params,
+        },
+        hostname: currentLocation.hostname,
+        protocol: currentLocation.protocol,
+        port: currentLocation.port,
+        origin: currentLocation.origin,
+        hash: currentLocation.hash,
+        name: routeObj.name,
+      });
+    } else {
+      await routerStore.setCurrentRoute({
+        ...currentLocation,
+        name: routeObj.name,
+      });
+    }
+
+    // setting component params
+    const routeParams = getRouteParams(routeObj);
 
     // if user defined some action before finalizeRoute
     if (
@@ -395,7 +428,6 @@
         routerStore.STORAGE_KEY
       );
     }
-    
 
     // routes were set?
     if (routes) {
@@ -438,7 +470,7 @@
   // -----------------  svelte_reactive - $navigateStore.pushRoute  --------------------
 
   $: if ($navigateStore.pushRoute) {
-    loadRoute(navigateStore.consumeRoutePushed());
+    loadRoute(navigateStore.consumeRoutePushed(), false);
   }
 
   // -----------------------------------------------------------------------------------

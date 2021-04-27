@@ -1,16 +1,18 @@
 <main class="scr-main-layout">
   <slot name="scr_header">
-    <h1 class="scr-main-layout__header">Svelte Client Router - Example Layout!</h1>
+    <h1 class="scr-main-layout__header">
+      Svelte Client Router - The Svelte SPA Router!
+    </h1>
   </slot>
   <slot name="scr_before-main">
     <p class="scr-main-layout__p">
-      This is a paragraph inside layout - BEFORE CONTENT!
+      Test some button to see the router working!
     </p>
   </slot>
   <slot />
   <slot name="scr_after-main">
     <p class="scr-main-layout__p">
-      This is a paragraph inside layout - AFTER CONTENT!
+      Nice Routing!
     </p>
   </slot>
   <slot name="scr_footer">
@@ -41,7 +43,7 @@
     text-align: center;
     color: #ff3e00;
   }
-
+  
   .scr-main-layout__footer {
     width: 100%;
     border-top: 1px solid #000;

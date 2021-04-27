@@ -1,8 +1,8 @@
 <script>
-  import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "svelte-client-router";
+  import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "./index.js";
 
   import SCR_C1 from "./testComponents/SCR_C1.svelte";
-  import SCR_C3 from "./testComponents/SCR_C3.svelte";
+  import SCR_C4 from "./testComponents/SCR_C4.svelte";
   import SCR_Layout_Global from "./testComponents/SCR_Layout_Global.svelte";
 
   SCR_CONFIG_STORE.setNotFoundRoute("/myCustomNotFound");
@@ -13,9 +13,8 @@
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   });
   SCR_CONFIG_STORE.setBeforeEnter([
-    (resolve, rFrom, rTo, p) => {
-      console.log(rFrom);
-      console.log(rTo);
+    (resolve) => {
+      console.log("GBER-1");
       resolve(true);
     },
     (resolve) => {
@@ -26,11 +25,16 @@
 
   let routes = [
     {
-      name: "1",
+      name: "rootRoute",
+      path: "/",
+      lazyLoadComponent: () => import("./testComponents/SCR_Root.svelte"),
+      lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
+      title: "SCR - Root Route",
+    },
+    {
+      name: "routeOne",
       path: "/test1",
       component: SCR_C1,
-      executeRouteBEFBeforeGlobalBEF: false,
-      ignoreGlobalBeforeFunction: false,
       beforeEnter: [
         (resolve) => {
           console.log("beforeEnter Executed");
@@ -38,17 +42,14 @@
         },
         (resolve) => {
           console.log("beforeEnter Executed2");
-          setTimeout(() => resolve({ redirect: "/test4" }), 1000);
+          setTimeout(() => resolve({ redirect: "/" }), 1000);
         },
       ],
       title: "First Route Title",
-      params: {
-        myCustomParam: "OK THEN SHALL WE!",
-      },
       loadingProps: { loadingText: "Carregando 1..." },
     },
     {
-      name: "2",
+      name: "routeTwo",
       path: "/test2",
       lazyLoadComponent: () => import("./testComponents/SCR_C2.svelte"),
       title: "Second Route Title",
@@ -62,17 +63,14 @@
       loadingProps: { loadingText: "Carregando 2..." },
     },
     {
-      name: "3",
+      name: "routeThree",
       path: "/test3",
-      component: SCR_C3,
-      params: {
-        myCustomParam: "OK THEN SHALL WE!",
-      },
+      component: SCR_C4,
+      title: "Third Route Title",
       beforeEnter: [
         (resolve) => {
-          console.log("BEFORE ENTEDER C3");
+          console.log("BEFORE Enter C3");
           throw new Error("teste");
-          resolve(true);
         },
       ],
       onError: (err, params) => {
@@ -81,44 +79,31 @@
       },
     },
     {
-      name: "4",
+      name: "routeFour",
       path: "/test4",
       params: {
-        myCustomParam: "OK THEN SHALL WE!",
+        myCustomParam: "This Param was set in the Router Definition",
       },
-      title: "I SHOUT",
-      lazyLoadComponent: () => import('./testComponents/SCR_C3.svelte'),
-      lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
+      title: "Four Route Title",
+      lazyLoadComponent: () => import('./testComponents/SCR_C4.svelte'),
+      lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout_Global.svelte"),
       afterBeforeEnter: (routeObjParams) => {
-        console.log("After BE")
+        console.log("After BE Route Four")
         console.log(routeObjParams);
       },
       loadingProps: { loadingText: "Carregando 4..." },
     },
     {
-      name: "5",
+      name: "routeFive",
       path: "/test5",
-      params: {
-        myCustomParam: "OK THEN SHALL WE!",
-      },
-      title: "I SHOUT",
+      title: "Five Route Title",
       lazyLoadComponent: () => import('./testComponents/SCR_C5.svelte'),
       loadingProps: { loadingText: "Carregando 5..." },
-      ignoreLayout: true
-    },
-    {
-      name: "6",
-      path: "/test6",
-      params: {
-        myCustomParam: "OK THEN SHALL WE!",
-      },
-      title: "I SHOUT",
-      lazyLoadComponent: () => import('./testComponents/SCR_C6.svelte'),
-      
-      loadingProps: { loadingText: "Carregando 6..." },
+      ignoreLayout: true,
+      ignoreGlobalBeforeFunction: true
     },
   ];
 
 </script>
 
-<SCR_ROUTER_COMPONENT bind:routes defaultLayoutComponent={SCR_Layout_Global} />
+<SCR_ROUTER_COMPONENT bind:routes defaultLayoutComponent={SCR_Layout_Global} allProps={{ allPropsTest: "Passing To ALL"}} />
