@@ -258,6 +258,7 @@ SCR_CONFIG_STORE.setErrorRoute("/myCustomErrorRoute");
 SCR_CONFIG_STORE.setConsoleLogErrorMessages(true);
 SCR_CONFIG_STORE.setConsoleLogStores(true);
 SCR_CONFIG_STORE.setUsesRouteLayout(true);
+SCR_CONFIG_STORE.setConsiderTrailingSlashOnMatchingRoute(true);
 
 // ## Callback receives 2 params 
 // ## 1) Error 
@@ -361,6 +362,7 @@ SCR_CONFIG_STORE.setConfig({
   consoleLogErrorMessages: true,
   consoleLogStores: true,
   usesRouteLayout: true,
+  considerTrailingSlashOnMatchingRoute: true,
   onError: (err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   },
