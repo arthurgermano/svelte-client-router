@@ -1,5 +1,14 @@
 # Svelte Router changelog
 
+## 1.0.10
+
+- Changed routeObjParam returned inside Before Enter Functions 
+- Added configuration option <b>setScrollProps</b>
+- Added configuration option <b>setUseScroll</b>
+- Added route option <b>scrollProps</b>
+- Added route option <b>ignoreScroll</b>
+- Added payload passing between all Before Enter Functions
+
 ## 1.0.9
 
 - Improved documentation

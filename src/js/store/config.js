@@ -14,7 +14,14 @@ const storeTemplate = {
   consoleLogErrorMessages: true,
   consoleLogStores: true,
   usesRouteLayout: true,
-  considerTrailingSlashOnMatchingRoute: true
+  considerTrailingSlashOnMatchingRoute: true,
+  useScroll: false,
+  scrollProps: {
+    top: 0,
+    left: 0,
+    behavior: "smooth",
+    timeout: 10,
+  },
 };
 
 const ENUM_SAVE_MODE = ["localstorage", "indexeddb", "none"];
@@ -34,9 +41,13 @@ function setConfig(config) {
   setConsoleLogErrorMessages(config.consoleLogErrorMessages);
   setConsoleLogStores(config.consoleLogStores);
   setUsesRouteLayout(config.usesRouteLayout);
-  setConsiderTrailingSlashOnMatchingRoute(config.considerTrailingSlashOnMatchingRoute);
+  setConsiderTrailingSlashOnMatchingRoute(
+    config.considerTrailingSlashOnMatchingRoute
+  );
   setOnError(config.onError);
   setBeforeEnter(config.beforeEnter);
+  setScrollProps(config.scrollProps);
+  setUseScroll(config.useScroll);
 }
 
 function getConfig() {
@@ -150,7 +161,9 @@ function getUsesRouteLayout() {
 // --------------------------------------------------------------------------------------
 // --------------  considerTrailingSlashOnMachingRoute Property  ------------------------
 
-function setConsiderTrailingSlashOnMachingRoute(considerTrailingSlashOnMachingRoute) {
+function setConsiderTrailingSlashOnMachingRoute(
+  considerTrailingSlashOnMachingRoute
+) {
   if (typeof considerTrailingSlashOnMachingRoute == "boolean") {
     updateStoreKey(store, { considerTrailingSlashOnMachingRoute });
   }
@@ -158,6 +171,41 @@ function setConsiderTrailingSlashOnMachingRoute(considerTrailingSlashOnMachingRo
 
 function getConsiderTrailingSlashOnMachingRoute() {
   return getStoreKey(store, "considerTrailingSlashOnMachingRoute");
+}
+
+// --------------------------------------------------------------------------------------
+// --------------  scrollProps Property  ------------------------------------------------
+
+function setScrollProps(scrollProps) {
+  if (typeof setScrollProps == "object") {
+    let sp = {
+      top: scrollProps.top,
+      left: scrollProps.left,
+      behavior: scrollProps.behavior,
+      timeout:
+        scrollProps.timeout && scrollProps.timeout > 10
+          ? scrollProps.timeout
+          : 10,
+    };
+    updateStoreKey(store, { scrollProps });
+  }
+}
+
+function getScrollProps() {
+  return getStoreKey(store, "scrollProps");
+}
+
+// --------------------------------------------------------------------------------------
+// --------------  useScroll Property  --------------------------------------------------
+
+function setUseScroll(useScroll) {
+  if (typeof useScroll == "boolean") {
+    updateStoreKey(store, { useScroll });
+  }
+}
+
+function getUseScroll() {
+  return getStoreKey(store, "useScroll");
 }
 
 // --------------------------------------------------------------------------------------
@@ -224,6 +272,10 @@ export default {
   getUsesRouteLayout,
   setConsiderTrailingSlashOnMachingRoute,
   getConsiderTrailingSlashOnMachingRoute,
+  setScrollProps,
+  getScrollProps,
+  setUseScroll,
+  getUseScroll,
   setOnError,
   getOnError,
   setBeforeEnter,

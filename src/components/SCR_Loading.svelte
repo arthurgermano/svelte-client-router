@@ -1,5 +1,8 @@
 <script>
   export let loadingText = "Loading...";
+  export let myCustomParam;
+
+  $: console.log("LOADING>>>",myCustomParam);
 </script>
 
 <center class="scr-center">

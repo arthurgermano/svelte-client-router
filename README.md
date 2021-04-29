@@ -78,6 +78,13 @@ In a default Svelte installation you need to edit your package.json and add _-s_
   SCR_CONFIG_STORE.setConsoleLogStores(false);
   SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
   SCR_CONFIG_STORE.setHashMode(false);
+  SCR_CONFIG_STORE.setUseScroll(true);
+  SCR_CONFIG_STORE.setScrollProps({
+    top: 0,
+    left: 0,
+    behavior: "smooth",
+    timeout: 10,
+  });
   SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   });
@@ -104,6 +111,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
       name: "routeOne",
       path: "/test1",
       component: SCR_C1,
+      ignoreScroll: true,
       beforeEnter: [
         (resolve) => {
           console.log("beforeEnter Executed");
@@ -123,13 +131,19 @@ In a default Svelte installation you need to edit your package.json and add _-s_
       lazyLoadComponent: () => import("./testComponents/SCR_C2.svelte"),
       title: "Second Route Title",
       beforeEnter: [
-        (resolve, rFrom, rTo, params) => {
+        (resolve, rFrom, rTo, params, payload) => {
           console.log("beforeEnter Executed");
           console.log(params);
           setTimeout(() => resolve(true), 1000);
         },
       ],
       loadingProps: { loadingText: "Carregando 2..." },
+      scrollProps: {
+        top: 100,
+        left: 100,
+        behavior: "smooth",
+        timeout: 1000,
+      },
     },
     {
       name: "routeThree",
@@ -236,6 +250,22 @@ Let's see the options we have here:
   // ## Boolean
   considerTrailingSlashOnMatchingRoute: true // ## Default is true
 
+  // ## Use Scroll - enable or disables scrolling on entering the route
+  // ## Boolean
+  useScroll: true // ## Default is true
+
+  // ## Scroll Props
+  // ## The scrolling props on entering the route if enabled
+  // ## Default Values: 
+  // ## scrollProps: {
+  // ##   top: 0,
+  // ##   left: 0,
+  // ##   behavior: "smooth",
+  // ##   timeout: 10, // timeout must be greater than 10 milliseconds
+  // ## },
+  // ## Object
+  scrollProps: "/notFound", // ## Default is "/notFound"
+
   // ## Before Enter defines a function or array of Functions
   // ## that must execute before each route
   // ## Function or Array - of Functions
@@ -289,11 +319,9 @@ SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
   // ##     port: "5000"
   // ##     protocol: "http:"
   // ##   }
-  // ##   {
-  // ##   params:
-  // ##     {
-  // ##       myCustomParam: "OK THEN SHALL WE!"
-  // ##     }
+  // ##   routeObjParams: 
+  // ##   { 
+  // ##     myCustomParams: "Route Defined Param!"
   // ##   }
   console.log("GLOBAL ERROR CONFIG", err);
 });
@@ -312,7 +340,7 @@ SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
 // ## 3) Route going to
 // ## 4) Route defined params
 SCR_CONFIG_STORE.setBeforeEnter([
-  (resolve, routeFrom, routeTo, routeObjParams) => {
+  (resolve, routeFrom, routeTo, routeObjParams, payload) => {
     // ## resolve - function
     // ## routeFrom: 
     // ## { 
@@ -338,15 +366,21 @@ SCR_CONFIG_STORE.setBeforeEnter([
     // ## }
     // ## routeObjParams: 
     // ## { 
-    // ##    params:
-    // ##    {
-    // ##      myCustomParams: "Route Defined Param!"
-    // ##    }
+    // ##   myCustomParams: "Route Defined Param!"
+    // ## }
+    // ## You can pass variables to components and between beforeEnters - acumulative
+    // ## Before Resolving this PAYLOAD will be made available to all components too
+    // ## This is great to update the loading component or you can send variables down the chain of 
+    // ## before Enter list
+    // ## DO NOT REDEFINE THIS - if you set this payload = ... it will lose its REFERENCE
+    // ## payload: 
+    // ## { 
+    // ##    ...
     // ## }
     console.log("Global Before Enter Route - 1");
     resolve(true);
   },
-  (resolve, routeFrom, routeTo, routeObjParams) => {
+  (resolve, routeFrom, routeTo, routeObjParams, payload) => {
     console.log("Global Before Enter Route - 2");
     resolve(true);
   },
@@ -363,15 +397,26 @@ SCR_CONFIG_STORE.setConfig({
   consoleLogStores: true,
   usesRouteLayout: true,
   considerTrailingSlashOnMatchingRoute: true,
+  useScroll: false,
+  scrollProps: {
+    top: 0,
+    left: 0,
+    behavior: "smooth",
+    timeout: 10,
+  },
   onError: (err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   },
   beforeEnter: [
-    (resolve, routeFrom, routeTo, routeObjParams) => {
+    (resolve, routeFrom, routeTo, routeObjParams, payload) => {
+      payload.GBER1 = "My Custom Param to Pass";
       console.log("Global Before Enter Route - 1");
       resolve(true);
     },
-    (resolve, routeFrom, routeTo, routeObjParams) => {
+    (resolve, routeFrom, routeTo, routeObjParams, payload) => {
+      if (payload.GBER1) {
+        payload.GBER2 = "Yes, I will be set too!";
+      }
       console.log("Global Before Enter Route - 2");
       resolve(true);
     }
@@ -426,6 +471,10 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   // ## when you do not want to use global or local layout component
   // ## Boolean
   ignoreLayout: false,
+
+  // ## Ignore Scroll - if this route should ignore scrolling
+  // ## Boolean
+  ignoreScroll: true,
 
   // ## Title - it defines the route title
   // ## String
@@ -492,7 +541,7 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   // ## defining all functions that must be executed for this specific route
   // ## Function or Array (Functions)
   beforeEnter: [
-    (resolve, routeFrom, routeTo, routeObjParams) => {
+    (resolve, routeFrom, routeTo, routeObjParams, payload) => {
       // ## resolve - function
       // ## routeFrom: 
       // ## { 
@@ -518,16 +567,29 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
       // ## }
       // ## routeObjParams: 
       // ## { 
-      // ##    params:
-      // ##    {
-      // ##      myCustomParams: "Route Defined Param!"
-      // ##    }
+      // ##    myCustomParams: "Route Defined Param!"
+      // ##    ... PAYLOAD VARIABLES will be included HERE!  
       // ## }
+      // ## You can pass variables to components and between beforeEnters - acumulative
+      // ## Before Resolving this PAYLOAD will be made available to all components too
+      // ## This is great to update the loading component or you can send variables down the chain of 
+      // ## before Enter list
+      // ## DO NOT REDEFINE THIS - if you set this payload = ... it will lose its REFERENCE
+      // ## payload: 
+      // ## { 
+      // ##    ...
+      // ## }
+      payload.passingToNextBeforeEnter: "yes, I will be there!",
+      payload.passingToComponents: "yes, I will be there either!",
+      payload.passingToLoadingComponents: "yes, why not?",
+      payload.passingToLayoutComponents: "yes, everyone get this payload",
+      
       setTimeout(() => resolve(true), 2000);
       console.log("beforeEnter Executed");
       resolve(true);
     },
-    (resolve, routeFrom, routeTo, routeObjParams) => {
+    (resolve, routeFrom, routeTo, routeObjParams, payload) => {
+      console.log(payload);
       setTimeout(() => resolve(true), 1000);
       console.log("beforeEnter Executed2");
       resolve({ redirect: "/test2" });
@@ -561,11 +623,9 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   // ##     port: "5000"
   // ##     protocol: "http:"
   // ##   }
+  // ##   routeObjParams:
   // ##   {
-  // ##   params:
-  // ##     {
-  // ##       myCustomParam: "OK THEN SHALL WE!"
-  // ##     }
+  // ##     myCustomParam: "OK THEN SHALL WE!"
   // ##   }
   // ## Function
   onError: (err, routeObjParams) => {

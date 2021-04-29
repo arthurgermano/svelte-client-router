@@ -13,6 +13,7 @@
   import SCR_Loading from "./SCR_Loading.svelte";
   import SCR_Error from "./SCR_Error.svelte";
   import SCR_Layout from "./SCR_Layout.svelte";
+  import { document } from "lodash/_freeGlobal";
 
   // ------------------------------------------------------------------------------------
   // -----------------  Export Variables  -----------------------------------------------
@@ -103,7 +104,11 @@
   function getRouteParams(routeObj, customParams) {
     props = {};
     if (routeObj && routeObj.params) {
-      props = { params: { ...routeObj.params, ...assign({}, allProps) } };
+      props = {
+        payload: routeObj.payload,
+        ...routeObj.params,
+        ...assign({}, allProps),
+      };
     }
     props = {
       ...props,
@@ -253,6 +258,7 @@
 
     // object merge params with custom route params defined
     let routeObjParams;
+    routeObj.payload = {};
     for (let bFunc of beforeEnterArr) {
       // beforeEnter Function is not a function throw an error
       if (!bFunc || typeof bFunc !== "function") {
@@ -268,12 +274,29 @@
           routeObjParams = undefined;
           if (routeObj.params) {
             routeObjParams = {
-              params: routeObj.params,
+              ...routeObj.params,
             };
           }
 
-          // executing beforeEnter router
-          await bFunc(resolve, routeFrom, routeTo, routeObjParams);
+          // executing beforeEnter Functions GLOBAL And Route Specific
+          await bFunc(
+            resolve,
+            routeFrom,
+            routeTo,
+            routeObjParams,
+            routeObj.payload
+          );
+
+          // reseting payload if destroyed
+          if (!routeObj.payload) {
+            routeObj.payload = {};
+            if ($configStore.consoleLogErrorMessages) {
+              console.warn("SCR_ROUTER - Payload property were redefined");
+            }
+          }
+
+          // updating props and passing to all components!
+          getRouteParams(routeObj);
         } catch (error) {
           resolve({ SCR_ROUTE_ERROR: true, error });
         }
@@ -412,6 +435,26 @@
       }
     }
     loadingController.resolveLoading();
+
+    // scroll to position if enabled
+    if ($configStore.useScroll && !routeObj.ignoreScroll) {
+      let scrollProps = {
+        top: $configStore.scrollProps.top || 0,
+        left: $configStore.scrollProps.left || 0,
+        behavior: $configStore.scrollProps.behavior || "smooth",
+        timeout: $configStore.scrollProps.timeout || 10,
+      };
+
+      if (routeObj.scrollProps) {
+        scrollProps.top = routeObj.scrollProps.top;
+        scrollProps.left = routeObj.scrollProps.left;
+        scrollProps.behavior = routeObj.scrollProps.behavior;
+        scrollProps.timeout = routeObj.scrollProps.timeout;
+      }
+
+      setTimeout(() => window.scrollTo(scrollProps), scrollProps.timeout);
+    }
+
     return pushRoute(routeObj.path, false);
   }
 
@@ -480,7 +523,7 @@
 </script>
 
 {#await loadingPromise}
-  <svelte:component this={loadingComponent} {...loadingProps} />
+  <svelte:component this={loadingComponent} {...loadingProps} {...props} />
 {:then value}
   {#if $configStore.usesRouteLayout && typeof layoutComponent === "function"}
     <svelte:component this={layoutComponent} {...props}>

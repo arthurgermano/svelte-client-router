@@ -1,9 +1,9 @@
 <script>
   import { pushRoute } from "../index.js";
-  export let params;
+  export let payload;
   export let currentRoute;
   export let fromRoute;
-  console.log(params)
+  console.log(payload)
 </script>
 
 <main>
@@ -12,7 +12,7 @@
   <br />
   <blockquote>
     <pre>
-      {JSON.stringify(params)}
+      {JSON.stringify(payload)}
     </pre>
   </blockquote>  
   <br />
