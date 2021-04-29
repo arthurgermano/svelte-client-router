@@ -21,16 +21,16 @@
   });
   SCR_CONFIG_STORE.setBeforeEnter([
     (resolve, routeFrom, routeTo, routeObjParams, payload) => {
-      payload.firstGBEF = "set on Global Enter Function - 1!"
-      console.log(payload)
+      payload.firstGBEF = "set on Global Enter Function - 1!";
+      console.log(payload);
       console.log("GBER-1");
       resolve(true);
     },
     (resolve, routeFrom, routeTo, routeObjParams, payload) => {
-      console.log(payload)
-      payload.secondGBEF = "set on Global Enter Function! - 2"
+      console.log(payload);
+      payload.secondGBEF = "set on Global Enter Function! - 2";
       console.log("GBER-2");
-      console.log(payload)
+      console.log(payload);
       resolve(true);
     },
   ]);
@@ -77,13 +77,17 @@
           console.log("<<<<>>>>>");
           console.log("beforeEnter Executed");
           console.log(params);
-          setTimeout(() => resolve(true), 1000);
+
+          setTimeout(() => {
+            alert("It will scroll to top: 300 - after 1 second!");
+            resolve(true);
+          }, 1000);
         },
       ],
       loadingProps: { loadingText: "Carregando 2..." },
       scrollProps: {
-        top: 100,
-        left: 100,
+        top: 300,
+        left: 0,
         behavior: "smooth",
         timeout: 1000,
       },
@@ -117,8 +121,8 @@
       beforeEnter: [
         (resolve, rFrom, rTo, params, payload) => {
           console.log(payload);
-          payload.myCustomParam2 = "set on Route Before Enter"
-          resolve(true)
+          payload.myCustomParam2 = "set on Route Before Enter";
+          resolve(true);
         },
       ],
       afterBeforeEnter: (routeObjParams) => {
