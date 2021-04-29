@@ -1,3 +1,7 @@
+<script>
+  import { SCR_CONFIG_STORE } from "../index.js";
+</script>
+
 <main class="scr-main-layout">
   <slot name="scr_header">
     <h1 class="scr-main-layout__header">
@@ -7,13 +11,14 @@
   <slot name="scr_before-main">
     <p class="scr-main-layout__p">
       Test some button to see the router working!
+      <br/>
+      <b>The Scrolling is set with SMOOTH</b>
     </p>
   </slot>
   <slot />
   <slot name="scr_after-main">
-    <p class="scr-main-layout__p">
-      Nice Routing!
-    </p>
+    <br /><br />
+    <p class="scr-main-layout__p">Nice Routing! <br /><br /></p>
   </slot>
   <slot name="scr_footer">
     <footer class="scr-main-layout__footer">This is some footer content</footer>
@@ -42,8 +47,10 @@
   .scr-main-layout__p {
     text-align: center;
     color: #ff3e00;
+    margin: 0;
+    padding: 0;
   }
-  
+
   .scr-main-layout__footer {
     width: 100%;
     border-top: 1px solid #000;
