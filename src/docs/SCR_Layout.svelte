@@ -1,4 +1,5 @@
 <script>
+  import { fly } from "svelte/transition";
   import SCR_Menu from "./SCR_Menu.svelte";
 </script>
 
@@ -12,14 +13,22 @@
   </div>
   <div class="scr-main">
     <SCR_Menu />
-    <div class="scr-pages"><slot /></div>
+    <div
+      class="scr-pages"
+      in:fly={{ delay: 201, x: 300, duration: 200, opacity: 0 }}
+      out:fly={{ x: 300, duration: 200, opacity: 0 }}
+    >
+      <slot />
+    </div>
   </div>
   <div class="scr-footer">
     <div class="scr-footer-left">
       <b>Last Git Version:</b> SCR_VERSION
       <br />
       <br />
-      <b>License:</b> <a href="https://en.wikipedia.org/wiki/MIT_License" target="_blank">MIT</a>
+      <b>License:</b>
+      <a href="https://en.wikipedia.org/wiki/MIT_License" target="_blank">MIT</a
+      >
     </div>
     <div class="scr-footer-right">
       <b>Github: </b><a
@@ -97,7 +106,6 @@
     text-align: center;
     background-color: #ff400013;
   }
-
 
   @media only screen and (max-width: 600px) {
     .scr-main {
