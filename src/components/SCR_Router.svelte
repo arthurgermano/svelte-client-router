@@ -136,11 +136,34 @@
   }
 
   // -----------------------------------------------------------------------------------
+  // -----------------  function throwRouteError  --------------------------------------
+
+  function throwRouteError(routeObj, error) {
+    if (routeObj.onError && typeof routeObj.onError === "function") {
+      routeObj.onError(error, getRouteParams(routeObj));
+      return setErrorComponent(
+        `SCR_ROUTER - Caught an error: ${error}!`,
+        error,
+        routeObj
+      );
+    }
+    throw `Error on route (${routeObj.name} - ${routeObj.path}) - ${error}!`;
+  }
+
+  // -----------------------------------------------------------------------------------
   // -----------------  function loadRoute  --------------------------------------------
 
   async function loadRoute(routeObj, isLoading = true) {
     try {
       getLocation();
+      if (
+        routeObj &&
+        !routeObj.forceReload &&
+        currentLocation.pathname === routeObj.path
+      ) {
+        return;
+      }
+
       layoutComponent = false;
 
       if (currentLocation.pathname === $configStore.errorRoute) {
@@ -187,12 +210,6 @@
         };
       }
 
-      // no component were defined by the user
-      if (!routeObj.component && !routeObj.lazyLoadComponent) {
-        throw new Error(
-          `No component defined for (${routeObj.name} - ${routeObj.path})!`
-        );
-      }
       await routerStore.setCurrentLocation(currentLocation.pathname);
 
       const configBERs = configStore.getBeforeEnter();
@@ -314,19 +331,7 @@
 
       if (resFunc.SCR_ROUTE_ERROR) {
         // each route can define an error function and if it is defined... execute it
-        if (routeObj.onError && typeof routeObj.onError === "function") {
-          routeObj.onError(resFunc.error, getRouteParams(routeObj));
-          return setErrorComponent(
-            `SCR_ROUTER - ${resFunc.error}!`,
-            resFunc.error,
-            routeObj
-          );
-        } else {
-          // this will execute, if defined, global error of the router
-          throw new Error(
-            `Error on route (${routeObj.name} - ${routeObj.path}) - ${error}!`
-          );
-        }
+        return throwRouteError(routeObj, resFunc.error);
       }
 
       // redirection defined by redirect or path
@@ -345,15 +350,12 @@
           let notFoundRouteName = new Error(
             `Error not found route name (${resFunc.name})`
           );
-          if (routeObj.onError && typeof routeObj.onError === "function") {
-            routeObj.onError(notFoundRouteName, getRouteParams(routeObj));
-            return false;
-          } else {
-            throw notFoundRouteName;
-          }
+          return throwRouteError(routeObj, notFoundRouteName);
         }
         return pushRoute(findRoute.path);
       }
+
+      return throwRouteError(routeObj, new Error("The resolve option was not able to understand the parameters passed!"));
     }
 
     // finalizeRoute definitions
@@ -421,6 +423,13 @@
       }
     } else {
       layoutComponent = false;
+    }
+
+    // no component were defined by the user
+    if (!routeObj.component && !routeObj.lazyLoadComponent) {
+      throw new Error(
+        `No component defined for (${routeObj.name} - ${routeObj.path})!`
+      );
     }
 
     // if is lazy loading component now is the time to load
@@ -507,9 +516,22 @@
   // -----------------------------------------------------------------------------------
   // -----------------  svelte_reactive - $configStore.consoleLogStores  ---------------
 
-  $: if ($configStore.consoleLogStores) {
+  $: if ($configStore.consoleLogStores && $routerStore) {
+    console.log(" ----- SCR - Router Store ------------ ");
     console.log($routerStore);
+    console.log(" ------------------------------------- ");
+  }
+
+  $: if ($configStore.consoleLogStores && $configStore) {
+    console.log(" ----- SCR - Configuration Store ----- ");
     console.log($configStore);
+    console.log(" ------------------------------------- ");
+  }
+
+  $: if ($configStore.consoleLogStores && $navigateStore) {
+    console.log(" ----- SCR - Navigate Store ---------- ");
+    console.log($navigateStore);
+    console.log(" ------------------------------------- ");
   }
 
   // -----------------------------------------------------------------------------------

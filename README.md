@@ -27,7 +27,7 @@ Designed to help make you in control of the routing of your Single Page Applicat
 
 - Lazy Load Components
 - Lazy Load Layouts
-- Routes based in Stores
+- Routes Based in Svelte Stores
 - Define Global Layout
 - Ignore Global Layout or define it by Route
 - Before Enter Global Functions
@@ -39,7 +39,7 @@ Designed to help make you in control of the routing of your Single Page Applicat
 - Global Route Error Function
 - Route Error Functions
 - Loading Component on Route Changing
-- Loading params for Loading Components per Route
+- Loading Params for Loading Components per Route
 
 ## Install
 
@@ -264,7 +264,12 @@ Let's see the options we have here:
   // ##   timeout: 10, // timeout must be greater than 10 milliseconds
   // ## },
   // ## Object
-  scrollProps: "/notFound", // ## Default is "/notFound"
+  scrollProps: {
+    top: 100,
+    left: 100,
+    behavior: "smooth",
+    timeout: 1000,
+  },
 
   // ## Before Enter defines a function or array of Functions
   // ## that must execute before each route
@@ -476,6 +481,17 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   // ## Boolean
   ignoreScroll: true,
 
+  // ## Scroll Props
+  // ## The scrolling props on entering the specific route if enabled
+  // ## Default Values: configuration store
+  // ## Object
+  scrollProps: {
+    top: 0,
+    left: 0,
+    behavior: "smooth",
+    timeout: 10, // timeout must be greater than 10 milliseconds
+  },
+
   // ## Title - it defines the route title
   // ## String
   title: "First Route Title",
@@ -487,6 +503,12 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   params: {
     myCustomParam: "OK THEN SHALL WE!",
   },
+
+  // ## Force Reload - when in opened route try to push the same route
+  // by using pushRoute function
+  // When enabled it will reload the current route as if it was not opened
+  // ## Boolean
+  forceReload: false,
 
   // ## Ignore Global Before Function - 
   // ## if should ignore defined global before function 

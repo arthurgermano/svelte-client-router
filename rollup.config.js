@@ -5,6 +5,7 @@ import livereload from "rollup-plugin-livereload";
 import replace from "@rollup/plugin-replace";
 import { terser } from "rollup-plugin-terser";
 import css from "rollup-plugin-css-only";
+import packageJson from "./package.json";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -44,6 +45,7 @@ export default {
   plugins: [
     replace({
 			preventAssignment: true,
+      SCR_VERSION: packageJson.version
     }),
     svelte({
       compilerOptions: {

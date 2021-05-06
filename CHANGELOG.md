@@ -1,5 +1,11 @@
 # Svelte Router changelog
 
+## 1.0.11
+- (Component Not Defined Mandatory) - Now only throws an error when is going to load the component
+- Added route option <b>forceReload</b>
+- Fixed issue when passing a strage parameter in Before Enter Function - Resolve Function
+- Improvement documentation - Now we have a documentation using Svelte Client Router!
+
 ## 1.0.10
 
 - Changed routeObjParam returned inside Before Enter Functions 

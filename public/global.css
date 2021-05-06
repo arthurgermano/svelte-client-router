@@ -1,3 +1,12 @@
+:root {
+	--scr-bg-color: #ffffff;
+	--scr-text-color: #000000;
+}
+
+* {
+	box-sizing: border-box;
+}
+
 html, body {
 	position: relative;
 	width: 100%;
@@ -5,59 +14,78 @@ html, body {
 }
 
 body {
-	color: #333;
+	background-color: var(--scr-bg-color);
+	color: var(--scr-text-color);
 	margin: 0;
-	padding: 8px;
 	box-sizing: border-box;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
-a {
-	color: rgb(0,100,200);
-	text-decoration: none;
+.scr-page {
+	display: grid;
+	grid-template-columns: 1fr;
+	padding: 0.5rem;
+	margin: 1rem auto;
+	justify-content: center;
+	align-content: start;
+	width: 100%;
+	min-height: 85vh;
 }
 
-a:hover {
-	text-decoration: underline;
+.scr-h4 {
+	color: #d43900;
+	margin-bottom: 1rem;
 }
 
-a:visited {
-	color: rgb(0,80,160);
+.scr-pre {
+	font: 0.875rem / 1.5 Consolas, monaco, monospace;
+	color: #414141;
+	-moz-tab-size: 4;
+	tab-size: 4;
+	overflow: auto;
+	padding: 0.625rem;
+	border: 1px solid orangered;
+	border-radius: 0.5rem;
+	background: #fff;
+	background-color: #d4390005;
 }
 
-label {
-	display: block;
+.scr-small {
+	color: #00000070;
+	font-weight: bolder;
 }
 
-input, button, select, textarea {
-	font-family: inherit;
-	font-size: inherit;
-	-webkit-padding: 0.4em 0;
-	padding: 0.4em;
-	margin: 0 0 0.5em 0;
-	box-sizing: border-box;
-	border: 1px solid #ccc;
-	border-radius: 2px;
+.scr-center {
+	margin-top: -0.5rem;
 }
 
-input:disabled {
-	color: #ccc;
+.scr-hr {
+	color: orangered;
 }
 
-button {
-	color: #333;
-	background-color: #f4f4f4;
-	outline: none;
+.scr-button {
+	color: #a82d00 !important;
+	background-color: #ff440018!important;
+	border-color: #a82d00 !important;
+	min-width: 10rem;
 }
 
-button:disabled {
-	color: #999;
+.scr-button:hover {
+	background-color: #ff44003d !important;
+	cursor: pointer !important;
+	color: #611a00 !important;
 }
 
-button:not(:disabled):active {
-	background-color: #ddd;
+.scr-b {
+	color: #005c00;
 }
 
-button:focus {
-	border-color: #666;
+.scr-text-justify {
+	text-align: justify;
+}
+
+@media only screen and (max-width: 600px) {
+	.scr-button {
+		min-width: 5rem;
+	}
 }

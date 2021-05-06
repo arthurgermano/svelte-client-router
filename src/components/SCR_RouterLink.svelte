@@ -1,10 +1,10 @@
 <script>
   import navigateStore from "../js/store/navigate.js";
 
-  export let props = {};
-  export let onError;
-  export let to;
-  export let elementProps;
+  export let props = undefined;
+  export let onError = undefined;
+  export let to = undefined;
+  export let elementProps = undefined;
 
   function onClick() {
     if (!to) {

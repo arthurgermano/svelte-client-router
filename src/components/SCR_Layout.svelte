@@ -1,11 +1,8 @@
 <main class="scr-main-layout">
   <slot name="scr_header">
-    <h1 class="scr-main-layout__header">Svelte Client Router - Example Layout!</h1>
+    <h1 class="scr-main-layout__header">Svelte Client Router - The Svelte SPA Router!</h1>
   </slot>
-  
   <slot />
-  
-
 </main>
 
 <style>
@@ -26,5 +23,4 @@
     border-bottom: 1px solid #000;
     padding: 1rem 0;
   }
-
 </style>
