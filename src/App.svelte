@@ -145,7 +145,7 @@
       path: "/svelte-client-router/routerStoreProperties",
       lazyLoadComponent: () =>
         import("./docs/pages/SCR_RouterStoreProperties.svelte"),
-      title: "SCR - Route Link - Properties",
+      title: "SCR - Route Store - Properties",
     },
   ];
 </script>
