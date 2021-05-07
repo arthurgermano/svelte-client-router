@@ -14,7 +14,7 @@ Designed to help make you in control of the routing of your Single Page Applicat
   - [Features](#features)
   - [Install](#install)
   - [Usage](#usage)
-    - [SCR - Test It](#scr---test-it)
+    - [SCR - Documentation and Test It!](#scr---documentation-and-test-it)
     - [SCR - Example](#scr---example)
     - [SCR - Configuration Store](#scr---configuration-store)
     - [SCR - Route Object Definition](#scr---route-object-definition)
@@ -60,7 +60,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 "start": "sirv public -s"
 ```
 
-### SCR - Test It
+### SCR - Documentation and Test It!
 [Click here to see Svelte Client Router - In Action!](https://arthurgermano.github.io/svelte-client-router/)
 
 
@@ -68,16 +68,19 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 
 ```javascript
 <script>
-  import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "svelte-client-router";
+  import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "./index.js";
 
-  import SCR_C1 from "./testComponents/SCR_C1.svelte";
-  import SCR_C4 from "./testComponents/SCR_C4.svelte";
-  import SCR_Layout_Global from "./testComponents/SCR_Layout_Global.svelte";
+  import SCR_Layout from "./docs/SCR_Layout.svelte";
 
-  SCR_CONFIG_STORE.setNotFoundRoute("/myCustomNotFound");
+  // Setting configurations of the SCR Router
+  // [https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions](https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions)
+  SCR_CONFIG_STORE.setNotFoundRoute(
+    "/svelte-client-router/myCustomNotFoundRoute"
+  );
+  SCR_CONFIG_STORE.setErrorRoute("/svelte-client-router/myCustomErrorRoute");
   SCR_CONFIG_STORE.setConsoleLogStores(false);
   SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
-  SCR_CONFIG_STORE.setHashMode(false);
+  SCR_CONFIG_STORE.setHashMode(true);
   SCR_CONFIG_STORE.setUseScroll(true);
   SCR_CONFIG_STORE.setScrollProps({
     top: 0,
@@ -85,113 +88,136 @@ In a default Svelte installation you need to edit your package.json and add _-s_
     behavior: "smooth",
     timeout: 10,
   });
+
+  // Setting global error function 
+  // [https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError](https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError)
   SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   });
-  SCR_CONFIG_STORE.setBeforeEnter([
-    (resolve) => {
-      console.log("GBER-1");
-      resolve(true);
-    },
-    (resolve) => {
-      console.log("GBER-2");
-      resolve(true);
-    },
-  ]);
 
+  // Setting the route object definition
+  [https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectOptions](https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectOptions)
   let routes = [
     {
-      name: "rootRoute",
+      name: "root",
       path: "/",
-      lazyLoadComponent: () => import("./testComponents/SCR_Root.svelte"),
-      lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
-      title: "SCR - Root Route",
-    },
-    {
-      name: "routeOne",
-      path: "/test1",
-      component: SCR_C1,
-      ignoreScroll: true,
-      beforeEnter: [
-        (resolve) => {
-          console.log("beforeEnter Executed");
-          setTimeout(() => resolve(true), 2000);
-        },
-        (resolve) => {
-          console.log("beforeEnter Executed2");
-          setTimeout(() => resolve({ redirect: "/" }), 1000);
-        },
-      ],
-      title: "First Route Title",
-      loadingProps: { loadingText: "Carregando 1..." },
-    },
-    {
-      name: "routeTwo",
-      path: "/test2",
-      lazyLoadComponent: () => import("./testComponents/SCR_C2.svelte"),
-      title: "Second Route Title",
       beforeEnter: [
         (resolve, rFrom, rTo, params, payload) => {
-          console.log("beforeEnter Executed");
-          console.log(params);
-          setTimeout(() => resolve(true), 1000);
+          resolve({ redirect: "/svelte-client-router" });
         },
       ],
-      loadingProps: { loadingText: "Carregando 2..." },
-      scrollProps: {
-        top: 100,
-        left: 100,
-        behavior: "smooth",
-        timeout: 1000,
-      },
     },
     {
-      name: "routeThree",
-      path: "/test3",
-      component: SCR_C4,
-      title: "Third Route Title",
-      beforeEnter: [
-        (resolve) => {
-          console.log("BEFORE Enter C3");
-          throw new Error("teste");
-        },
-      ],
-      onError: (err, params) => {
-        console.log("ERROR DEFINED ROUTER C1", err);
-        console.log(params);
-      },
+      name: "rootRoute",
+      path: "/svelte-client-router",
+      lazyLoadComponent: () => import("./docs/pages/SCR_Presentation.svelte"),
+      title: "SCR - Presentation",
     },
     {
-      name: "routeFour",
-      path: "/test4",
-      params: {
-        myCustomParam: "This Param was set in the Router Definition",
-      },
-      title: "Four Route Title",
-      lazyLoadComponent: () => import('./testComponents/SCR_C4.svelte'),
-      lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout_Global.svelte"),
-      afterBeforeEnter: (routeObjParams) => {
-        console.log("After BE Route Four")
-        console.log(routeObjParams);
-      },
-      loadingProps: { loadingText: "Carregando 4..." },
+      name: "installationRoute",
+      path: "/svelte-client-router/installation",
+      lazyLoadComponent: () => import("./docs/pages/SCR_Installation.svelte"),
+      title: "SCR - Installation",
     },
     {
-      name: "routeFive",
-      path: "/test5",
-      title: "Five Route Title",
-      lazyLoadComponent: () => import('./testComponents/SCR_C5.svelte'),
-      loadingProps: { loadingText: "Carregando 5..." },
-      ignoreLayout: true,
-      ignoreGlobalBeforeFunction: true
+      name: "gettingStartedRoute",
+      path: "/svelte-client-router/gettingStarted",
+      lazyLoadComponent: () => import("./docs/pages/SCR_GettingStarted.svelte"),
+      title: "SCR - Getting Started",
+    },
+    {
+      name: "configurationOptionsRoute",
+      path: "/svelte-client-router/configurationOptions",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_ConfigurationOptions.svelte"),
+      title: "SCR - Configuration Options",
+    },
+    {
+      name: "configurationGlobalBeforeEnterOptionRoute",
+      path: "/svelte-client-router/configurationBeforeEnter",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_ConfigurationBeforeEnter.svelte"),
+      title: "SCR - Configuration - Before Enter",
+    },
+    {
+      name: "configurationOnErrorOptionRoute",
+      path: "/svelte-client-router/configurationOnError",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_ConfigurationOnError.svelte"),
+      title: "SCR - Configuration - On Error",
+    },
+    {
+      name: "routeObjectOptionsRoute",
+      path: "/svelte-client-router/routeObjectOptions",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_RouteObjectProperties.svelte"),
+      title: "SCR - Route Object - Options",
+    },
+    {
+      name: "routeObjectBeforeEnterRoute",
+      path: "/svelte-client-router/routeObjectBeforeEnter",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_RouteObjectBeforeEnter.svelte"),
+      title: "SCR - Route Object - Before Enter Functions",
+    },
+    {
+      name: "routeObjectAfterBeforeEnterRoute",
+      path: "/svelte-client-router/routeObjectAfterBeforeEnter",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_RouteObjectAfterBeforeEnter.svelte"),
+      title: "SCR - Route Object - After Before Function",
+    },
+    {
+      name: "routeObjectOnErrorRoute",
+      path: "/svelte-client-router/routeObjectOnError",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_RouteObjectOnError.svelte"),
+      title: "SCR - Route Object - On Error Function",
+    },
+    {
+      name: "routeComponentPropertiesRoute",
+      path: "/svelte-client-router/routeComponentProperties",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_RouteComponentProperties.svelte"),
+      title: "SCR - Route Component - Properties",
+    },
+    {
+      name: "routeComponentComponentsRoute",
+      path: "/svelte-client-router/routeComponentComponents",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_RouteComponentComponents.svelte"),
+      title: "SCR - Route Component - Components",
+    },
+    {
+      name: "navigationRoutingRoute",
+      path: "/svelte-client-router/navigationRouting",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_NavigationRouting.svelte"),
+      title: "SCR - Navigation - Routing",
+    },
+    {
+      name: "navigationStoreRoute",
+      path: "/svelte-client-router/navigationStore",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_NavigationStore.svelte"),
+      title: "SCR - Navigation - Store",
+    },
+    {
+      name: "routerLinkPropertiesRoute",
+      path: "/svelte-client-router/routerLinkProperties",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_RouterLinkProperties.svelte"),
+      title: "SCR - Route Link - Properties",
     },
   ];
-
 </script>
 
-<SCR_ROUTER_COMPONENT bind:routes defaultLayoutComponent={SCR_Layout_Global} allProps={{ allPropsTest: "Passing To ALL"}} />
-```
+<!-- Using SCR_ROUTER_COMPONENT -->
+<!-- [https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentProperties](https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentProperties) -->
+<!-- [https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentComponents](https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentComponents) -->
+<SCR_ROUTER_COMPONENT bind:routes defaultLayoutComponent={SCR_Layout} />
 
+```
 
 ### SCR - Configuration Store
 

@@ -3,7 +3,11 @@
 
   import SCR_Layout from "./docs/SCR_Layout.svelte";
 
-  SCR_CONFIG_STORE.setNotFoundRoute("/svelte-client-router/myCustomNotFoundRoute");
+  // Setting configurations of the SCR Router
+  // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions
+  SCR_CONFIG_STORE.setNotFoundRoute(
+    "/svelte-client-router/myCustomNotFoundRoute"
+  );
   SCR_CONFIG_STORE.setErrorRoute("/svelte-client-router/myCustomErrorRoute");
   SCR_CONFIG_STORE.setConsoleLogStores(false);
   SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
@@ -15,10 +19,15 @@
     behavior: "smooth",
     timeout: 10,
   });
+
+  // Setting global error function 
+  // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError
   SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   });
 
+  // Setting the route object definition
+  // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectOptions
   let routes = [
     {
       name: "root",
@@ -134,4 +143,7 @@
   ];
 </script>
 
+<!-- Using SCR_ROUTER_COMPONENT -->
+<!-- https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentProperties -->
+<!-- https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentComponents -->
 <SCR_ROUTER_COMPONENT bind:routes defaultLayoutComponent={SCR_Layout} />
