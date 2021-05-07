@@ -230,8 +230,8 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 Configuration Store manages the behavior of the <abbr title="Svelte Client Router">SCR</abbr>.
 Let's see the options we have here:
 <br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions" target="_blank">Configuration Options</a><br />
-<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationBeforeEnter" target="_blank">Global Before Enter Functions</a><br />
-<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError" target="_blank">Global On Error</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationBeforeEnter" target="_blank">Global Before Enter Functions</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError" target="_blank">Global On Error</a><br />
 
 ```javascript
 {
