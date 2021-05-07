@@ -1,5 +1,10 @@
 # Svelte Router changelog
 
+## 1.0.12
+- Fixed package.json imports. Now saving as dev-dependencies non production packages.
+- Removed date-fns as production package - not using removeExpiredKeys and addExpiredKeys
+- Remove @rollup/plugin-replace as production package
+
 ## 1.0.11
 - (Component Not Defined Mandatory) - Now only throws an error when is going to load the component
 - Added route option <b>forceReload</b>

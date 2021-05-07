@@ -1,12 +1,12 @@
 import cloneDeep from "lodash/cloneDeep";
-import { isBefore, addMilliseconds } from "date-fns";
+//import { isBefore, addMilliseconds } from "date-fns";
 
 const LS = localStorage;
 const PREFIX_KEY = "SCR_ROUTER_";
 const EXPIRE_KEYS = `${PREFIX_KEY}EXPIRE_KEYS`;
 
 export const getItem = (key) => {
-  removeExpiredKeys();
+  // removeExpiredKeys();
   return fromJSON(LS.getItem(key));
 };
 
@@ -18,20 +18,20 @@ export const setItem = (key, value, time) => {
     clearKeyList([key]);
     return;
   }
-  removeExpiredKeys();
-  if (
-    time &&
-    Number.isSafeInteger(time) &&
-    Number.isInteger(time) &&
-    time > 0
-  ) {
-    addExpireKey(key, time);
-  }
+  // removeExpiredKeys();
+  // if (
+  //   time &&
+  //   Number.isSafeInteger(time) &&
+  //   Number.isInteger(time) &&
+  //   time > 0
+  // ) {
+  //   addExpireKey(key, time);
+  // }
   LS.setItem(key, toJSON(value));
 };
 
 export const removeItem = (key) => {
-  removeExpiredKeys();
+  // removeExpiredKeys();
   const item = fromJSON(LS.getItem(key));
   if (item !== null && item !== undefined) {
     LS.removeItem(key);
@@ -44,7 +44,7 @@ export const getAll = () => {
   if (!LS || LS.length === 0) {
     return [];
   }
-  removeExpiredKeys();
+  // removeExpiredKeys();
   let items = Object.assign({}, cloneDeep(LS));
   delete items[EXPIRE_KEYS];
   return items;
@@ -93,30 +93,30 @@ export const clearKeyList = (keyList) => {
 
 // Function to check and remove a key if expired
 // If so... remove the key from the expiration list and the key
-export const removeExpiredKeys = () => {
-  let keyList = [];
-  let expire = fromJSON(LS.getItem(EXPIRE_KEYS));
+// export const removeExpiredKeys = () => {
+//   let keyList = [];
+//   let expire = fromJSON(LS.getItem(EXPIRE_KEYS));
 
-  if (expire && expire.length > 0) {
-    expire = expire.filter((item) => {
-      if (
-        isBefore(new Date(), new Date(item.liveUntil)) &&
-        LS.getItem(item.key)
-      ) {
-        return true;
-      }
-      LS.removeItem(item.key);
-      keyList.push(item.key);
-    });
+//   if (expire && expire.length > 0) {
+//     expire = expire.filter((item) => {
+//       if (
+//         isBefore(new Date(), new Date(item.liveUntil)) &&
+//         LS.getItem(item.key)
+//       ) {
+//         return true;
+//       }
+//       LS.removeItem(item.key);
+//       keyList.push(item.key);
+//     });
 
-    if (expire.length > 0) {
-      LS.setItem(EXPIRE_KEYS, toJSON(expire));
-    } else {
-      LS.removeItem(EXPIRE_KEYS);
-    }
-  }
-  return keyList;
-};
+//     if (expire.length > 0) {
+//       LS.setItem(EXPIRE_KEYS, toJSON(expire));
+//     } else {
+//       LS.removeItem(EXPIRE_KEYS);
+//     }
+//   }
+//   return keyList;
+// };
 
 export const setSvelteStoreInStorage = (
   subscribe,
@@ -147,23 +147,23 @@ export const getSvelteStoreInStorage = (update, key) => {
 // add a key in the expiration key list
 // key: String
 // time: In milliseconds
-function addExpireKey(key, time) {
-  if (!Number.isInteger(time) || !Number.isSafeInteger(time)) {
-    throw new Error("Time to add an expire key is not a safe integer");
-  }
+// function addExpireKey(key, time) {
+//   if (!Number.isInteger(time) || !Number.isSafeInteger(time)) {
+//     throw new Error("Time to add an expire key is not a safe integer");
+//   }
 
-  let expire = fromJSON(LS.getItem(EXPIRE_KEYS));
-  const liveUntil = addMilliseconds(new Date(), time);
+//   let expire = fromJSON(LS.getItem(EXPIRE_KEYS));
+//   const liveUntil = addMilliseconds(new Date(), time);
 
-  if (expire !== null && expire !== undefined) {
-    expire = expire.filter((item) => item.key !== key);
-    expire.push({ key, liveUntil });
-  } else {
-    expire = [{ key, liveUntil }];
-  }
+//   if (expire !== null && expire !== undefined) {
+//     expire = expire.filter((item) => item.key !== key);
+//     expire.push({ key, liveUntil });
+//   } else {
+//     expire = [{ key, liveUntil }];
+//   }
 
-  LS.setItem(EXPIRE_KEYS, toJSON(expire));
-}
+//   LS.setItem(EXPIRE_KEYS, toJSON(expire));
+// }
 
 // removes a specific key from expiration key list, may remove the key too
 // key: String

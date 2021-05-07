@@ -1,5 +1,4 @@
 import cloneDeep from "lodash/cloneDeep";
-import { isBefore, addMilliseconds } from "date-fns";
 import localforage from "localforage";
 
 const PREFIX_KEY = "SCR_ROUTER_";
@@ -19,7 +18,7 @@ const LF = localforage;
 
 export const getItem = async (key) => {
   try {
-    await removeExpiredKeys();
+    // await removeExpiredKeys();
     return fromJSON(await LF.getItem(key));
   } catch (error) {
     throw error;
@@ -35,14 +34,14 @@ export const setItem = async (key, value, time) => {
       await clearKeyList([key]);
       return;
     }
-    await removeExpiredKeys();
+    // await removeExpiredKeys();
     if (
       time &&
       Number.isSafeInteger(time) &&
       Number.isInteger(time) &&
       time > 0
     ) {
-      await addExpireKey(key, time);
+      // await addExpireKey(key, time);
     }
     await LF.setItem(key, toJSON(value));
   } catch (error) {
@@ -52,7 +51,7 @@ export const setItem = async (key, value, time) => {
 
 export const removeItem = async (key) => {
   try {
-    await removeExpiredKeys();
+    // await removeExpiredKeys();
     const item = fromJSON(await LF.getItem(key));
     if (item !== null && item !== undefined) {
       await LF.removeItem(key);
@@ -66,7 +65,7 @@ export const removeItem = async (key) => {
 
 export const getAll = async () => {
   try {
-    await removeExpiredKeys();
+    // await removeExpiredKeys();
     const keys = await LF.keys();
     const items = [];
     let item;
@@ -131,34 +130,34 @@ export const clearKeyList = async (keyList) => {
 
 // Function to check and remove a key if expired
 // If so... remove the key from the expiration list and the key
-export const removeExpiredKeys = async () => {
-  try {
-    let keyList = [];
-    let expire = fromJSON(await LF.getItem(EXPIRE_KEYS));
+// export const removeExpiredKeys = async () => {
+//   try {
+//     let keyList = [];
+//     let expire = fromJSON(await LF.getItem(EXPIRE_KEYS));
 
-    if (expire && expire.length > 0) {
-      expire = await expire.filter(async (item) => {
-        if (
-          isBefore(new Date(), new Date(item.liveUntil)) &&
-          (await LF.getItem(item.key))
-        ) {
-          return true;
-        }
-        await LF.removeItem(item.key);
-        keyList.push(item.key);
-      });
+//     if (expire && expire.length > 0) {
+//       expire = await expire.filter(async (item) => {
+//         if (
+//           isBefore(new Date(), new Date(item.liveUntil)) &&
+//           (await LF.getItem(item.key))
+//         ) {
+//           return true;
+//         }
+//         await LF.removeItem(item.key);
+//         keyList.push(item.key);
+//       });
 
-      if (expire.length > 0) {
-        await LF.setItem(EXPIRE_KEYS, toJSON(expire));
-      } else {
-        await LF.removeItem(EXPIRE_KEYS);
-      }
-    }
-    return keyList;
-  } catch (error) {
-    throw error;
-  }
-};
+//       if (expire.length > 0) {
+//         await LF.setItem(EXPIRE_KEYS, toJSON(expire));
+//       } else {
+//         await LF.removeItem(EXPIRE_KEYS);
+//       }
+//     }
+//     return keyList;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
 
 export const setSvelteStoreInStorage = async (
   subscribe,
@@ -197,27 +196,27 @@ export const getSvelteStoreInStorage = async (update, key) => {
 // add a key in the expiration key list
 // key: String
 // time: In milliseconds
-async function addExpireKey(key, time) {
-  try {
-    if (!Number.isInteger(time) || !Number.isSafeInteger(time)) {
-      throw new Error("Time to add an expire key is not a safe integer");
-    }
+// async function addExpireKey(key, time) {
+//   try {
+//     if (!Number.isInteger(time) || !Number.isSafeInteger(time)) {
+//       throw new Error("Time to add an expire key is not a safe integer");
+//     }
 
-    let expire = fromJSON(await LF.getItem(EXPIRE_KEYS));
-    const liveUntil = addMilliseconds(new Date(), time);
+//     let expire = fromJSON(await LF.getItem(EXPIRE_KEYS));
+//     const liveUntil = addMilliseconds(new Date(), time);
 
-    if (expire !== null && expire !== undefined) {
-      expire = expire.filter((item) => item.key !== key);
-      expire.push({ key, liveUntil });
-    } else {
-      expire = [{ key, liveUntil }];
-    }
+//     if (expire !== null && expire !== undefined) {
+//       expire = expire.filter((item) => item.key !== key);
+//       expire.push({ key, liveUntil });
+//     } else {
+//       expire = [{ key, liveUntil }];
+//     }
 
-    await LF.setItem(EXPIRE_KEYS, toJSON(expire));
-  } catch (error) {
-    throw error;
-  }
-}
+//     await LF.setItem(EXPIRE_KEYS, toJSON(expire));
+//   } catch (error) {
+//     throw error;
+//   }
+// }
 
 // removes a specific key from expiration key list, may remove the key too
 // key: String
