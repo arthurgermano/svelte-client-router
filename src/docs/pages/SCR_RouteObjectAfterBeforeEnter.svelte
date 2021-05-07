@@ -27,7 +27,7 @@
   afterEnter((routeObjParams) =&gt; &#123; console.log(routeObjParams); &#125;);
 &#125;
   </pre>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Anatomy of the After Before Enter Function</h4>
   <p class="scr-text-justify">
     When declaring a After Before Enter Function it will be provided a

@@ -140,6 +140,13 @@
         import("./docs/pages/SCR_RouterLinkProperties.svelte"),
       title: "SCR - Route Link - Properties",
     },
+    {
+      name: "routerStorePropertiesRoute",
+      path: "/svelte-client-router/routerStoreProperties",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_RouterStoreProperties.svelte"),
+      title: "SCR - Route Link - Properties",
+    },
   ];
 </script>
 

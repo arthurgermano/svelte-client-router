@@ -54,6 +54,10 @@
   <SCR_ROUTER_LINK to={{ name: "routerLinkPropertiesRoute" }}>
     <div class="scr-menu-item">Properties</div>
   </SCR_ROUTER_LINK>
+  <h4 class="scr-menu-h4">Router Store</h4>
+  <SCR_ROUTER_LINK to={{ name: "routerStorePropertiesRoute" }}>
+    <div class="scr-menu-item">Properties</div>
+  </SCR_ROUTER_LINK>
 </div>
 
 <style>

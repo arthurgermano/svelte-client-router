@@ -33,7 +33,7 @@
 
 &lt;/SCR_ROUTER_LINK&gt;
   </pre>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Properties</h4>
   <p class="scr-text-justify">
     Pretty easy to use, isn't it? So now lets check out the component exported
@@ -110,10 +110,9 @@
           routeName="navigationStoreRoute"
         />
         <SCR_PushRouteButton
-          style="float:right; opacity: 0.5"
+          style="float:right"
           text="Next"
-          routeName="routerLinkPropertiesRoute"
-          title="More content to be added"
+          routeName="routerStorePropertiesRoute"
         />
       </div>
     </div>

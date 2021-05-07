@@ -17,7 +17,7 @@
     There are no secret of using them, but <b>pushRoute</b> has some nice features.
     Lets check them:
   </p>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Push Route</h4>
   <pre
     class="scr-pre">
@@ -33,7 +33,7 @@ import &#123; pushRoute &#125; from "svelte-client-router"
   pushRoute("/routePath");
 &lt;/script&gt;
   </pre>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Push Route Function Anatomy</h4>
   <p class="scr-text-justify">
     This function can receive three paramenters as it follows:
@@ -60,7 +60,7 @@ import &#123; pushRoute &#125; from "svelte-client-router"
       instead of the route definition declared function.
     </li>
   </ul>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Back Route</h4>
   <pre
     class="scr-pre">

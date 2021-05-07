@@ -21,7 +21,7 @@ Designed to help make you in control of the routing of your Single Page Applicat
     - [SCR - Router Svelte Component](#scr---router-svelte-component)
     - [SCR - Navigation](#scr---navigation)
     - [SCR - Router Link Component](#scr---router-link-component)
-    - [SCR - Router Store Component](#scr---router-store-component)
+    - [SCR - Router Store](#scr---router-store)
 
 ## Features
 
@@ -883,12 +883,13 @@ Let's see it:
 
 ```
 
-### SCR - Router Store Component
+### SCR - Router Store
 
-<abbr title="Svelte Client Router">SCR</abbr> Router Store Component is the store where all the route definitions
+<abbr title="Svelte Client Router">SCR</abbr> Router Store is the store where all the route definitions
 are updated and controlled. You can check real time what is happening.
 
 Let's see it:
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routerStoreProperties" target="_blank">Router Store Properties</a><br />
 
 ```javascript
 // < -- You Svelte Component Definition-- >

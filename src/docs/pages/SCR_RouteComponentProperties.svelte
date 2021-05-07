@@ -54,7 +54,7 @@ const routes = [
 /&gt;
 
   </pre>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Routes</h4>
   <p class="scr-text-justify">
     This is where you declare all your routes. It is the index of your
@@ -118,7 +118,7 @@ const routes = [
     Each route defined inside the route array object can have these options.
     Very robust and we can see that SCR is focused on before enter behaviour.
   </p>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">All Props</h4>
   <p class="scr-text-justify">
     The <b>allProps</b> option can be passed to the router component. It must be
@@ -133,7 +133,7 @@ const allProps = &#123;
   passToAll: "OK"
 &#125;
   </pre>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">All Loading Props</h4>
   <p class="scr-text-justify">
     The <b>allLoadingProps</b> option can be passed to the router component. It must

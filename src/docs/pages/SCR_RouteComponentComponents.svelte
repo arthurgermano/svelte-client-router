@@ -12,7 +12,7 @@
     <br />
     Lets see all the components one by one:
   </p>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Layout Component</h4>
   <p class="scr-text-justify">
     The Layout Component is the layout used to encapsulate all your route
@@ -82,7 +82,7 @@ const routes = [
   &lt;div&gt;&lt;SCR_Footer /&gt;&lt;/div&gt;
 &lt;/div&gt;
 </pre>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Loading Component</h4>
   <p class="scr-text-justify">
     The Loading Component is the loading screen used to show when before enter
@@ -139,7 +139,7 @@ const routes = [
   &lt;h1 class="scr-h1"&gt;&#123;loadingText&#125;&lt;/h1&gt;
 &lt;/center&gt;
 </pre>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Not Found Component</h4>
   <p class="scr-text-justify">
     The Not Found Component is the component that must be loaded when the user
@@ -182,7 +182,7 @@ const routes = [
   &lt;p class="scr-p-small"&gt;&#123;$routerStore.currentLocation || "='("&#125;&lt;/p&gt;
 &lt;/center&gt;
 </pre>
-  <br />
+  <hr class="scr-hr" />
   <h4 class="scr-h4">Error Component</h4>
   <p class="scr-text-justify">
     The Error Component is the component that must be loaded when something goes
