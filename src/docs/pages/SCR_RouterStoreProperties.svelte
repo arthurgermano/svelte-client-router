@@ -102,7 +102,7 @@
   path: "/svelte-client-router/routerStoreProperties",
   lazyLoadComponent: () =&gt;
     import("./docs/pages/SCR_RouterStoreProperties.svelte"),
-  title: "SCR - Route Link - Properties",
+  title: "SCR - Route Store - Properties",
 &#125;
 </pre>
   <SCR_PageFooter>
