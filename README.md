@@ -230,6 +230,9 @@ Helpful links<br />
 
 Configuration Store manages the behavior of the <abbr title="Svelte Client Router">SCR</abbr>.
 Let's see the options we have here:
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions" target="_blank">Configuration Options</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationBeforeEnter" target="_blank">Global Before Enter Functions</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError" target="_blank">Global On Error</a><br />
 
 ```javascript
 {
@@ -467,6 +470,11 @@ SCR_CONFIG_STORE.setConfig({
 Route Object is the definition of every route we have in the SPA application and is below our <abbr title="Svelte Client Router">SCR</abbr> Route Component.
 
 Let's see the object format:
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectOptions" target="_blank">Route Object Options</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectBeforeEnter" target="_blank">Route Object Before Enter Functions</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectAfterBeforeEnter" target="_blank">Route Object After Before Enter Function</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectOnError" target="_blank">Route Object  On Error</a><br />
+
 
 ```javascript
 import { SCR_ROUTER_COMPONENT } from "svelte-client-router";
@@ -699,6 +707,8 @@ Route Svelte Component will control the selection of the route, execute all the 
 specified in the router object. 
 
 Let's see this component properties and possibilities:
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentProperties" target="_blank">Route Component Properties</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentComponents" target="_blank">Route Component Components</a><br />
 
 ```javascript
 import { SCR_ROUTER_COMPONENT } from "svelte-client-router";
@@ -764,6 +774,8 @@ export let allLoadingProps = {};
 just the methods to navigate.
 
 Let's see them:
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/navigationRouting" target="_blank">Navigate Routing</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/navigationStore" target="_blank">Navigate Store</a><br />
 
 ```javascript
 // < -- You Svelte Component Definition-- >
@@ -842,6 +854,7 @@ backRoute()
 <abbr title="Svelte Client Router">SCR</abbr> RouterLink Component is a component to make easy clickable go to route.
 
 Let's see it:
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routerLinkProperties" target="_blank">Router Link Properties</a><br />
 
 ```javascript
 // < -- You Svelte Component Definition-- >
