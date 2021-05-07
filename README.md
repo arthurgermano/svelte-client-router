@@ -67,11 +67,11 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 ### SCR - Example
 
 Helpful links 
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions" target="_blank">Configuration Options</a>
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError" target="_blank">Global On Error</a>
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectOptions" target="_blank">Route Object Options</a>
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentProperties" target="_blank">SCR Component Properties</a>
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentComponents" target="_blank">SCR Component Components</a>
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions" target="_blank">Configuration Options</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError" target="_blank">Global On Error</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectOptions" target="_blank">Route Object Options</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentProperties" target="_blank">SCR Component Properties</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentComponents" target="_blank">SCR Component Components</a><br />
 
 ```javascript
 <script>
