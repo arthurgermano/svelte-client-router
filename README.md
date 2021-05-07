@@ -66,7 +66,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 
 ### SCR - Example
 
-Helpful links 
+Helpful links<br /> 
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions" target="_blank">Configuration Options</a><br />
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError" target="_blank">Global On Error</a><br />
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeObjectOptions" target="_blank">Route Object Options</a><br />
