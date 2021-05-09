@@ -36,6 +36,7 @@
   let loadingPromise;
   let layoutComponent = defaultLayoutComponent;
   let loadingController = new LoadingController();
+  let isBacking = false;
 
   // -----------------------------------------------------------------------------------
   // -----------------  function getBeforeEnterAsArray  --------------------------------
@@ -58,11 +59,12 @@
 
   function pushRoute(route, popEvent = true) {
     const routePath = ($configStore.hashMode ? "#" : "") + route;
-    if (history.pushState) {
+    if (history.pushState && !isBacking) {
       history.pushState(null, null, routePath);
     } else {
       location.hash = routePath;
     }
+    isBacking = false;
     if (popEvent) {
       window.dispatchEvent(new Event("popstate"));
     }
@@ -207,6 +209,7 @@
         loadingProps = {
           ...loadingProps,
           ...routeObj.loadingProps,
+          ...getRouteParams(routeObj)
         };
       }
 
@@ -503,6 +506,7 @@
     }
 
     // loading route
+    isBacking = false;
     await loadRoute();
   });
 
@@ -510,6 +514,7 @@
   // -----------------  Window - eventListener popstate  -------------------------------
 
   window.addEventListener("popstate", async (event) => {
+    isBacking = true;
     await loadRoute();
   });
 
@@ -538,6 +543,7 @@
   // -----------------  svelte_reactive - $navigateStore.pushRoute  --------------------
 
   $: if ($navigateStore.pushRoute) {
+    isBacking = false;
     loadRoute(navigateStore.consumeRoutePushed(), false);
   }
 

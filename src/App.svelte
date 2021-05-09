@@ -1,7 +1,7 @@
 <script>
   import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "./index.js";
-
   import SCR_Layout from "./docs/SCR_Layout.svelte";
+  import SCR_NotFound from "./docs/SCR_NotFound.svelte";
 
   // Setting configurations of the SCR Router
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions
@@ -20,7 +20,7 @@
     timeout: 10,
   });
 
-  // Setting global error function 
+  // Setting global error function
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOnError
   SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
@@ -153,4 +153,8 @@
 <!-- Using SCR_ROUTER_COMPONENT -->
 <!-- https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentProperties -->
 <!-- https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/routeComponentComponents -->
-<SCR_ROUTER_COMPONENT bind:routes defaultLayoutComponent={SCR_Layout} />
+<SCR_ROUTER_COMPONENT
+  bind:routes
+  defaultLayoutComponent={SCR_Layout}
+  notFoundComponent={SCR_NotFound}
+/>

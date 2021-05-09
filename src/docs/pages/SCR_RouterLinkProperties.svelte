@@ -17,7 +17,7 @@
       // Importing Navigate Store
     </b>
 &lt;script&gt;
-  import &#123; SCR_ROUTE_LINK &#125; from "svelte-client-router";
+  import &#123; SCR_ROUTER_LINK &#125; from "svelte-client-router";
 &lt;/script&gt;
 
 <b class="scr-b">
@@ -73,7 +73,7 @@
       // Importing Navigate Store
     </b>
 &lt;script&gt;
-  import &#123; SCR_ROUTE_LINK &#125; from "svelte-client-router";
+  import &#123; SCR_ROUTER_LINK &#125; from "svelte-client-router";
 &lt;/script&gt;
 
 <b class="scr-b">

@@ -1,5 +1,9 @@
 # Svelte Router changelog
 
+## 1.0.13
+- Fixed issue when backing route - Now is not pushing that route into the history
+- Fixed issue of non passing parameters to Loading Components
+
 ## 1.0.12
 - Fixed package.json imports. Now saving as dev-dependencies non production packages.
 - Removed date-fns as production package - not using removeExpiredKeys and addExpiredKeys
