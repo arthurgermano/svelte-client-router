@@ -52,7 +52,7 @@
     if ($configStore.hashMode) {
       let queryArr = currentLocation.pathname.split("?");
       if (queryArr && queryArr[1]) {
-      console.log(queryArr[1], "<<<")
+
         return "?"+queryArr[1];
       }
       return "";
