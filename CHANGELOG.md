@@ -1,15 +1,24 @@
 # Svelte Router changelog
 
+## 1.0.14
+
+- Fixed issue with query params on routing
+- Fixed issue on hash routing with query params
+- Better code commenting on Route Component
+
 ## 1.0.13
+
 - Fixed issue when backing route - Now is not pushing that route into the history
 - Fixed issue of non passing parameters to Loading Components
 
 ## 1.0.12
+
 - Fixed package.json imports. Now saving as dev-dependencies non production packages.
 - Removed date-fns as production package - not using removeExpiredKeys and addExpiredKeys
 - Remove @rollup/plugin-replace as production package
 
 ## 1.0.11
+
 - (Component Not Defined Mandatory) - Now only throws an error when is going to load the component
 - Added route option <b>forceReload</b>
 - Fixed issue when passing a strage parameter in Before Enter Function - Resolve Function

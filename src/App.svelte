@@ -13,6 +13,7 @@
   SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
   SCR_CONFIG_STORE.setHashMode(true);
   SCR_CONFIG_STORE.setUseScroll(true);
+  SCR_CONFIG_STORE.setConsiderTrailingSlashOnMachingRoute(false);
   SCR_CONFIG_STORE.setScrollProps({
     top: 0,
     left: 0,
