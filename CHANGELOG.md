@@ -1,5 +1,9 @@
 # Svelte Router changelog
 
+## 1.1.1
+
+- Fixed bug when navigate tries to find a route passed wrongly or not existent!
+
 ## 1.1.0
 
 - RegexPath - now you can declare an route with params /my/route/:with/params

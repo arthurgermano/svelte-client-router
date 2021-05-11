@@ -163,6 +163,11 @@
           return pushRoute($configStore.notFoundRoute);
         }
         return false;
+
+      // when navigate tries to find a route passed wrongly or not existent! 
+      } else if (routeObj.notFound) {
+        await routerStore.setCurrentLocation(routeObj.path);
+        return pushRoute($configStore.notFoundRoute);
       }
 
       getRouteParams(routeObj);
@@ -217,7 +222,7 @@
         await executeBeforeEnterFunctions(routeObj, beforeEnterArr, isLoading);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       loadingController.resolveLoading();
       if (configStore.getOnError()) {
         configStore.getOnError()(error, getRouteParams(routeObj));

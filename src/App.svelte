@@ -150,11 +150,19 @@
       title: "SCR - Route Store - Properties",
     },
     {
-      name: "test1Route",
+      name: "testRegexPathRoute",
       path: "/svelte-client-router/:teste/test1",
       lazyLoadComponent: () =>
-        import("./docs/pages/SCR_Test1.svelte"),
+        import("./docs/pages/SCR_TestRegexPath.svelte"),
       title: "SCR - Test 1",
+      forceReload: true
+    },
+    {
+      name: "testRegexPath2Route",
+      path: "/svelte-client-router/:firstParam/test2/:secondParam",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_TestRegexPath2.svelte"),
+      title: "SCR - Test 2",
       forceReload: true
     },
   ];

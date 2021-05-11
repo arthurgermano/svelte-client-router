@@ -59,8 +59,11 @@
     <div class="scr-btn">Properties</div>
   </SCR_ROUTER_LINK>
   <h4 class="scr-menu-h4">Testing</h4>
-  <SCR_ROUTER_LINK to={{ name: "test1Route" }}>
-    <div class="scr-btn">Test One</div>
+  <SCR_ROUTER_LINK to={{ name: "testRegexPathRoute" }}>
+    <div class="scr-btn">Test - Regex Path</div>
+  </SCR_ROUTER_LINK>
+  <SCR_ROUTER_LINK to={{ name: "testRegexPath2Route" }}>
+    <div class="scr-btn">Test - Regex Path 2</div>
   </SCR_ROUTER_LINK>
 </div>
 

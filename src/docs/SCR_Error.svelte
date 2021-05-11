@@ -1,22 +1,17 @@
 <script>
-  import { SCR_ROUTER_LINK } from "../index.js";
-  import routerStore from "../js/store/router.js";
+  import navigateStore from "../js/store/navigate.js";
 
   export let errorMessage = "An error has occured!";
-
-  let backTo = "/rootRoute";
-  $: if ($routerStore.currentRoute) {
-    backTo = $routerStore.currentRoute.name;
-  }
 </script>
 
 <center>
   <p class="scr-p">Error</p>
   <p class="scr-p-small">{errorMessage}</p>
   <br />
-  <SCR_ROUTER_LINK to={{ name: backTo }}>
-    <div class="scr-btn">Back</div>
-  </SCR_ROUTER_LINK>
+  <br />
+  <div>
+    <div class="scr-btn" on:click={navigateStore.backRoute}>Back</div>
+  </div>
 </center>
 
 <style>

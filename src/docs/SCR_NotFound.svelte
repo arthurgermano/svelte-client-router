@@ -1,20 +1,15 @@
 <script>
   import routerStore from "../js/store/router.js";
-  import { SCR_ROUTER_LINK } from "../index.js";
-
-  let backTo = "/rootRoute";
-  $: if ($routerStore.currentRoute) {
-    backTo = $routerStore.currentRoute.name;
-  }
+  import navigateStore from "../js/store/navigate.js";
 </script>
 
 <center>
   <p class="scr-p">Not Found</p>
   <p class="scr-p-small">{$routerStore.currentLocation || "='("}</p>
   <br />
-  <SCR_ROUTER_LINK to={{ name: backTo }}>
-    <div class="scr-btn">Back</div>
-  </SCR_ROUTER_LINK>
+  <div>
+    <div class="scr-btn" on:click={navigateStore.backRoute}>Back</div>
+  </div>
 </center>
 
 <style>

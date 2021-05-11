@@ -116,7 +116,7 @@
         <SCR_PushRouteButton
           style="float:right;"
           text="Next"
-          routeName="test1Route"
+          routeName="testRegexPathRoute"
         />
       </div>
     </div>

@@ -14,7 +14,7 @@
   }
 </script>
 <div class="scr-page">
-  <h4 class="scr-h4">Test 1</h4>
+  <h4 class="scr-h4">Test - Regex Path</h4>
   <p class="scr-text-justify">
     This route tests regex param path.
     <br />
@@ -44,10 +44,10 @@
   <pre
     class="scr-pre">
 &#123;
-  name: "test1Route",
+  name: "testRegexPathRoute",
   path: "/svelte-client-router/:teste/test1",
   lazyLoadComponent: () =&gt
-    import("./docs/pages/SCR_Test1.svelte"),
+    import("./docs/pages/SCR_TestRegexPath.svelte"),
   title: "SCR - Test 1",
   forceReload: true
 &#125;
@@ -61,10 +61,9 @@
           routeName="routerStorePropertiesRoute"
         />
         <SCR_PushRouteButton
-          style="float:right; opacity: 0.5"
+          style="float:right;"
           text="Next"
-          routeName="test1Route"
-          title="More content to be added"
+          routeName="testRegexPath2Route"
         />
       </div>
     </div>
@@ -72,4 +71,7 @@
 </div>
 
 <style>
+  .scr-btn {
+    border: 1px solid;
+  }
 </style>
