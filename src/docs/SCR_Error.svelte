@@ -1,6 +1,8 @@
 <script>
-  import routerStore from "../js/store/router.js";
   import { SCR_ROUTER_LINK } from "../index.js";
+  import routerStore from "../js/store/router.js";
+
+  export let errorMessage = "An error has occured!";
 
   let backTo = "/rootRoute";
   $: if ($routerStore.currentRoute) {
@@ -9,8 +11,8 @@
 </script>
 
 <center>
-  <p class="scr-p">Not Found</p>
-  <p class="scr-p-small">{$routerStore.currentLocation || "='("}</p>
+  <p class="scr-p">Error</p>
+  <p class="scr-p-small">{errorMessage}</p>
   <br />
   <SCR_ROUTER_LINK to={{ name: backTo }}>
     <div class="scr-btn">Back</div>
@@ -19,18 +21,18 @@
 
 <style>
   .scr-p {
-    color: #ff3e00;
+    color: #ff0000;
     text-transform: uppercase;
     font-size: 4rem;
     font-weight: 100;
   }
-
   .scr-p-small {
-    color: #ff3e00;
+    color: #ff0000;
     text-transform: uppercase;
     font-size: 2rem;
     font-weight: 100;
   }
+
 
   .scr-btn {
     width: 50% !important;

@@ -4,7 +4,7 @@ import {
   updateStoreKey,
   getStoreState,
   getStoreKey,
-} from "../functions";
+} from "../helpers/functions";
 const storeTemplate = {
   hashMode: false,
   navigationHistoryLimit: 10,
@@ -161,7 +161,7 @@ function getUsesRouteLayout() {
 // --------------------------------------------------------------------------------------
 // --------------  considerTrailingSlashOnMachingRoute Property  ------------------------
 
-function setConsiderTrailingSlashOnMachingRoute(
+function setConsiderTrailingSlashOnMatchingRoute(
   considerTrailingSlashOnMachingRoute
 ) {
   if (typeof considerTrailingSlashOnMachingRoute == "boolean") {
@@ -169,7 +169,7 @@ function setConsiderTrailingSlashOnMachingRoute(
   }
 }
 
-function getConsiderTrailingSlashOnMachingRoute() {
+function getConsiderTrailingSlashOnMatchingRoute() {
   return getStoreKey(store, "considerTrailingSlashOnMachingRoute");
 }
 
@@ -270,8 +270,8 @@ export default {
   getConsoleLogStores,
   setUsesRouteLayout,
   getUsesRouteLayout,
-  setConsiderTrailingSlashOnMachingRoute,
-  getConsiderTrailingSlashOnMachingRoute,
+  setConsiderTrailingSlashOnMatchingRoute,
+  getConsiderTrailingSlashOnMatchingRoute,
   setScrollProps,
   getScrollProps,
   setUseScroll,

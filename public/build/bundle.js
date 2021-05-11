@@ -179,6 +179,9 @@ var app = (function () {
     function children(element) {
         return Array.from(element.childNodes);
     }
+    function set_input_value(input, value) {
+        input.value = value == null ? '' : value;
+    }
     function set_style(node, key, value, important) {
         node.style.setProperty(key, value, important ? 'important' : '');
     }
@@ -3338,6 +3341,335 @@ var app = (function () {
       });
     };
 
+    const subscriber_queue = [];
+    /**
+     * Create a `Writable` store that allows both updating and reading by subscription.
+     * @param {*=}value initial value
+     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
+     */
+    function writable(value, start = noop) {
+        let stop;
+        const subscribers = [];
+        function set(new_value) {
+            if (safe_not_equal(value, new_value)) {
+                value = new_value;
+                if (stop) { // store is ready
+                    const run_queue = !subscriber_queue.length;
+                    for (let i = 0; i < subscribers.length; i += 1) {
+                        const s = subscribers[i];
+                        s[1]();
+                        subscriber_queue.push(s, value);
+                    }
+                    if (run_queue) {
+                        for (let i = 0; i < subscriber_queue.length; i += 2) {
+                            subscriber_queue[i][0](subscriber_queue[i + 1]);
+                        }
+                        subscriber_queue.length = 0;
+                    }
+                }
+            }
+        }
+        function update(fn) {
+            set(fn(value));
+        }
+        function subscribe(run, invalidate = noop) {
+            const subscriber = [run, invalidate];
+            subscribers.push(subscriber);
+            if (subscribers.length === 1) {
+                stop = start(set) || noop;
+            }
+            run(value);
+            return () => {
+                const index = subscribers.indexOf(subscriber);
+                if (index !== -1) {
+                    subscribers.splice(index, 1);
+                }
+                if (subscribers.length === 0) {
+                    stop();
+                    stop = null;
+                }
+            };
+        }
+        return { set, update, subscribe };
+    }
+
+    const storeTemplate$2 = {
+      hashMode: false,
+      navigationHistoryLimit: 10,
+      saveMode: "localstorage",
+      notFoundRoute: "/notFound",
+      errorRoute: "/error",
+      consoleLogErrorMessages: true,
+      consoleLogStores: true,
+      usesRouteLayout: true,
+      considerTrailingSlashOnMatchingRoute: true,
+      useScroll: false,
+      scrollProps: {
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+        timeout: 10,
+      },
+    };
+
+    const ENUM_SAVE_MODE = ["localstorage", "indexeddb", "none"];
+
+    const store$2 = writable(assign({}, storeTemplate$2));
+    let onError;
+    let beforeEnter;
+
+    // --------------  config Property  -----------------------------------------------------
+
+    function setConfig(config) {
+      setHashMode(config.hashMode);
+      setNavigationHistoryLimit(config.navigationHistoryLimit);
+      setSaveMode(config.saveMode);
+      setNotFoundRoute(config.notFoundRoute);
+      setErrorRoute(config.errorRoute);
+      setConsoleLogErrorMessages(config.consoleLogErrorMessages);
+      setConsoleLogStores(config.consoleLogStores);
+      setUsesRouteLayout(config.usesRouteLayout);
+      setConsiderTrailingSlashOnMatchingRoute(
+        config.considerTrailingSlashOnMatchingRoute
+      );
+      setOnError(config.onError);
+      setBeforeEnter(config.beforeEnter);
+      setScrollProps(config.scrollProps);
+      setUseScroll(config.useScroll);
+    }
+
+    function getConfig$2() {
+      return getStoreState(store$2);
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  hashmode Property  ---------------------------------------------------
+
+    function setHashMode(hashMode) {
+      if (typeof hashMode == "boolean") {
+        updateStoreKey(store$2, { hashMode });
+      }
+    }
+
+    function getHashMode() {
+      return getStoreKey(store$2, "hashMode");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  navigationHistoryLimit Property  -------------------------------------
+
+    function setNavigationHistoryLimit(navigationHistoryLimit) {
+      if (typeof navigationHistoryLimit == "number") {
+        updateStoreKey(store$2, { navigationHistoryLimit });
+      }
+    }
+
+    function getNavigationHistoryLimit() {
+      return getStoreKey(store$2, "navigationHistoryLimit");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  saveMode Property  ---------------------------------------------------
+
+    function setSaveMode(saveMode) {
+      if (ENUM_SAVE_MODE.includes(saveMode)) {
+        updateStoreKey(store$2, { saveMode });
+      }
+    }
+
+    function getSaveMode() {
+      return getStoreKey(store$2, "saveMode");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  notFoundRoute Property  ----------------------------------------------
+
+    function setNotFoundRoute(notFoundRoute) {
+      if (typeof notFoundRoute == "string" && notFoundRoute.includes("/")) {
+        updateStoreKey(store$2, { notFoundRoute });
+      }
+    }
+
+    function getNotFoundRoute() {
+      return getStoreKey(store$2, "notFoundRoute");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  errorRoute Property  -------------------------------------------------
+
+    function setErrorRoute(errorRoute) {
+      if (typeof errorRoute == "string" && errorRoute.includes("/")) {
+        updateStoreKey(store$2, { errorRoute });
+      }
+    }
+
+    function getErrorRoute() {
+      return getStoreKey(store$2, "errorRoute");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  consoleLogErrorMessages Property  ------------------------------------
+
+    function setConsoleLogErrorMessages(consoleLogErrorMessages = false) {
+      if (typeof consoleLogErrorMessages == "boolean") {
+        updateStoreKey(store$2, { consoleLogErrorMessages });
+      }
+    }
+
+    function getConsoleLogErrorMessages() {
+      return getStoreKey(store$2, "consoleLogErrorMessages");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  consoleLogStores Property  ------------------------------------
+
+    function setConsoleLogStores(consoleLogStores = false) {
+      if (typeof consoleLogStores == "boolean") {
+        updateStoreKey(store$2, { consoleLogStores });
+      }
+    }
+
+    function getConsoleLogStores() {
+      return getStoreKey(store$2, "consoleLogStores");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  usesRouteLayout Property  --------------------------------------------
+
+    function setUsesRouteLayout(usesRouteLayout) {
+      if (typeof usesRouteLayout == "boolean") {
+        updateStoreKey(store$2, { usesRouteLayout });
+      }
+    }
+
+    function getUsesRouteLayout() {
+      return getStoreKey(store$2, "usesRouteLayout");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  considerTrailingSlashOnMachingRoute Property  ------------------------
+
+    function setConsiderTrailingSlashOnMatchingRoute(
+      considerTrailingSlashOnMachingRoute
+    ) {
+      if (typeof considerTrailingSlashOnMachingRoute == "boolean") {
+        updateStoreKey(store$2, { considerTrailingSlashOnMachingRoute });
+      }
+    }
+
+    function getConsiderTrailingSlashOnMatchingRoute() {
+      return getStoreKey(store$2, "considerTrailingSlashOnMachingRoute");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  scrollProps Property  ------------------------------------------------
+
+    function setScrollProps(scrollProps) {
+      if (typeof setScrollProps == "object") {
+        ({
+          top: scrollProps.top,
+          left: scrollProps.left,
+          behavior: scrollProps.behavior,
+          timeout:
+            scrollProps.timeout && scrollProps.timeout > 10
+              ? scrollProps.timeout
+              : 10,
+        });
+        updateStoreKey(store$2, { scrollProps });
+      }
+    }
+
+    function getScrollProps() {
+      return getStoreKey(store$2, "scrollProps");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  useScroll Property  --------------------------------------------------
+
+    function setUseScroll(useScroll) {
+      if (typeof useScroll == "boolean") {
+        updateStoreKey(store$2, { useScroll });
+      }
+    }
+
+    function getUseScroll() {
+      return getStoreKey(store$2, "useScroll");
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  onError Function  ----------------------------------------------------
+
+    function setOnError(onErrorParam) {
+      if (!onErrorParam || typeof onErrorParam !== "function") {
+        return;
+      }
+      onError = onErrorParam;
+    }
+
+    function getOnError() {
+      return onError;
+    }
+
+    // --------------------------------------------------------------------------------------
+    // --------------  beforeEnter Function  --------------------------------------------
+
+    function setBeforeEnter(beforeEnterParam) {
+      if (
+        !beforeEnterParam ||
+        (typeof beforeEnterParam !== "function" && !Array.isArray(beforeEnterParam))
+      ) {
+        return;
+      }
+      if (Array.isArray(beforeEnterParam)) {
+        for (let bFuncItem of beforeEnterParam) {
+          if (typeof bFuncItem !== "function") {
+            return;
+          }
+        }
+      }
+      // if is valid
+      beforeEnter = beforeEnterParam;
+    }
+
+    function getBeforeEnter() {
+      return beforeEnter;
+    }
+
+    // --------------------------------------------------------------------------------------
+
+    var configStore = {
+      subscribe: store$2.subscribe,
+      update: store$2.update,
+      setConfig,
+      getConfig: getConfig$2,
+      setHashMode,
+      getHashMode,
+      setNavigationHistoryLimit,
+      getNavigationHistoryLimit,
+      setSaveMode,
+      getSaveMode,
+      setNotFoundRoute,
+      getNotFoundRoute,
+      setErrorRoute,
+      getErrorRoute,
+      setConsoleLogErrorMessages,
+      getConsoleLogErrorMessages,
+      setConsoleLogStores,
+      getConsoleLogStores,
+      setUsesRouteLayout,
+      getUsesRouteLayout,
+      setConsiderTrailingSlashOnMatchingRoute,
+      getConsiderTrailingSlashOnMatchingRoute,
+      setScrollProps,
+      getScrollProps,
+      setUseScroll,
+      getUseScroll,
+      setOnError,
+      getOnError,
+      setBeforeEnter,
+      getBeforeEnter,
+    };
+
     //import { isBefore, addMilliseconds } from "date-fns";
 
     const LS = localStorage;
@@ -3367,39 +3699,6 @@ var app = (function () {
       //   addExpireKey(key, time);
       // }
       LS.setItem(key, toJSON$1(value));
-    };
-
-    const removeItem$1 = (key) => {
-      // removeExpiredKeys();
-      const item = fromJSON$1(LS.getItem(key));
-      if (item !== null && item !== undefined) {
-        LS.removeItem(key);
-        removeExpireKey$1(key);
-      }
-      return item;
-    };
-
-    const getAll$1 = () => {
-      if (!LS || LS.length === 0) {
-        return [];
-      }
-      // removeExpiredKeys();
-      let items = Object.assign({}, cloneDeep_1(LS));
-      delete items[EXPIRE_KEYS$1];
-      return items;
-    };
-
-    // clear all the expiration list and the keys
-    const clearExpireKeys$1 = () => {
-      const expire = fromJSON$1(LS.getItem(EXPIRE_KEYS$1));
-
-      if (expire === null || expire === undefined) {
-        return;
-      }
-
-      expire.map((item) => LS.removeItem(item.key));
-
-      LS.removeItem(EXPIRE_KEYS$1);
     };
 
     // clear a given array list of keys
@@ -3545,18 +3844,6 @@ var app = (function () {
     }
 
     // setInterval(removeExpiredKeys, 5000);
-
-    var LS$1 = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        getItem: getItem$1,
-        setItem: setItem$1,
-        removeItem: removeItem$1,
-        getAll: getAll$1,
-        clearExpireKeys: clearExpireKeys$1,
-        clearKeyList: clearKeyList$1,
-        setSvelteStoreInStorage: setSvelteStoreInStorage$1,
-        getSvelteStoreInStorage: getSvelteStoreInStorage$1
-    });
 
     /*!
         localForage -- Offline Storage, Improved
@@ -6407,53 +6694,6 @@ var app = (function () {
       }
     };
 
-    const removeItem = async (key) => {
-      try {
-        // await removeExpiredKeys();
-        const item = fromJSON(await LF.getItem(key));
-        if (item !== null && item !== undefined) {
-          await LF.removeItem(key);
-          await removeExpireKey(key);
-        }
-        return item;
-      } catch (error) {
-        throw error;
-      }
-    };
-
-    const getAll = async () => {
-      try {
-        // await removeExpiredKeys();
-        const keys = await LF.keys();
-        const items = [];
-        let item;
-        for (let key of keys) {
-          items.push(await LF.getItem(key));
-          await LF.removeItem(key);
-        }
-        return items;
-      } catch (error) {
-        throw error;
-      }
-    };
-
-    // clear all the expiration list and the keys
-    const clearExpireKeys = async () => {
-      try {
-        const expire = fromJSON(await LF.getItem(EXPIRE_KEYS));
-
-        if (expire === null || expire === undefined) {
-          return;
-        }
-
-        await expire.map(async (item) => await LF.removeItem(item.key));
-
-        await LF.removeItem(EXPIRE_KEYS);
-      } catch (error) {
-        throw error;
-      }
-    };
-
     // clear a given array list of keys
     // affects expiration key list and the keys
     const clearKeyList = async (keyList) => {
@@ -6622,347 +6862,6 @@ var app = (function () {
 
     // setInterval(removeExpiredKeys, 5000);
 
-    var LF$1 = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        getItem: getItem,
-        setItem: setItem,
-        removeItem: removeItem,
-        getAll: getAll,
-        clearExpireKeys: clearExpireKeys,
-        clearKeyList: clearKeyList,
-        setSvelteStoreInStorage: setSvelteStoreInStorage,
-        getSvelteStoreInStorage: getSvelteStoreInStorage
-    });
-
-    const subscriber_queue = [];
-    /**
-     * Create a `Writable` store that allows both updating and reading by subscription.
-     * @param {*=}value initial value
-     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
-     */
-    function writable(value, start = noop) {
-        let stop;
-        const subscribers = [];
-        function set(new_value) {
-            if (safe_not_equal(value, new_value)) {
-                value = new_value;
-                if (stop) { // store is ready
-                    const run_queue = !subscriber_queue.length;
-                    for (let i = 0; i < subscribers.length; i += 1) {
-                        const s = subscribers[i];
-                        s[1]();
-                        subscriber_queue.push(s, value);
-                    }
-                    if (run_queue) {
-                        for (let i = 0; i < subscriber_queue.length; i += 2) {
-                            subscriber_queue[i][0](subscriber_queue[i + 1]);
-                        }
-                        subscriber_queue.length = 0;
-                    }
-                }
-            }
-        }
-        function update(fn) {
-            set(fn(value));
-        }
-        function subscribe(run, invalidate = noop) {
-            const subscriber = [run, invalidate];
-            subscribers.push(subscriber);
-            if (subscribers.length === 1) {
-                stop = start(set) || noop;
-            }
-            run(value);
-            return () => {
-                const index = subscribers.indexOf(subscriber);
-                if (index !== -1) {
-                    subscribers.splice(index, 1);
-                }
-                if (subscribers.length === 0) {
-                    stop();
-                    stop = null;
-                }
-            };
-        }
-        return { set, update, subscribe };
-    }
-
-    const storeTemplate$2 = {
-      hashMode: false,
-      navigationHistoryLimit: 10,
-      saveMode: "localstorage",
-      notFoundRoute: "/notFound",
-      errorRoute: "/error",
-      consoleLogErrorMessages: true,
-      consoleLogStores: true,
-      usesRouteLayout: true,
-      considerTrailingSlashOnMatchingRoute: true,
-      useScroll: false,
-      scrollProps: {
-        top: 0,
-        left: 0,
-        behavior: "smooth",
-        timeout: 10,
-      },
-    };
-
-    const ENUM_SAVE_MODE = ["localstorage", "indexeddb", "none"];
-
-    const store$2 = writable(assign({}, storeTemplate$2));
-    let onError;
-    let beforeEnter;
-
-    // --------------  config Property  -----------------------------------------------------
-
-    function setConfig(config) {
-      setHashMode(config.hashMode);
-      setNavigationHistoryLimit(config.navigationHistoryLimit);
-      setSaveMode(config.saveMode);
-      setNotFoundRoute(config.notFoundRoute);
-      setErrorRoute(config.errorRoute);
-      setConsoleLogErrorMessages(config.consoleLogErrorMessages);
-      setConsoleLogStores(config.consoleLogStores);
-      setUsesRouteLayout(config.usesRouteLayout);
-      setConsiderTrailingSlashOnMatchingRoute(
-        config.considerTrailingSlashOnMatchingRoute
-      );
-      setOnError(config.onError);
-      setBeforeEnter(config.beforeEnter);
-      setScrollProps(config.scrollProps);
-      setUseScroll(config.useScroll);
-    }
-
-    function getConfig$2() {
-      return getStoreState(store$2);
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  hashmode Property  ---------------------------------------------------
-
-    function setHashMode(hashMode) {
-      if (typeof hashMode == "boolean") {
-        updateStoreKey(store$2, { hashMode });
-      }
-    }
-
-    function getHashMode() {
-      return getStoreKey(store$2, "hashMode");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  navigationHistoryLimit Property  -------------------------------------
-
-    function setNavigationHistoryLimit(navigationHistoryLimit) {
-      if (typeof navigationHistoryLimit == "number") {
-        updateStoreKey(store$2, { navigationHistoryLimit });
-      }
-    }
-
-    function getNavigationHistoryLimit() {
-      return getStoreKey(store$2, "navigationHistoryLimit");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  saveMode Property  ---------------------------------------------------
-
-    function setSaveMode(saveMode) {
-      if (ENUM_SAVE_MODE.includes(saveMode)) {
-        updateStoreKey(store$2, { saveMode });
-      }
-    }
-
-    function getSaveMode() {
-      return getStoreKey(store$2, "saveMode");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  notFoundRoute Property  ----------------------------------------------
-
-    function setNotFoundRoute(notFoundRoute) {
-      if (typeof notFoundRoute == "string" && notFoundRoute.includes("/")) {
-        updateStoreKey(store$2, { notFoundRoute });
-      }
-    }
-
-    function getNotFoundRoute() {
-      return getStoreKey(store$2, "notFoundRoute");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  errorRoute Property  -------------------------------------------------
-
-    function setErrorRoute(errorRoute) {
-      if (typeof errorRoute == "string" && errorRoute.includes("/")) {
-        updateStoreKey(store$2, { errorRoute });
-      }
-    }
-
-    function getErrorRoute() {
-      return getStoreKey(store$2, "errorRoute");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  consoleLogErrorMessages Property  ------------------------------------
-
-    function setConsoleLogErrorMessages(consoleLogErrorMessages = false) {
-      if (typeof consoleLogErrorMessages == "boolean") {
-        updateStoreKey(store$2, { consoleLogErrorMessages });
-      }
-    }
-
-    function getConsoleLogErrorMessages() {
-      return getStoreKey(store$2, "consoleLogErrorMessages");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  consoleLogStores Property  ------------------------------------
-
-    function setConsoleLogStores(consoleLogStores = false) {
-      if (typeof consoleLogStores == "boolean") {
-        updateStoreKey(store$2, { consoleLogStores });
-      }
-    }
-
-    function getConsoleLogStores() {
-      return getStoreKey(store$2, "consoleLogStores");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  usesRouteLayout Property  --------------------------------------------
-
-    function setUsesRouteLayout(usesRouteLayout) {
-      if (typeof usesRouteLayout == "boolean") {
-        updateStoreKey(store$2, { usesRouteLayout });
-      }
-    }
-
-    function getUsesRouteLayout() {
-      return getStoreKey(store$2, "usesRouteLayout");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  considerTrailingSlashOnMachingRoute Property  ------------------------
-
-    function setConsiderTrailingSlashOnMachingRoute(
-      considerTrailingSlashOnMachingRoute
-    ) {
-      if (typeof considerTrailingSlashOnMachingRoute == "boolean") {
-        updateStoreKey(store$2, { considerTrailingSlashOnMachingRoute });
-      }
-    }
-
-    function getConsiderTrailingSlashOnMachingRoute() {
-      return getStoreKey(store$2, "considerTrailingSlashOnMachingRoute");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  scrollProps Property  ------------------------------------------------
-
-    function setScrollProps(scrollProps) {
-      if (typeof setScrollProps == "object") {
-        ({
-          top: scrollProps.top,
-          left: scrollProps.left,
-          behavior: scrollProps.behavior,
-          timeout:
-            scrollProps.timeout && scrollProps.timeout > 10
-              ? scrollProps.timeout
-              : 10,
-        });
-        updateStoreKey(store$2, { scrollProps });
-      }
-    }
-
-    function getScrollProps() {
-      return getStoreKey(store$2, "scrollProps");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  useScroll Property  --------------------------------------------------
-
-    function setUseScroll(useScroll) {
-      if (typeof useScroll == "boolean") {
-        updateStoreKey(store$2, { useScroll });
-      }
-    }
-
-    function getUseScroll() {
-      return getStoreKey(store$2, "useScroll");
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  onError Function  ----------------------------------------------------
-
-    function setOnError(onErrorParam) {
-      if (!onErrorParam || typeof onErrorParam !== "function") {
-        return;
-      }
-      onError = onErrorParam;
-    }
-
-    function getOnError() {
-      return onError;
-    }
-
-    // --------------------------------------------------------------------------------------
-    // --------------  beforeEnter Function  --------------------------------------------
-
-    function setBeforeEnter(beforeEnterParam) {
-      if (
-        !beforeEnterParam ||
-        (typeof beforeEnterParam !== "function" && !Array.isArray(beforeEnterParam))
-      ) {
-        return;
-      }
-      if (Array.isArray(beforeEnterParam)) {
-        for (let bFuncItem of beforeEnterParam) {
-          if (typeof bFuncItem !== "function") {
-            return;
-          }
-        }
-      }
-      // if is valid
-      beforeEnter = beforeEnterParam;
-    }
-
-    function getBeforeEnter() {
-      return beforeEnter;
-    }
-
-    // --------------------------------------------------------------------------------------
-
-    var configStore = {
-      subscribe: store$2.subscribe,
-      update: store$2.update,
-      setConfig,
-      getConfig: getConfig$2,
-      setHashMode,
-      getHashMode,
-      setNavigationHistoryLimit,
-      getNavigationHistoryLimit,
-      setSaveMode,
-      getSaveMode,
-      setNotFoundRoute,
-      getNotFoundRoute,
-      setErrorRoute,
-      getErrorRoute,
-      setConsoleLogErrorMessages,
-      getConsoleLogErrorMessages,
-      setConsoleLogStores,
-      getConsoleLogStores,
-      setUsesRouteLayout,
-      getUsesRouteLayout,
-      setConsiderTrailingSlashOnMachingRoute,
-      getConsiderTrailingSlashOnMachingRoute,
-      setScrollProps,
-      getScrollProps,
-      setUseScroll,
-      getUseScroll,
-      setOnError,
-      getOnError,
-      setBeforeEnter,
-      getBeforeEnter,
-    };
-
     const STORAGE_KEY = "SRC_ROUTER_STORE";
 
     const storeTemplate$1 = {
@@ -7130,6 +7029,253 @@ var app = (function () {
       getConfig: getConfig$1,
     };
 
+    const PATH_PARAM_CHAR = "/:";
+
+    // -----------------  function hasPathParam  -----------------------------------------
+
+    function hasPathParam(path) {
+      return path && path.includes(PATH_PARAM_CHAR);
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function loadFromStorage  --------------------------------------
+
+    async function loadFromStorage() {
+      // is to load from storages?
+      const saveMode = configStore.getSaveMode();
+      if (saveMode === "localstorage") {
+        await getSvelteStoreInStorage$1(
+          routerStore.update,
+          routerStore.STORAGE_KEY
+        );
+      } else if (saveMode === "indexeddb") {
+        await getSvelteStoreInStorage(
+          routerStore.update,
+          routerStore.STORAGE_KEY
+        );
+      }
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function getBeforeEnterAsArray  --------------------------------
+
+    function getBeforeEnterAsArray(beforeEnterFuncOrArr) {
+      if (!beforeEnterFuncOrArr) {
+        return [];
+      }
+      if (Array.isArray(beforeEnterFuncOrArr)) {
+        return beforeEnterFuncOrArr;
+      }
+      if (typeof beforeEnterFuncOrArr === "function") {
+        return [beforeEnterFuncOrArr];
+      }
+      return [];
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function getFindRouteFunc  -------------------------------------
+
+    function getFindRouteFunc(path, realParamPath = { path: false }) {
+      // adding trailing slash to route or not
+      const hasTrailingSlash = getTrailingSlash();
+
+      let realPath = path.toString();
+      if (configStore.getHashMode()) {
+        realPath = realPath.split("?");
+        realPath = realPath[0];
+      }
+      if (realPath.substring(realPath.length - 1) != "/") {
+        realPath += "/";
+      }
+
+      return (routeItem) => {
+        // get route path to search with trailing slash if included
+        const routePath = routeItem.path + hasTrailingSlash;
+
+        // if route has regex declared
+        if (hasPathParam(routeItem.path)) {
+
+          // splitting to compare path sections
+          const routeDefArr = routePath.split("/");
+          const pathDefArr = realPath.split("/");
+          if (routeDefArr.length != pathDefArr.length) {
+            return false;
+          }
+
+          for (let key in routeDefArr) {
+            // if the section is different and it is not regex then it is not it
+            if (
+              routeDefArr[key] != pathDefArr[key] &&
+              !routeDefArr[key].includes(":")
+            ) {
+              return false;
+            }
+          }
+          
+          // realParamPath when using navigation if not using path
+          realParamPath.path = realPath;
+
+          // if check all sections and not returned then we have our matching route
+          return routeItem;
+
+          // route with no regex declared
+        } else if (
+          routeItem.path == realPath ||
+          (configStore.getConsiderTrailingSlashOnMatchingRoute() &&
+            routePath == realPath)
+        ) {
+          return routeItem;
+        }
+        return false;
+      };
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function getLocation  ------------------------------------------
+
+    function getLocation(routeObj) {
+      let pathname = location.pathname;
+      let objHash;
+      let params;
+
+      if (routeObj) {
+        // realParamPath when using navigation if not using path
+        pathname = routeObj.realParamPath || routeObj.path;
+        objHash = "#" + routeObj.path;
+        params = routeObj.params;
+      } else if (configStore.getHashMode() && location.hash) {
+        pathname = location.hash.slice(1);
+      }
+
+      let currentLocation = {
+        pathname,
+        params: params || getUrlParameter(location.href),
+        hostname: location.hostname,
+        protocol: location.protocol,
+        port: location.port,
+        origin: location.origin,
+        hash: objHash || location.hash,
+      };
+
+      return currentLocation;
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function getPathParams  ----------------------------------------
+
+    function getPathParams(path, routePath) {
+      if (!hasPathParam(routePath)) {
+        return {};
+      }
+
+      let pathParams = {};
+      const hasTrailingSlash = getTrailingSlash();
+
+      routePath += hasTrailingSlash;
+      const routeDefArr = routePath.split("/");
+      const pathDefArr = path.split("/");
+
+      for (let key in routeDefArr) {
+        if (routeDefArr[key].includes(":")) {
+          pathParams = {
+            ...pathParams,
+            [routeDefArr[key].replace(":", "")]: pathDefArr[key],
+          };
+        }
+      }
+
+      return pathParams;
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function getQueryParams  ---------------------------------------
+
+    function getQueryParams(currentLocation) {
+      if (!currentLocation || typeof currentLocation != "object") {
+        return {};
+      }
+      let queryParams = currentLocation.params;
+      if (configStore.getHashMode()) {
+        let queryArr = currentLocation.pathname.split("?");
+        if (!queryArr || !queryArr[1]) {
+          return {};
+        }
+        queryArr = queryArr[1].split("&");
+        queryParams = {};
+        let splitItem;
+        for(let item of queryArr) {
+          splitItem = item.split("=");
+          if (splitItem && splitItem[0] && splitItem[1]) {
+            queryParams = {
+              ...queryParams,
+              [splitItem[0]]: splitItem[1]
+            };
+          }
+        }
+      }
+
+      return queryParams;
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function getQueryParamsToPath  ---------------------------------
+
+    function getQueryParamsToPath(currentLocation) {
+      if (!currentLocation || typeof currentLocation != "object" || currentLocation.pathname.includes("?")) {
+        return "";
+      }
+      let queryToPath = "?";
+      if (configStore.getHashMode()) {
+        let queryArr = currentLocation.pathname.split("?");
+        if (queryArr && queryArr[1]) {
+          return "?" + queryArr[1];
+        }
+        return "";
+      }
+      for (let key in currentLocation.params) {
+        queryToPath += `${key}=${currentLocation.params[key]}&`;
+      }
+      return queryToPath.slice(0, -1);
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function getTrailingSlash  -------------------------------------
+
+    function getTrailingSlash() {
+      return configStore.getConsiderTrailingSlashOnMatchingRoute() ? "/" : "";
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function getUrlParameter  --------------------------------------
+
+    function getUrlParameter(url) {
+      let getParams = {};
+      url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+        getParams[key] = value;
+      });
+      return getParams;
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------  function replacePathParamWithParams  ---------------------------
+
+    function replacePathParamWithParams(path, routePath) {
+      if (!hasPathParam(routePath)) {
+        return routePath;
+      }
+      routePath += getTrailingSlash();
+      const routeDefArr = routePath.split("/");
+      const pathDefArr = path.split("/");
+      for (let key in routeDefArr) {
+        if (routeDefArr[key].includes(":")) {
+          routePath = routePath.replace(routeDefArr[key], pathDefArr[key]);
+        }
+      }
+      return routePath;
+    }
+
+    // -----------------------------------------------------------------------------------
+
     const storeTemplate = {
       pushRoute: false,
       params: {},
@@ -7140,7 +7286,7 @@ var app = (function () {
 
     // --------------  pushRoute Property  --------------------------------------------------
 
-    function pushRoute$1(route, params, onError) {
+    function pushRoute$1(route, params = {}, onError) {
       if (!route) {
         const error = new Error(`SCR_ROUTER - Route not defined - ${route}`);
         if (typeof onError === "function") {
@@ -7150,12 +7296,13 @@ var app = (function () {
         }
       }
       const routes = routerStore.getRoutes();
+      
+      let realParamPath = { path: false };
       routeNavigation = undefined;
-
       if (typeof route === "string") {
-        routeNavigation = routes.find((rItem) => rItem.path === route);
+        routeNavigation = routes.find(getFindRouteFunc(route, realParamPath));
       } else if (route.path) {
-        routeNavigation = routes.find((rItem) => rItem.path === route.path);
+        routeNavigation = routes.find(getFindRouteFunc(route.path, realParamPath));
       } else if (route.name) {
         routeNavigation = routes.find((rItem) => rItem.name === route.name);
       }
@@ -7165,7 +7312,10 @@ var app = (function () {
           notFound: true,
           path: typeof route === "string" ? route : route.path || "",
         };
-      }
+      } 
+      if (realParamPath.path) {
+        routeNavigation.realParamPath = realParamPath.path;
+      } 
 
       if (onError && typeof onError === "function") {
         routeNavigation.onError = onError;
@@ -7258,9 +7408,9 @@ var app = (function () {
     }
 
     /* src/components/SCR_NotFound.svelte generated by Svelte v3.37.0 */
-    const file$r = "src/components/SCR_NotFound.svelte";
+    const file$t = "src/components/SCR_NotFound.svelte";
 
-    function create_fragment$t(ctx) {
+    function create_fragment$v(ctx) {
     	let center;
     	let p0;
     	let t1;
@@ -7277,10 +7427,10 @@ var app = (function () {
     			p1 = element("p");
     			t2 = text(t2_value);
     			attr_dev(p0, "class", "scr-p svelte-zj7cmj");
-    			add_location(p0, file$r, 5, 2, 82);
+    			add_location(p0, file$t, 5, 2, 82);
     			attr_dev(p1, "class", "scr-p-small svelte-zj7cmj");
-    			add_location(p1, file$r, 6, 2, 115);
-    			add_location(center, file$r, 4, 0, 71);
+    			add_location(p1, file$t, 6, 2, 115);
+    			add_location(center, file$t, 4, 0, 71);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -7304,7 +7454,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$t.name,
+    		id: create_fragment$v.name,
     		type: "component",
     		source: "",
     		ctx
@@ -7313,7 +7463,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$t($$self, $$props, $$invalidate) {
+    function instance$v($$self, $$props, $$invalidate) {
     	let $routerStore;
     	validate_store(routerStore, "routerStore");
     	component_subscribe($$self, routerStore, $$value => $$invalidate(0, $routerStore = $$value));
@@ -7332,22 +7482,22 @@ var app = (function () {
     class SCR_NotFound$1 extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$t, create_fragment$t, safe_not_equal, {});
+    		init(this, options, instance$v, create_fragment$v, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_NotFound",
     			options,
-    			id: create_fragment$t.name
+    			id: create_fragment$v.name
     		});
     	}
     }
 
     /* src/components/SCR_Loading.svelte generated by Svelte v3.37.0 */
 
-    const file$q = "src/components/SCR_Loading.svelte";
+    const file$s = "src/components/SCR_Loading.svelte";
 
-    function create_fragment$s(ctx) {
+    function create_fragment$u(ctx) {
     	let center;
     	let div12;
     	let div0;
@@ -7408,35 +7558,35 @@ var app = (function () {
     			h1 = element("h1");
     			t12 = text(/*loadingText*/ ctx[0]);
     			attr_dev(div0, "class", "svelte-146mxqr");
-    			add_location(div0, file$q, 6, 4, 125);
+    			add_location(div0, file$s, 6, 4, 125);
     			attr_dev(div1, "class", "svelte-146mxqr");
-    			add_location(div1, file$q, 7, 4, 137);
+    			add_location(div1, file$s, 7, 4, 137);
     			attr_dev(div2, "class", "svelte-146mxqr");
-    			add_location(div2, file$q, 8, 4, 149);
+    			add_location(div2, file$s, 8, 4, 149);
     			attr_dev(div3, "class", "svelte-146mxqr");
-    			add_location(div3, file$q, 9, 4, 161);
+    			add_location(div3, file$s, 9, 4, 161);
     			attr_dev(div4, "class", "svelte-146mxqr");
-    			add_location(div4, file$q, 10, 4, 173);
+    			add_location(div4, file$s, 10, 4, 173);
     			attr_dev(div5, "class", "svelte-146mxqr");
-    			add_location(div5, file$q, 11, 4, 185);
+    			add_location(div5, file$s, 11, 4, 185);
     			attr_dev(div6, "class", "svelte-146mxqr");
-    			add_location(div6, file$q, 12, 4, 197);
+    			add_location(div6, file$s, 12, 4, 197);
     			attr_dev(div7, "class", "svelte-146mxqr");
-    			add_location(div7, file$q, 13, 4, 209);
+    			add_location(div7, file$s, 13, 4, 209);
     			attr_dev(div8, "class", "svelte-146mxqr");
-    			add_location(div8, file$q, 14, 4, 221);
+    			add_location(div8, file$s, 14, 4, 221);
     			attr_dev(div9, "class", "svelte-146mxqr");
-    			add_location(div9, file$q, 15, 4, 233);
+    			add_location(div9, file$s, 15, 4, 233);
     			attr_dev(div10, "class", "svelte-146mxqr");
-    			add_location(div10, file$q, 16, 4, 245);
+    			add_location(div10, file$s, 16, 4, 245);
     			attr_dev(div11, "class", "svelte-146mxqr");
-    			add_location(div11, file$q, 17, 4, 257);
+    			add_location(div11, file$s, 17, 4, 257);
     			attr_dev(div12, "class", "scr-lds-spinner svelte-146mxqr");
-    			add_location(div12, file$q, 5, 2, 91);
+    			add_location(div12, file$s, 5, 2, 91);
     			attr_dev(h1, "class", "scr-h1 svelte-146mxqr");
-    			add_location(h1, file$q, 19, 2, 276);
+    			add_location(h1, file$s, 19, 2, 276);
     			attr_dev(center, "class", "scr-center svelte-146mxqr");
-    			add_location(center, file$q, 4, 0, 61);
+    			add_location(center, file$s, 4, 0, 61);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -7483,7 +7633,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$s.name,
+    		id: create_fragment$u.name,
     		type: "component",
     		source: "",
     		ctx
@@ -7492,7 +7642,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$s($$self, $$props, $$invalidate) {
+    function instance$u($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_Loading", slots, []);
     	let { loadingText = "Loading..." } = $$props;
@@ -7522,13 +7672,13 @@ var app = (function () {
     class SCR_Loading extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$s, create_fragment$s, safe_not_equal, { loadingText: 0 });
+    		init(this, options, instance$u, create_fragment$u, safe_not_equal, { loadingText: 0 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_Loading",
     			options,
-    			id: create_fragment$s.name
+    			id: create_fragment$u.name
     		});
     	}
 
@@ -7543,9 +7693,9 @@ var app = (function () {
 
     /* src/components/SCR_Error.svelte generated by Svelte v3.37.0 */
 
-    const file$p = "src/components/SCR_Error.svelte";
+    const file$r = "src/components/SCR_Error.svelte";
 
-    function create_fragment$r(ctx) {
+    function create_fragment$t(ctx) {
     	let center;
     	let p0;
     	let t1;
@@ -7561,10 +7711,10 @@ var app = (function () {
     			p1 = element("p");
     			t2 = text(/*errorMessage*/ ctx[0]);
     			attr_dev(p0, "class", "scr-p svelte-jhjhwz");
-    			add_location(p0, file$p, 5, 2, 84);
+    			add_location(p0, file$r, 5, 2, 84);
     			attr_dev(p1, "class", "scr-p-small svelte-jhjhwz");
-    			add_location(p1, file$p, 6, 2, 113);
-    			add_location(center, file$p, 4, 0, 73);
+    			add_location(p1, file$r, 6, 2, 113);
+    			add_location(center, file$r, 4, 0, 73);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -7588,7 +7738,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$r.name,
+    		id: create_fragment$t.name,
     		type: "component",
     		source: "",
     		ctx
@@ -7597,7 +7747,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$r($$self, $$props, $$invalidate) {
+    function instance$t($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_Error", slots, []);
     	let { errorMessage = "An error has occured!" } = $$props;
@@ -7624,16 +7774,16 @@ var app = (function () {
     	return [errorMessage];
     }
 
-    class SCR_Error extends SvelteComponentDev {
+    class SCR_Error$1 extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$r, create_fragment$r, safe_not_equal, { errorMessage: 0 });
+    		init(this, options, instance$t, create_fragment$t, safe_not_equal, { errorMessage: 0 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_Error",
     			options,
-    			id: create_fragment$r.name
+    			id: create_fragment$t.name
     		});
     	}
 
@@ -7648,7 +7798,7 @@ var app = (function () {
 
     /* src/components/SCR_Layout.svelte generated by Svelte v3.37.0 */
 
-    const file$o = "src/components/SCR_Layout.svelte";
+    const file$q = "src/components/SCR_Layout.svelte";
     const get_scr_header_slot_changes$1 = dirty => ({});
     const get_scr_header_slot_context$1 = ctx => ({});
 
@@ -7661,7 +7811,7 @@ var app = (function () {
     			h1 = element("h1");
     			h1.textContent = "Svelte Client Router - The Svelte SPA Router!";
     			attr_dev(h1, "class", "scr-main-layout__header svelte-1brx1pu");
-    			add_location(h1, file$o, 2, 4, 62);
+    			add_location(h1, file$q, 2, 4, 62);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h1, anchor);
@@ -7682,7 +7832,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$q(ctx) {
+    function create_fragment$s(ctx) {
     	let main;
     	let t;
     	let current;
@@ -7699,7 +7849,7 @@ var app = (function () {
     			t = space();
     			if (default_slot) default_slot.c();
     			attr_dev(main, "class", "scr-main-layout svelte-1brx1pu");
-    			add_location(main, file$o, 0, 0, 0);
+    			add_location(main, file$q, 0, 0, 0);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -7752,7 +7902,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$q.name,
+    		id: create_fragment$s.name,
     		type: "component",
     		source: "",
     		ctx
@@ -7761,7 +7911,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$q($$self, $$props, $$invalidate) {
+    function instance$s($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_Layout", slots, ['scr_header','default']);
     	const writable_props = [];
@@ -7780,13 +7930,13 @@ var app = (function () {
     class SCR_Layout$1 extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$q, create_fragment$q, safe_not_equal, {});
+    		init(this, options, instance$s, create_fragment$s, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_Layout",
     			options,
-    			id: create_fragment$q.name
+    			id: create_fragment$s.name
     		});
     	}
     }
@@ -7817,7 +7967,7 @@ var app = (function () {
     	return block;
     }
 
-    // (643:0) {:then value}
+    // (517:0) {:then value}
     function create_then_block(ctx) {
     	let current_block_type_index;
     	let if_block;
@@ -7890,14 +8040,14 @@ var app = (function () {
     		block,
     		id: create_then_block.name,
     		type: "then",
-    		source: "(643:0) {:then value}",
+    		source: "(517:0) {:then value}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (648:2) {:else}
+    // (522:2) {:else}
     function create_else_block(ctx) {
     	let switch_instance;
     	let switch_instance_anchor;
@@ -7983,14 +8133,14 @@ var app = (function () {
     		block,
     		id: create_else_block.name,
     		type: "else",
-    		source: "(648:2) {:else}",
+    		source: "(522:2) {:else}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (644:2) {#if $configStore.usesRouteLayout && typeof layoutComponent === "function"}
+    // (518:2) {#if $configStore.usesRouteLayout && typeof layoutComponent === "function"}
     function create_if_block(ctx) {
     	let switch_instance;
     	let switch_instance_anchor;
@@ -8000,7 +8150,7 @@ var app = (function () {
 
     	function switch_props(ctx) {
     		let switch_instance_props = {
-    			$$slots: { default: [create_default_slot$i] },
+    			$$slots: { default: [create_default_slot$k] },
     			$$scope: { ctx }
     		};
 
@@ -8036,7 +8186,7 @@ var app = (function () {
     			? get_spread_update(switch_instance_spread_levels, [get_spread_object(/*props*/ ctx[2])])
     			: {};
 
-    			if (dirty & /*$$scope, currentComponent, props*/ 536870932) {
+    			if (dirty & /*$$scope, currentComponent, props*/ 67108884) {
     				switch_instance_changes.$$scope = { dirty, ctx };
     			}
 
@@ -8083,15 +8233,15 @@ var app = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(644:2) {#if $configStore.usesRouteLayout && typeof layoutComponent === \\\"function\\\"}",
+    		source: "(518:2) {#if $configStore.usesRouteLayout && typeof layoutComponent === \\\"function\\\"}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (645:4) <svelte:component this={layoutComponent} {...props}>
-    function create_default_slot$i(ctx) {
+    // (519:4) <svelte:component this={layoutComponent} {...props}>
+    function create_default_slot$k(ctx) {
     	let switch_instance;
     	let switch_instance_anchor;
     	let current;
@@ -8174,16 +8324,16 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$i.name,
+    		id: create_default_slot$k.name,
     		type: "slot",
-    		source: "(645:4) <svelte:component this={layoutComponent} {...props}>",
+    		source: "(519:4) <svelte:component this={layoutComponent} {...props}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (641:23)    <svelte:component this={loadingComponent}
+    // (515:23)    <svelte:component this={loadingComponent}
     function create_pending_block(ctx) {
     	let switch_instance;
     	let switch_instance_anchor;
@@ -8272,14 +8422,14 @@ var app = (function () {
     		block,
     		id: create_pending_block.name,
     		type: "pending",
-    		source: "(641:23)    <svelte:component this={loadingComponent}",
+    		source: "(515:23)    <svelte:component this={loadingComponent}",
     		ctx
     	});
 
     	return block;
     }
 
-    function create_fragment$p(ctx) {
+    function create_fragment$r(ctx) {
     	let await_block_anchor;
     	let promise;
     	let current;
@@ -8292,7 +8442,7 @@ var app = (function () {
     		pending: create_pending_block,
     		then: create_then_block,
     		catch: create_catch_block,
-    		value: 28,
+    		value: 25,
     		blocks: [,,,]
     	};
 
@@ -8319,7 +8469,7 @@ var app = (function () {
 
     			if (dirty & /*loadingPromise*/ 32 && promise !== (promise = /*loadingPromise*/ ctx[5]) && handle_promise(promise, info)) ; else {
     				const child_ctx = ctx.slice();
-    				child_ctx[28] = info.resolved;
+    				child_ctx[25] = info.resolved;
     				info.block.p(child_ctx, dirty);
     			}
     		},
@@ -8346,7 +8496,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$p.name,
+    		id: create_fragment$r.name,
     		type: "component",
     		source: "",
     		ctx
@@ -8355,35 +8505,7 @@ var app = (function () {
     	return block;
     }
 
-    function getBeforeEnterAsArray(beforeEnterFuncOrArr) {
-    	if (!beforeEnterFuncOrArr) {
-    		return [];
-    	}
-
-    	if (Array.isArray(beforeEnterFuncOrArr)) {
-    		return beforeEnterFuncOrArr;
-    	}
-
-    	if (typeof beforeEnterFuncOrArr === "function") {
-    		return [beforeEnterFuncOrArr];
-    	}
-
-    	return [];
-    }
-
-    // -----------------------------------------------------------------------------------
-    // -----------------  function getUrlParameter  --------------------------------------
-    function getUrlParameter(url) {
-    	let getParams = {};
-
-    	url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-    		getParams[key] = value;
-    	});
-
-    	return getParams;
-    }
-
-    function instance$p($$self, $$props, $$invalidate) {
+    function instance$r($$self, $$props, $$invalidate) {
     	let $configStore;
     	let $routerStore;
     	let $navigateStore;
@@ -8397,7 +8519,7 @@ var app = (function () {
     	validate_slots("SCR_Router", slots, []);
     	let { routes } = $$props;
     	let { notFoundComponent = SCR_NotFound$1 } = $$props;
-    	let { errorComponent = SCR_Error } = $$props;
+    	let { errorComponent = SCR_Error$1 } = $$props;
     	let { defaultLayoutComponent = SCR_Layout$1 } = $$props;
     	let { loadingComponent = SCR_Loading } = $$props;
     	let { allProps = {} } = $$props;
@@ -8416,41 +8538,14 @@ var app = (function () {
     	let isBacking = false;
 
     	// -----------------------------------------------------------------------------------
-    	// -----------------  function setErrorComponent  ------------------------------------
-    	function getQueryParamsToPath() {
-    		if (!currentLocation || typeof currentLocation != "object" || !currentLocation.params) {
-    			return "";
-    		}
-
-    		let queryToPath = "?";
-
-    		if ($configStore.hashMode) {
-    			let queryArr = currentLocation.pathname.split("?");
-
-    			if (queryArr && queryArr[1]) {
-    				console.log(queryArr[1], "<<<");
-    				return "?" + queryArr[1];
-    			}
-
-    			return "";
-    		}
-
-    		for (let key in currentLocation.params) {
-    			queryToPath += `${key}=${currentLocation.params[key]}&`;
-    		}
-
-    		return queryToPath.slice(0, -1);
-    	}
-
-    	// -----------------------------------------------------------------------------------
     	// -----------------  function pushRoute  --------------------------------------------
-    	function pushRoute(route, popEvent = true) {
-    		const routePath = ($configStore.hashMode ? "#" : "") + route;
+    	function pushRoute(routePath, popEvent = true) {
+    		routePath = ($configStore.hashMode ? "#" : "") + routePath;
 
     		if (history.pushState && !isBacking) {
-    			history.pushState(null, null, routePath + getQueryParamsToPath());
+    			history.pushState(null, null, routePath);
     		} else {
-    			location.hash = routePath + getQueryParamsToPath();
+    			location.hash = routePath + getQueryParamsToPath(currentLocation);
     		}
 
     		isBacking = false;
@@ -8461,35 +8556,19 @@ var app = (function () {
     	}
 
     	// -----------------------------------------------------------------------------------
-    	// -----------------  function getLocation  ------------------------------------------
-    	function getLocation() {
-    		let pathname = location.pathname;
-
-    		if ($configStore.hashMode && location.hash) {
-    			pathname = location.hash.slice(1);
-    		}
-
-    		currentLocation = {
-    			pathname,
-    			params: getUrlParameter(location.href),
-    			hostname: location.hostname,
-    			protocol: location.protocol,
-    			port: location.port,
-    			origin: location.origin,
-    			hash: location.hash
-    		};
-    	}
-
-    	// -----------------------------------------------------------------------------------
     	// -----------------  function getRouteParams  ---------------------------------------
     	function getRouteParams(routeObj, customParams) {
     		$$invalidate(2, props = {});
 
-    		if (routeObj && routeObj.params) {
+    		if (routeObj) {
     			$$invalidate(2, props = {
     				payload: routeObj.payload,
-    				...routeObj.params,
-    				...assign({}, allProps)
+    				...routeObj.params || {},
+    				...assign({}, allProps),
+    				pathParams: {
+    					...getPathParams(currentLocation.pathname, routeObj.path)
+    				},
+    				queryParams: { ...getQueryParams(currentLocation) }
     			});
     		}
 
@@ -8532,61 +8611,16 @@ var app = (function () {
     	}
 
     	// -----------------------------------------------------------------------------------
-    	// -----------------  function findRoute  --------------------------------------------
-    	function findRoute(path) {
-    		let realPath = path.toString();
-
-    		if ($configStore.hashMode) {
-    			realPath = realPath.split("?");
-    			realPath = realPath[0];
-    		}
-
-    		return routeItem => {
-    			// adding trailing slash to route
-    			const hasTrailingSlash = $configStore.considerTrailingSlashOnMatchingRoute
-    			? "/"
-    			: "";
-
-    			// get route path to search with trailing slash if included  
-    			const routePath = routeItem.path + hasTrailingSlash;
-
-    			// if route has regex declared - TODO
-    			if (routeItem.path.includes("/:")) {
-    				// 
-    				const routeDefArr = routePath.split("/");
-
-    				const pathDefArr = realPath.split("/");
-
-    				if (routeDefArr.length == 0 || pathDefArr.length || routeDefArr.length != pathDefArr.length) {
-    					return false;
-    				}
-
-    				for (let key of routeDefArr) {
-    					if (routeDefArr[key] != pathDefArr[key] && !routeDefArr[key].includes("/:")) {
-    						return false;
-    					}
-    				}
-
-    				return routeItem;
-    			} else if (routeItem.path == realPath || $configStore.considerTrailingSlashOnMatchingRoute && routePath == realPath) {
-    				return routeItem;
-    			}
-
-    			return false;
-    		};
-    	}
-
-    	// -----------------------------------------------------------------------------------
     	// -----------------  function loadRoute  --------------------------------------------
     	async function loadRoute(routeObj, isLoading = true) {
     		try {
-    			// updating location
-    			getLocation();
-
     			// if it is to reload current route if is redirected to the same route
     			if (routeObj && !routeObj.forceReload && currentLocation.pathname === routeObj.path) {
     				return;
     			}
+
+    			// updating location
+    			currentLocation = getLocation(routeObj);
 
     			// cleaning component for later check if the route has a custom one
     			$$invalidate(6, layoutComponent = false);
@@ -8598,7 +8632,7 @@ var app = (function () {
 
     			// searching route from routes definition if not defined
     			if (!routeObj) {
-    				routeObj = $routerStore.routes.find(findRoute(currentLocation.pathname));
+    				routeObj = $routerStore.routes.find(getFindRouteFunc(currentLocation.pathname));
     			}
 
     			// route not found - must redirect to NOT FOUND
@@ -8614,6 +8648,8 @@ var app = (function () {
     				return false;
     			}
 
+    			getRouteParams(routeObj);
+
     			// setting loading property and start loading screen
     			$$invalidate(5, loadingPromise = loadingController$1.startLoading());
 
@@ -8624,7 +8660,7 @@ var app = (function () {
     				$$invalidate(3, loadingProps = {
     					...loadingProps,
     					...routeObj.loadingProps,
-    					...getRouteParams(routeObj)
+    					...props
     				});
     			}
 
@@ -8657,6 +8693,7 @@ var app = (function () {
     				await executeBeforeEnterFunctions(routeObj, beforeEnterArr, isLoading);
     			}
     		} catch(error) {
+    			console.log(error);
     			loadingController$1.resolveLoading();
 
     			if (configStore.getOnError()) {
@@ -8685,10 +8722,8 @@ var app = (function () {
     		// { name: "" } - redirect to somewhere else -- local - base on name
     		let resFunc;
 
-    		// object merge params with custom route params defined
-    		let routeObjParams;
-
     		routeObj.payload = {};
+    		getRouteParams(routeObj);
 
     		for (let bFunc of beforeEnterArr) {
     			// beforeEnter Function is not a function throw an error
@@ -8699,15 +8734,8 @@ var app = (function () {
     			// promisify each beforeEnter
     			resFunc = await new Promise(async (resolve, reject) => {
     					try {
-    						// passing down the router params defined in the router object
-    						routeObjParams = undefined;
-
-    						if (routeObj.params) {
-    							routeObjParams = { ...routeObj.params };
-    						}
-
     						// executing beforeEnter Functions GLOBAL And Route Specific
-    						await bFunc(resolve, routeFrom, routeTo, routeObjParams, routeObj.payload);
+    						await bFunc(resolve, routeFrom, routeTo, props, routeObj.payload);
 
     						// reseting payload if destroyed
     						if (!routeObj.payload) {
@@ -8718,7 +8746,6 @@ var app = (function () {
     							}
     						}
 
-    						// updating props and passing to all components!
     						getRouteParams(routeObj);
     					} catch(error) {
     						resolve({ SCR_ROUTE_ERROR: true, error });
@@ -8777,16 +8804,15 @@ var app = (function () {
     		await routerStore.setFromRoute($routerStore.currentRoute);
 
     		await routerStore.pushNavigationHistory($routerStore.currentRoute);
+    		const routePathWithParams = replacePathParamWithParams(currentLocation.pathname, routeObj.path);
 
     		// is loading means that we don't know yet the route name and we should add it
     		// to the object - when we are pushing routes for example we know which route we
     		// are pushing, but when the user enters via URL then we should figure it out.
-    		console.log(currentLocation);
-
     		if (!isLoading) {
     			// we have to add the route name
     			await routerStore.setCurrentRoute({
-    				pathname: routeObj.path + getQueryParamsToPath(),
+    				pathname: routePathWithParams + getQueryParamsToPath(currentLocation),
     				params: { ...routeObj.params },
     				hostname: currentLocation.hostname,
     				protocol: currentLocation.protocol,
@@ -8799,16 +8825,13 @@ var app = (function () {
     			await routerStore.setCurrentRoute({
     				...currentLocation,
     				name: routeObj.name,
-    				pathname: currentLocation.pathname + getQueryParamsToPath()
+    				pathname: currentLocation.pathname + getQueryParamsToPath(currentLocation)
     			});
     		}
 
-    		// setting component params
-    		const routeParams = getRouteParams(routeObj);
-
     		// if user defined some action before finalizeRoute
     		if (routeObj.afterBeforeEnter && typeof routeObj.afterBeforeEnter === "function") {
-    			routeObj.afterBeforeEnter(routeParams);
+    			routeObj.afterBeforeEnter(props);
     		}
 
     		if ($configStore.usesRouteLayout && !routeObj.ignoreLayout) {
@@ -8832,7 +8855,7 @@ var app = (function () {
 
     		// no component were defined by the user
     		if (!routeObj.component && !routeObj.lazyLoadComponent) {
-    			throw new Error(`No component defined for (${routeObj.name} - ${routeObj.path})!`);
+    			throw new Error(`No component defined for ${routeObj.name || "Route"} - ${routeObj.path || "Path"}!`);
     		}
 
     		// if is lazy loading component now is the time to load
@@ -8867,18 +8890,14 @@ var app = (function () {
     			setTimeout(() => window.scrollTo(scrollProps), scrollProps.timeout);
     		}
 
-    		return pushRoute(routeObj.path, false);
+    		return pushRoute($routerStore.currentRoute.pathname, false);
     	}
 
     	// -----------------------------------------------------------------------------------
     	// -----------------  function onMount  ----------------------------------------------
     	onMount(async () => {
     		// is to load from storages?
-    		if ($configStore.saveMode === "localstorage") {
-    			await getSvelteStoreInStorage$1(routerStore.update, routerStore.STORAGE_KEY);
-    		} else if ($configStore.saveMode === "indexeddb") {
-    			await getSvelteStoreInStorage(routerStore.update, routerStore.STORAGE_KEY);
-    		}
+    		await loadFromStorage();
 
     		// routes were set?
     		if (routes) {
@@ -8939,15 +8958,21 @@ var app = (function () {
     	$$self.$capture_state = () => ({
     		onMount,
     		assign,
-    		LS: LS$1,
-    		LF: LF$1,
+    		loadFromStorage,
+    		getBeforeEnterAsArray,
+    		getFindRouteFunc,
+    		getLocation,
+    		getPathParams,
+    		getQueryParams,
+    		getQueryParamsToPath,
+    		replacePathParamWithParams,
     		configStore,
     		routerStore,
     		navigateStore,
     		LoadingController: loadingController,
     		SCR_NotFound: SCR_NotFound$1,
     		SCR_Loading,
-    		SCR_Error,
+    		SCR_Error: SCR_Error$1,
     		SCR_Layout: SCR_Layout$1,
     		routes,
     		notFoundComponent,
@@ -8964,15 +8989,10 @@ var app = (function () {
     		layoutComponent,
     		loadingController: loadingController$1,
     		isBacking,
-    		getQueryParamsToPath,
-    		getBeforeEnterAsArray,
     		pushRoute,
-    		getUrlParameter,
-    		getLocation,
     		getRouteParams,
     		setErrorComponent,
     		throwRouteError,
-    		findRoute,
     		loadRoute,
     		executeBeforeEnterFunctions,
     		finalizeRoute,
@@ -9063,7 +9083,7 @@ var app = (function () {
     	constructor(options) {
     		super(options);
 
-    		init(this, options, instance$p, create_fragment$p, safe_not_equal, {
+    		init(this, options, instance$r, create_fragment$r, safe_not_equal, {
     			routes: 7,
     			notFoundComponent: 8,
     			errorComponent: 9,
@@ -9077,7 +9097,7 @@ var app = (function () {
     			component: this,
     			tagName: "SCR_Router",
     			options,
-    			id: create_fragment$p.name
+    			id: create_fragment$r.name
     		});
 
     		const { ctx } = this.$$;
@@ -9146,9 +9166,9 @@ var app = (function () {
     }
 
     /* src/components/SCR_RouterLink.svelte generated by Svelte v3.37.0 */
-    const file$n = "src/components/SCR_RouterLink.svelte";
+    const file$p = "src/components/SCR_RouterLink.svelte";
 
-    function create_fragment$o(ctx) {
+    function create_fragment$q(ctx) {
     	let div;
     	let current;
     	let mounted;
@@ -9167,7 +9187,7 @@ var app = (function () {
     			div = element("div");
     			if (default_slot) default_slot.c();
     			set_attributes(div, div_data);
-    			add_location(div, file$n, 17, 0, 393);
+    			add_location(div, file$p, 17, 0, 393);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -9214,7 +9234,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$o.name,
+    		id: create_fragment$q.name,
     		type: "component",
     		source: "",
     		ctx
@@ -9223,7 +9243,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$o($$self, $$props, $$invalidate) {
+    function instance$q($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouterLink", slots, ['default']);
     	let { props = undefined } = $$props;
@@ -9281,7 +9301,7 @@ var app = (function () {
     	constructor(options) {
     		super(options);
 
-    		init(this, options, instance$o, create_fragment$o, safe_not_equal, {
+    		init(this, options, instance$q, create_fragment$q, safe_not_equal, {
     			props: 2,
     			onError: 3,
     			to: 4,
@@ -9292,7 +9312,7 @@ var app = (function () {
     			component: this,
     			tagName: "SCR_RouterLink",
     			options,
-    			id: create_fragment$o.name
+    			id: create_fragment$q.name
     		});
     	}
 
@@ -9355,18 +9375,48 @@ var app = (function () {
     }
 
     /* src/docs/SCR_Menu.svelte generated by Svelte v3.37.0 */
-    const file$m = "src/docs/SCR_Menu.svelte";
+    const file$o = "src/docs/SCR_Menu.svelte";
 
     // (7:2) <SCR_ROUTER_LINK to={{ name: "rootRoute" }}>
-    function create_default_slot_15(ctx) {
+    function create_default_slot_16(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
     			div.textContent = "Presentation";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 7, 4, 187);
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 7, 4, 187);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot_16.name,
+    		type: "slot",
+    		source: "(7:2) <SCR_ROUTER_LINK to={{ name: \\\"rootRoute\\\" }}>",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (10:2) <SCR_ROUTER_LINK to={{ name: "installationRoute" }}>
+    function create_default_slot_15(ctx) {
+    	let div;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			div.textContent = "Installation";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 10, 4, 307);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9380,23 +9430,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_15.name,
     		type: "slot",
-    		source: "(7:2) <SCR_ROUTER_LINK to={{ name: \\\"rootRoute\\\" }}>",
+    		source: "(10:2) <SCR_ROUTER_LINK to={{ name: \\\"installationRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (10:2) <SCR_ROUTER_LINK to={{ name: "installationRoute" }}>
+    // (13:2) <SCR_ROUTER_LINK to={{ name: "gettingStartedRoute" }}>
     function create_default_slot_14(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Installation";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 10, 4, 313);
+    			div.textContent = "Getting Started";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 13, 4, 429);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9410,23 +9460,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_14.name,
     		type: "slot",
-    		source: "(10:2) <SCR_ROUTER_LINK to={{ name: \\\"installationRoute\\\" }}>",
+    		source: "(13:2) <SCR_ROUTER_LINK to={{ name: \\\"gettingStartedRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (13:2) <SCR_ROUTER_LINK to={{ name: "gettingStartedRoute" }}>
+    // (17:2) <SCR_ROUTER_LINK to={{ name: "configurationOptionsRoute" }}>
     function create_default_slot_13(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Getting Started";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 13, 4, 441);
+    			div.textContent = "Configuration Options";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 17, 4, 605);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9440,23 +9490,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_13.name,
     		type: "slot",
-    		source: "(13:2) <SCR_ROUTER_LINK to={{ name: \\\"gettingStartedRoute\\\" }}>",
+    		source: "(17:2) <SCR_ROUTER_LINK to={{ name: \\\"configurationOptionsRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (17:2) <SCR_ROUTER_LINK to={{ name: "configurationOptionsRoute" }}>
+    // (20:2) <SCR_ROUTER_LINK to={{ name: "configurationGlobalBeforeEnterOptionRoute" }}>
     function create_default_slot_12(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Configuration Options";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 17, 4, 623);
+    			div.textContent = "Global Before Enter";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 20, 4, 758);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9470,23 +9520,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_12.name,
     		type: "slot",
-    		source: "(17:2) <SCR_ROUTER_LINK to={{ name: \\\"configurationOptionsRoute\\\" }}>",
+    		source: "(20:2) <SCR_ROUTER_LINK to={{ name: \\\"configurationGlobalBeforeEnterOptionRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (20:2) <SCR_ROUTER_LINK to={{ name: "configurationGlobalBeforeEnterOptionRoute" }}>
+    // (23:2) <SCR_ROUTER_LINK to={{ name: "configurationOnErrorOptionRoute" }}>
     function create_default_slot_11(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Global Before Enter";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 20, 4, 782);
+    			div.textContent = "Global On Error";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 23, 4, 899);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9500,23 +9550,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_11.name,
     		type: "slot",
-    		source: "(20:2) <SCR_ROUTER_LINK to={{ name: \\\"configurationGlobalBeforeEnterOptionRoute\\\" }}>",
+    		source: "(23:2) <SCR_ROUTER_LINK to={{ name: \\\"configurationOnErrorOptionRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (23:2) <SCR_ROUTER_LINK to={{ name: "configurationOnErrorOptionRoute" }}>
+    // (27:2) <SCR_ROUTER_LINK to={{ name: "routeObjectOptionsRoute" }}>
     function create_default_slot_10(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Global On Error";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 23, 4, 929);
+    			div.textContent = "Properties";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 27, 4, 1072);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9530,23 +9580,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_10.name,
     		type: "slot",
-    		source: "(23:2) <SCR_ROUTER_LINK to={{ name: \\\"configurationOnErrorOptionRoute\\\" }}>",
+    		source: "(27:2) <SCR_ROUTER_LINK to={{ name: \\\"routeObjectOptionsRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (27:2) <SCR_ROUTER_LINK to={{ name: "routeObjectOptionsRoute" }}>
+    // (30:2) <SCR_ROUTER_LINK to={{ name: "routeObjectBeforeEnterRoute" }}>
     function create_default_slot_9(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Properties";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 27, 4, 1108);
+    			div.textContent = "Before Enter";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 30, 4, 1200);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9560,23 +9610,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_9.name,
     		type: "slot",
-    		source: "(27:2) <SCR_ROUTER_LINK to={{ name: \\\"routeObjectOptionsRoute\\\" }}>",
+    		source: "(30:2) <SCR_ROUTER_LINK to={{ name: \\\"routeObjectBeforeEnterRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (30:2) <SCR_ROUTER_LINK to={{ name: "routeObjectBeforeEnterRoute" }}>
+    // (33:2) <SCR_ROUTER_LINK to={{ name: "routeObjectAfterBeforeEnterRoute" }}>
     function create_default_slot_8(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Before Enter";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 30, 4, 1242);
+    			div.textContent = "After Before Enter";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 33, 4, 1335);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9590,23 +9640,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_8.name,
     		type: "slot",
-    		source: "(30:2) <SCR_ROUTER_LINK to={{ name: \\\"routeObjectBeforeEnterRoute\\\" }}>",
+    		source: "(33:2) <SCR_ROUTER_LINK to={{ name: \\\"routeObjectAfterBeforeEnterRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (33:2) <SCR_ROUTER_LINK to={{ name: "routeObjectAfterBeforeEnterRoute" }}>
+    // (36:2) <SCR_ROUTER_LINK to={{ name: "routeObjectOnErrorRoute" }}>
     function create_default_slot_7(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "After Before Enter";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 33, 4, 1383);
+    			div.textContent = "On Error";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 36, 4, 1467);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9620,23 +9670,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_7.name,
     		type: "slot",
-    		source: "(33:2) <SCR_ROUTER_LINK to={{ name: \\\"routeObjectAfterBeforeEnterRoute\\\" }}>",
+    		source: "(36:2) <SCR_ROUTER_LINK to={{ name: \\\"routeObjectOnErrorRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (36:2) <SCR_ROUTER_LINK to={{ name: "routeObjectOnErrorRoute" }}>
+    // (40:2) <SCR_ROUTER_LINK to={{ name: "routeComponentPropertiesRoute" }}>
     function create_default_slot_6(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "On Error";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 36, 4, 1521);
+    			div.textContent = "Properties";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 40, 4, 1642);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9650,23 +9700,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_6.name,
     		type: "slot",
-    		source: "(36:2) <SCR_ROUTER_LINK to={{ name: \\\"routeObjectOnErrorRoute\\\" }}>",
+    		source: "(40:2) <SCR_ROUTER_LINK to={{ name: \\\"routeComponentPropertiesRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (40:2) <SCR_ROUTER_LINK to={{ name: "routeComponentPropertiesRoute" }}>
+    // (43:2) <SCR_ROUTER_LINK to={{ name: "routeComponentComponentsRoute" }}>
     function create_default_slot_5(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Properties";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 40, 4, 1702);
+    			div.textContent = "Components";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 43, 4, 1772);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9680,23 +9730,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_5.name,
     		type: "slot",
-    		source: "(40:2) <SCR_ROUTER_LINK to={{ name: \\\"routeComponentPropertiesRoute\\\" }}>",
+    		source: "(43:2) <SCR_ROUTER_LINK to={{ name: \\\"routeComponentComponentsRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (43:2) <SCR_ROUTER_LINK to={{ name: "routeComponentComponentsRoute" }}>
+    // (47:2) <SCR_ROUTER_LINK to={{ name: "navigationRoutingRoute" }}>
     function create_default_slot_4(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Components";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 43, 4, 1838);
+    			div.textContent = "Routing";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 47, 4, 1937);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9710,23 +9760,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_4.name,
     		type: "slot",
-    		source: "(43:2) <SCR_ROUTER_LINK to={{ name: \\\"routeComponentComponentsRoute\\\" }}>",
+    		source: "(47:2) <SCR_ROUTER_LINK to={{ name: \\\"navigationRoutingRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (47:2) <SCR_ROUTER_LINK to={{ name: "navigationRoutingRoute" }}>
+    // (50:2) <SCR_ROUTER_LINK to={{ name: "navigationStoreRoute" }}>
     function create_default_slot_3(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Routing";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 47, 4, 2009);
+    			div.textContent = "Store";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 50, 4, 2055);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9740,23 +9790,23 @@ var app = (function () {
     		block,
     		id: create_default_slot_3.name,
     		type: "slot",
-    		source: "(47:2) <SCR_ROUTER_LINK to={{ name: \\\"navigationRoutingRoute\\\" }}>",
+    		source: "(50:2) <SCR_ROUTER_LINK to={{ name: \\\"navigationStoreRoute\\\" }}>",
     		ctx
     	});
 
     	return block;
     }
 
-    // (50:2) <SCR_ROUTER_LINK to={{ name: "navigationStoreRoute" }}>
+    // (54:2) <SCR_ROUTER_LINK to={{ name: "routerLinkPropertiesRoute" }}>
     function create_default_slot_2$1(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			div.textContent = "Store";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 50, 4, 2133);
+    			div.textContent = "Properties";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 54, 4, 2218);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9770,36 +9820,6 @@ var app = (function () {
     		block,
     		id: create_default_slot_2$1.name,
     		type: "slot",
-    		source: "(50:2) <SCR_ROUTER_LINK to={{ name: \\\"navigationStoreRoute\\\" }}>",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (54:2) <SCR_ROUTER_LINK to={{ name: "routerLinkPropertiesRoute" }}>
-    function create_default_slot_1$5(ctx) {
-    	let div;
-
-    	const block = {
-    		c: function create() {
-    			div = element("div");
-    			div.textContent = "Properties";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 54, 4, 2302);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, div, anchor);
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_default_slot_1$5.name,
-    		type: "slot",
     		source: "(54:2) <SCR_ROUTER_LINK to={{ name: \\\"routerLinkPropertiesRoute\\\" }}>",
     		ctx
     	});
@@ -9808,15 +9828,15 @@ var app = (function () {
     }
 
     // (58:2) <SCR_ROUTER_LINK to={{ name: "routerStorePropertiesRoute" }}>
-    function create_default_slot$h(ctx) {
+    function create_default_slot_1$6(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
     			div.textContent = "Properties";
-    			attr_dev(div, "class", "scr-menu-item svelte-1gz3q5m");
-    			add_location(div, file$m, 58, 4, 2479);
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 58, 4, 2389);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -9828,7 +9848,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$h.name,
+    		id: create_default_slot_1$6.name,
     		type: "slot",
     		source: "(58:2) <SCR_ROUTER_LINK to={{ name: \\\"routerStorePropertiesRoute\\\" }}>",
     		ctx
@@ -9837,7 +9857,37 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$n(ctx) {
+    // (62:2) <SCR_ROUTER_LINK to={{ name: "test1Route" }}>
+    function create_default_slot$j(ctx) {
+    	let div;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			div.textContent = "Test One";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file$o, 62, 4, 2539);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot$j.name,
+    		type: "slot",
+    		source: "(62:2) <SCR_ROUTER_LINK to={{ name: \\\"test1Route\\\" }}>",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$p(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -9884,12 +9934,16 @@ var app = (function () {
     	let h46;
     	let t28;
     	let scr_router_link15;
+    	let t29;
+    	let h47;
+    	let t31;
+    	let scr_router_link16;
     	let current;
 
     	scr_router_link0 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "rootRoute" },
-    				$$slots: { default: [create_default_slot_15] },
+    				$$slots: { default: [create_default_slot_16] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9898,7 +9952,7 @@ var app = (function () {
     	scr_router_link1 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "installationRoute" },
-    				$$slots: { default: [create_default_slot_14] },
+    				$$slots: { default: [create_default_slot_15] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9907,7 +9961,7 @@ var app = (function () {
     	scr_router_link2 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "gettingStartedRoute" },
-    				$$slots: { default: [create_default_slot_13] },
+    				$$slots: { default: [create_default_slot_14] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9916,7 +9970,7 @@ var app = (function () {
     	scr_router_link3 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "configurationOptionsRoute" },
-    				$$slots: { default: [create_default_slot_12] },
+    				$$slots: { default: [create_default_slot_13] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9927,7 +9981,7 @@ var app = (function () {
     				to: {
     					name: "configurationGlobalBeforeEnterOptionRoute"
     				},
-    				$$slots: { default: [create_default_slot_11] },
+    				$$slots: { default: [create_default_slot_12] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9936,7 +9990,7 @@ var app = (function () {
     	scr_router_link5 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "configurationOnErrorOptionRoute" },
-    				$$slots: { default: [create_default_slot_10] },
+    				$$slots: { default: [create_default_slot_11] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9945,7 +9999,7 @@ var app = (function () {
     	scr_router_link6 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "routeObjectOptionsRoute" },
-    				$$slots: { default: [create_default_slot_9] },
+    				$$slots: { default: [create_default_slot_10] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9954,7 +10008,7 @@ var app = (function () {
     	scr_router_link7 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "routeObjectBeforeEnterRoute" },
-    				$$slots: { default: [create_default_slot_8] },
+    				$$slots: { default: [create_default_slot_9] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9963,7 +10017,7 @@ var app = (function () {
     	scr_router_link8 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "routeObjectAfterBeforeEnterRoute" },
-    				$$slots: { default: [create_default_slot_7] },
+    				$$slots: { default: [create_default_slot_8] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9972,7 +10026,7 @@ var app = (function () {
     	scr_router_link9 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "routeObjectOnErrorRoute" },
-    				$$slots: { default: [create_default_slot_6] },
+    				$$slots: { default: [create_default_slot_7] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9981,7 +10035,7 @@ var app = (function () {
     	scr_router_link10 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "routeComponentPropertiesRoute" },
-    				$$slots: { default: [create_default_slot_5] },
+    				$$slots: { default: [create_default_slot_6] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9990,7 +10044,7 @@ var app = (function () {
     	scr_router_link11 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "routeComponentComponentsRoute" },
-    				$$slots: { default: [create_default_slot_4] },
+    				$$slots: { default: [create_default_slot_5] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -9999,7 +10053,7 @@ var app = (function () {
     	scr_router_link12 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "navigationRoutingRoute" },
-    				$$slots: { default: [create_default_slot_3] },
+    				$$slots: { default: [create_default_slot_4] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -10008,7 +10062,7 @@ var app = (function () {
     	scr_router_link13 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "navigationStoreRoute" },
-    				$$slots: { default: [create_default_slot_2$1] },
+    				$$slots: { default: [create_default_slot_3] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -10017,7 +10071,7 @@ var app = (function () {
     	scr_router_link14 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "routerLinkPropertiesRoute" },
-    				$$slots: { default: [create_default_slot_1$5] },
+    				$$slots: { default: [create_default_slot_2$1] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -10026,7 +10080,16 @@ var app = (function () {
     	scr_router_link15 = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: "routerStorePropertiesRoute" },
-    				$$slots: { default: [create_default_slot$h] },
+    				$$slots: { default: [create_default_slot_1$6] },
+    				$$scope: { ctx }
+    			},
+    			$$inline: true
+    		});
+
+    	scr_router_link16 = new SCR_ROUTER_LINK({
+    			props: {
+    				to: { name: "test1Route" },
+    				$$slots: { default: [create_default_slot$j] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -10087,22 +10150,29 @@ var app = (function () {
     			h46.textContent = "Router Store";
     			t28 = space();
     			create_component(scr_router_link15.$$.fragment);
-    			attr_dev(h40, "class", "scr-menu-h4 svelte-1gz3q5m");
-    			add_location(h40, file$m, 5, 2, 94);
-    			attr_dev(h41, "class", "scr-menu-h4 svelte-1gz3q5m");
-    			add_location(h41, file$m, 15, 2, 513);
-    			attr_dev(h42, "class", "scr-menu-h4 svelte-1gz3q5m");
-    			add_location(h42, file$m, 25, 2, 1001);
-    			attr_dev(h43, "class", "scr-menu-h4 svelte-1gz3q5m");
-    			add_location(h43, file$m, 38, 2, 1586);
-    			attr_dev(h44, "class", "scr-menu-h4 svelte-1gz3q5m");
-    			add_location(h44, file$m, 45, 2, 1905);
-    			attr_dev(h45, "class", "scr-menu-h4 svelte-1gz3q5m");
-    			add_location(h45, file$m, 52, 2, 2195);
-    			attr_dev(h46, "class", "scr-menu-h4 svelte-1gz3q5m");
-    			add_location(h46, file$m, 56, 2, 2369);
-    			attr_dev(div, "class", "scr-menu svelte-1gz3q5m");
-    			add_location(div, file$m, 4, 0, 69);
+    			t29 = space();
+    			h47 = element("h4");
+    			h47.textContent = "Testing";
+    			t31 = space();
+    			create_component(scr_router_link16.$$.fragment);
+    			attr_dev(h40, "class", "scr-menu-h4 svelte-1y3f1bo");
+    			add_location(h40, file$o, 5, 2, 94);
+    			attr_dev(h41, "class", "scr-menu-h4 svelte-1y3f1bo");
+    			add_location(h41, file$o, 15, 2, 495);
+    			attr_dev(h42, "class", "scr-menu-h4 svelte-1y3f1bo");
+    			add_location(h42, file$o, 25, 2, 965);
+    			attr_dev(h43, "class", "scr-menu-h4 svelte-1y3f1bo");
+    			add_location(h43, file$o, 38, 2, 1526);
+    			attr_dev(h44, "class", "scr-menu-h4 svelte-1y3f1bo");
+    			add_location(h44, file$o, 45, 2, 1833);
+    			attr_dev(h45, "class", "scr-menu-h4 svelte-1y3f1bo");
+    			add_location(h45, file$o, 52, 2, 2111);
+    			attr_dev(h46, "class", "scr-menu-h4 svelte-1y3f1bo");
+    			add_location(h46, file$o, 56, 2, 2279);
+    			attr_dev(h47, "class", "scr-menu-h4 svelte-1y3f1bo");
+    			add_location(h47, file$o, 60, 2, 2450);
+    			attr_dev(div, "class", "scr-menu svelte-1y3f1bo");
+    			add_location(div, file$o, 4, 0, 69);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -10154,6 +10224,10 @@ var app = (function () {
     			append_dev(div, h46);
     			append_dev(div, t28);
     			mount_component(scr_router_link15, div, null);
+    			append_dev(div, t29);
+    			append_dev(div, h47);
+    			append_dev(div, t31);
+    			mount_component(scr_router_link16, div, null);
     			current = true;
     		},
     		p: function update(ctx, [dirty]) {
@@ -10269,6 +10343,13 @@ var app = (function () {
     			}
 
     			scr_router_link15.$set(scr_router_link15_changes);
+    			const scr_router_link16_changes = {};
+
+    			if (dirty & /*$$scope*/ 1) {
+    				scr_router_link16_changes.$$scope = { dirty, ctx };
+    			}
+
+    			scr_router_link16.$set(scr_router_link16_changes);
     		},
     		i: function intro(local) {
     			if (current) return;
@@ -10288,6 +10369,7 @@ var app = (function () {
     			transition_in(scr_router_link13.$$.fragment, local);
     			transition_in(scr_router_link14.$$.fragment, local);
     			transition_in(scr_router_link15.$$.fragment, local);
+    			transition_in(scr_router_link16.$$.fragment, local);
     			current = true;
     		},
     		o: function outro(local) {
@@ -10307,6 +10389,7 @@ var app = (function () {
     			transition_out(scr_router_link13.$$.fragment, local);
     			transition_out(scr_router_link14.$$.fragment, local);
     			transition_out(scr_router_link15.$$.fragment, local);
+    			transition_out(scr_router_link16.$$.fragment, local);
     			current = false;
     		},
     		d: function destroy(detaching) {
@@ -10327,12 +10410,13 @@ var app = (function () {
     			destroy_component(scr_router_link13);
     			destroy_component(scr_router_link14);
     			destroy_component(scr_router_link15);
+    			destroy_component(scr_router_link16);
     		}
     	};
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$n.name,
+    		id: create_fragment$p.name,
     		type: "component",
     		source: "",
     		ctx
@@ -10341,7 +10425,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$n($$self, $$props, $$invalidate) {
+    function instance$p($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_Menu", slots, []);
     	const writable_props = [];
@@ -10357,19 +10441,19 @@ var app = (function () {
     class SCR_Menu extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$n, create_fragment$n, safe_not_equal, {});
+    		init(this, options, instance$p, create_fragment$p, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_Menu",
     			options,
-    			id: create_fragment$n.name
+    			id: create_fragment$p.name
     		});
     	}
     }
 
     /* src/docs/SCR_Layout.svelte generated by Svelte v3.37.0 */
-    const file$l = "src/docs/SCR_Layout.svelte";
+    const file$n = "src/docs/SCR_Layout.svelte";
     const get_scr_header_slot_changes = dirty => ({});
     const get_scr_header_slot_context = ctx => ({});
 
@@ -10382,7 +10466,7 @@ var app = (function () {
     			h2 = element("h2");
     			h2.textContent = "Svelte Client Router - The Svelte SPA Router!";
     			attr_dev(h2, "class", "scr-main-layout__header svelte-lxpf7t");
-    			add_location(h2, file$l, 8, 6, 199);
+    			add_location(h2, file$n, 8, 6, 199);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h2, anchor);
@@ -10403,7 +10487,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$m(ctx) {
+    function create_fragment$o(ctx) {
     	let div6;
     	let div0;
     	let t0;
@@ -10460,7 +10544,7 @@ var app = (function () {
     			div3 = element("div");
     			b0 = element("b");
     			b0.textContent = "Last Git Version:";
-    			t4 = text(" 1.0.13\n      ");
+    			t4 = text(" 1.1.0\n      ");
     			br0 = element("br");
     			t5 = space();
     			br1 = element("br");
@@ -10486,36 +10570,36 @@ var app = (function () {
     			a2 = element("a");
     			a2.textContent = "https://www.npmjs.com/package/svelte-client-router";
     			attr_dev(div0, "class", "scr-header svelte-lxpf7t");
-    			add_location(div0, file$l, 6, 2, 139);
+    			add_location(div0, file$n, 6, 2, 139);
     			attr_dev(div1, "class", "scr-pages svelte-lxpf7t");
-    			add_location(div1, file$l, 15, 4, 369);
+    			add_location(div1, file$n, 15, 4, 369);
     			attr_dev(div2, "class", "scr-main svelte-lxpf7t");
-    			add_location(div2, file$l, 13, 2, 325);
-    			add_location(b0, file$l, 25, 6, 625);
-    			add_location(br0, file$l, 26, 6, 663);
-    			add_location(br1, file$l, 27, 6, 676);
-    			add_location(b1, file$l, 28, 6, 689);
+    			add_location(div2, file$n, 13, 2, 325);
+    			add_location(b0, file$n, 25, 6, 625);
+    			add_location(br0, file$n, 26, 6, 662);
+    			add_location(br1, file$n, 27, 6, 675);
+    			add_location(b1, file$n, 28, 6, 688);
     			attr_dev(a0, "href", "https://en.wikipedia.org/wiki/MIT_License");
     			attr_dev(a0, "target", "_blank");
-    			add_location(a0, file$l, 29, 6, 711);
+    			add_location(a0, file$n, 29, 6, 710);
     			attr_dev(div3, "class", "scr-footer-left");
-    			add_location(div3, file$l, 24, 4, 589);
-    			add_location(b2, file$l, 33, 6, 846);
+    			add_location(div3, file$n, 24, 4, 589);
+    			add_location(b2, file$n, 33, 6, 845);
     			attr_dev(a1, "href", "https://github.com/arthurgermano/svelte-client-router");
     			attr_dev(a1, "target", "_blank");
-    			add_location(a1, file$l, 33, 21, 861);
-    			add_location(br2, file$l, 37, 6, 1028);
-    			add_location(br3, file$l, 38, 6, 1041);
-    			add_location(b3, file$l, 39, 6, 1054);
+    			add_location(a1, file$n, 33, 21, 860);
+    			add_location(br2, file$n, 37, 6, 1027);
+    			add_location(br3, file$n, 38, 6, 1040);
+    			add_location(b3, file$n, 39, 6, 1053);
     			attr_dev(a2, "href", "https://www.npmjs.com/package/svelte-client-router");
     			attr_dev(a2, "target", "_blank");
-    			add_location(a2, file$l, 39, 18, 1066);
+    			add_location(a2, file$n, 39, 18, 1065);
     			attr_dev(div4, "class", "scr-footer-right");
-    			add_location(div4, file$l, 32, 4, 809);
+    			add_location(div4, file$n, 32, 4, 808);
     			attr_dev(div5, "class", "scr-footer svelte-lxpf7t");
-    			add_location(div5, file$l, 23, 2, 560);
+    			add_location(div5, file$n, 23, 2, 560);
     			attr_dev(div6, "class", "scr-main-layout svelte-lxpf7t");
-    			add_location(div6, file$l, 5, 0, 107);
+    			add_location(div6, file$n, 5, 0, 107);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -10616,7 +10700,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$m.name,
+    		id: create_fragment$o.name,
     		type: "component",
     		source: "",
     		ctx
@@ -10625,7 +10709,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$m($$self, $$props, $$invalidate) {
+    function instance$o($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_Layout", slots, ['scr_header','default']);
     	const writable_props = [];
@@ -10645,30 +10729,30 @@ var app = (function () {
     class SCR_Layout extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$m, create_fragment$m, safe_not_equal, {});
+    		init(this, options, instance$o, create_fragment$o, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_Layout",
     			options,
-    			id: create_fragment$m.name
+    			id: create_fragment$o.name
     		});
     	}
     }
 
     /* src/docs/SCR_NotFound.svelte generated by Svelte v3.37.0 */
-    const file$k = "src/docs/SCR_NotFound.svelte";
+    const file$m = "src/docs/SCR_NotFound.svelte";
 
     // (15:2) <SCR_ROUTER_LINK to={{ name: backTo }}>
-    function create_default_slot$g(ctx) {
+    function create_default_slot$i(ctx) {
     	let div;
 
     	const block = {
     		c: function create() {
     			div = element("div");
     			div.textContent = "Back";
-    			attr_dev(div, "class", "scr-menu-item svelte-1bi32dn");
-    			add_location(div, file$k, 15, 4, 403);
+    			attr_dev(div, "class", "scr-btn svelte-f7tw5n");
+    			add_location(div, file$m, 15, 4, 403);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -10680,7 +10764,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$g.name,
+    		id: create_default_slot$i.name,
     		type: "slot",
     		source: "(15:2) <SCR_ROUTER_LINK to={{ name: backTo }}>",
     		ctx
@@ -10689,7 +10773,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$l(ctx) {
+    function create_fragment$n(ctx) {
     	let center;
     	let p0;
     	let t1;
@@ -10705,7 +10789,7 @@ var app = (function () {
     	scr_router_link = new SCR_ROUTER_LINK({
     			props: {
     				to: { name: /*backTo*/ ctx[1] },
-    				$$slots: { default: [create_default_slot$g] },
+    				$$slots: { default: [create_default_slot$i] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -10723,12 +10807,12 @@ var app = (function () {
     			br = element("br");
     			t4 = space();
     			create_component(scr_router_link.$$.fragment);
-    			attr_dev(p0, "class", "scr-p svelte-1bi32dn");
-    			add_location(p0, file$k, 11, 2, 248);
-    			attr_dev(p1, "class", "scr-p-small svelte-1bi32dn");
-    			add_location(p1, file$k, 12, 2, 281);
-    			add_location(br, file$k, 13, 2, 350);
-    			add_location(center, file$k, 10, 0, 237);
+    			attr_dev(p0, "class", "scr-p svelte-f7tw5n");
+    			add_location(p0, file$m, 11, 2, 248);
+    			attr_dev(p1, "class", "scr-p-small svelte-f7tw5n");
+    			add_location(p1, file$m, 12, 2, 281);
+    			add_location(br, file$m, 13, 2, 350);
+    			add_location(center, file$m, 10, 0, 237);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -10773,7 +10857,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$l.name,
+    		id: create_fragment$n.name,
     		type: "component",
     		source: "",
     		ctx
@@ -10782,7 +10866,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$l($$self, $$props, $$invalidate) {
+    function instance$n($$self, $$props, $$invalidate) {
     	let $routerStore;
     	validate_store(routerStore, "routerStore");
     	component_subscribe($$self, routerStore, $$value => $$invalidate(0, $routerStore = $$value));
@@ -10824,14 +10908,207 @@ var app = (function () {
     class SCR_NotFound extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$l, create_fragment$l, safe_not_equal, {});
+    		init(this, options, instance$n, create_fragment$n, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_NotFound",
     			options,
-    			id: create_fragment$l.name
+    			id: create_fragment$n.name
     		});
+    	}
+    }
+
+    /* src/docs/SCR_Error.svelte generated by Svelte v3.37.0 */
+    const file$l = "src/docs/SCR_Error.svelte";
+
+    // (17:2) <SCR_ROUTER_LINK to={{ name: backTo }}>
+    function create_default_slot$h(ctx) {
+    	let div;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			div.textContent = "Back";
+    			attr_dev(div, "class", "scr-btn svelte-dz0sst");
+    			add_location(div, file$l, 17, 4, 428);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot$h.name,
+    		type: "slot",
+    		source: "(17:2) <SCR_ROUTER_LINK to={{ name: backTo }}>",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$m(ctx) {
+    	let center;
+    	let p0;
+    	let t1;
+    	let p1;
+    	let t2;
+    	let t3;
+    	let br;
+    	let t4;
+    	let scr_router_link;
+    	let current;
+
+    	scr_router_link = new SCR_ROUTER_LINK({
+    			props: {
+    				to: { name: /*backTo*/ ctx[1] },
+    				$$slots: { default: [create_default_slot$h] },
+    				$$scope: { ctx }
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			center = element("center");
+    			p0 = element("p");
+    			p0.textContent = "Error";
+    			t1 = space();
+    			p1 = element("p");
+    			t2 = text(/*errorMessage*/ ctx[0]);
+    			t3 = space();
+    			br = element("br");
+    			t4 = space();
+    			create_component(scr_router_link.$$.fragment);
+    			attr_dev(p0, "class", "scr-p svelte-dz0sst");
+    			add_location(p0, file$l, 13, 2, 302);
+    			attr_dev(p1, "class", "scr-p-small svelte-dz0sst");
+    			add_location(p1, file$l, 14, 2, 331);
+    			add_location(br, file$l, 15, 2, 375);
+    			add_location(center, file$l, 12, 0, 291);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, center, anchor);
+    			append_dev(center, p0);
+    			append_dev(center, t1);
+    			append_dev(center, p1);
+    			append_dev(p1, t2);
+    			append_dev(center, t3);
+    			append_dev(center, br);
+    			append_dev(center, t4);
+    			mount_component(scr_router_link, center, null);
+    			current = true;
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (!current || dirty & /*errorMessage*/ 1) set_data_dev(t2, /*errorMessage*/ ctx[0]);
+    			const scr_router_link_changes = {};
+    			if (dirty & /*backTo*/ 2) scr_router_link_changes.to = { name: /*backTo*/ ctx[1] };
+
+    			if (dirty & /*$$scope*/ 8) {
+    				scr_router_link_changes.$$scope = { dirty, ctx };
+    			}
+
+    			scr_router_link.$set(scr_router_link_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(scr_router_link.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(scr_router_link.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(center);
+    			destroy_component(scr_router_link);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$m.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$m($$self, $$props, $$invalidate) {
+    	let $routerStore;
+    	validate_store(routerStore, "routerStore");
+    	component_subscribe($$self, routerStore, $$value => $$invalidate(2, $routerStore = $$value));
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("SCR_Error", slots, []);
+    	let { errorMessage = "An error has occured!" } = $$props;
+    	let backTo = "/rootRoute";
+    	const writable_props = ["errorMessage"];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<SCR_Error> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$$set = $$props => {
+    		if ("errorMessage" in $$props) $$invalidate(0, errorMessage = $$props.errorMessage);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		SCR_ROUTER_LINK,
+    		routerStore,
+    		errorMessage,
+    		backTo,
+    		$routerStore
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("errorMessage" in $$props) $$invalidate(0, errorMessage = $$props.errorMessage);
+    		if ("backTo" in $$props) $$invalidate(1, backTo = $$props.backTo);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*$routerStore*/ 4) {
+    			if ($routerStore.currentRoute) {
+    				$$invalidate(1, backTo = $routerStore.currentRoute.name);
+    			}
+    		}
+    	};
+
+    	return [errorMessage, backTo, $routerStore];
+    }
+
+    class SCR_Error extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$m, create_fragment$m, safe_not_equal, { errorMessage: 0 });
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "SCR_Error",
+    			options,
+    			id: create_fragment$m.name
+    		});
+    	}
+
+    	get errorMessage() {
+    		throw new Error("<SCR_Error>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set errorMessage(value) {
+    		throw new Error("<SCR_Error>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
 
@@ -10839,7 +11116,7 @@ var app = (function () {
 
     const { console: console_1 } = globals;
 
-    function create_fragment$k(ctx) {
+    function create_fragment$l(ctx) {
     	let scr_router_component;
     	let updating_routes;
     	let current;
@@ -10850,7 +11127,8 @@ var app = (function () {
 
     	let scr_router_component_props = {
     		defaultLayoutComponent: SCR_Layout,
-    		notFoundComponent: SCR_NotFound
+    		notFoundComponent: SCR_NotFound,
+    		errorComponent: SCR_Error
     	};
 
     	if (/*routes*/ ctx[0] !== void 0) {
@@ -10902,7 +11180,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$k.name,
+    		id: create_fragment$l.name,
     		type: "component",
     		source: "",
     		ctx
@@ -10911,7 +11189,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$k($$self, $$props, $$invalidate) {
+    function instance$l($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("App", slots, []);
     	SCR_CONFIG_STORE.setNotFoundRoute("/svelte-client-router/myCustomNotFoundRoute");
@@ -10920,7 +11198,7 @@ var app = (function () {
     	SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
     	SCR_CONFIG_STORE.setHashMode(true);
     	SCR_CONFIG_STORE.setUseScroll(true);
-    	SCR_CONFIG_STORE.setConsiderTrailingSlashOnMachingRoute(false);
+    	SCR_CONFIG_STORE.setConsiderTrailingSlashOnMatchingRoute(true);
 
     	SCR_CONFIG_STORE.setScrollProps({
     		top: 0,
@@ -11042,6 +11320,13 @@ var app = (function () {
     			path: "/svelte-client-router/routerStoreProperties",
     			lazyLoadComponent: () => Promise.resolve().then(function () { return SCR_RouterStoreProperties$1; }),
     			title: "SCR - Route Store - Properties"
+    		},
+    		{
+    			name: "test1Route",
+    			path: "/svelte-client-router/:teste/test1",
+    			lazyLoadComponent: () => Promise.resolve().then(function () { return SCR_Test1$1; }),
+    			title: "SCR - Test 1",
+    			forceReload: true
     		}
     	];
 
@@ -11061,6 +11346,7 @@ var app = (function () {
     		SCR_CONFIG_STORE,
     		SCR_Layout,
     		SCR_NotFound,
+    		SCR_Error,
     		routes
     	});
 
@@ -11078,13 +11364,13 @@ var app = (function () {
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$k, create_fragment$k, safe_not_equal, {});
+    		init(this, options, instance$l, create_fragment$l, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "App",
     			options,
-    			id: create_fragment$k.name
+    			id: create_fragment$l.name
     		});
     	}
     }
@@ -11095,9 +11381,9 @@ var app = (function () {
 
     /* src/docs/SCR_PageFooter.svelte generated by Svelte v3.37.0 */
 
-    const file$j = "src/docs/SCR_PageFooter.svelte";
+    const file$k = "src/docs/SCR_PageFooter.svelte";
 
-    function create_fragment$j(ctx) {
+    function create_fragment$k(ctx) {
     	let div;
     	let hr;
     	let t;
@@ -11112,9 +11398,9 @@ var app = (function () {
     			t = space();
     			if (default_slot) default_slot.c();
     			attr_dev(hr, "class", "scr-hr");
-    			add_location(hr, file$j, 1, 2, 27);
+    			add_location(hr, file$k, 1, 2, 27);
     			attr_dev(div, "class", "scr-footer svelte-rxr6jj");
-    			add_location(div, file$j, 0, 0, 0);
+    			add_location(div, file$k, 0, 0, 0);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11154,7 +11440,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$j.name,
+    		id: create_fragment$k.name,
     		type: "component",
     		source: "",
     		ctx
@@ -11163,7 +11449,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$j($$self, $$props, $$invalidate) {
+    function instance$k($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_PageFooter", slots, ['default']);
     	const writable_props = [];
@@ -11182,21 +11468,21 @@ var app = (function () {
     class SCR_PageFooter extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$j, create_fragment$j, safe_not_equal, {});
+    		init(this, options, instance$k, create_fragment$k, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_PageFooter",
     			options,
-    			id: create_fragment$j.name
+    			id: create_fragment$k.name
     		});
     	}
     }
 
     /* src/docs/components/SCR_PushRouteButton.svelte generated by Svelte v3.37.0 */
-    const file$i = "src/docs/components/SCR_PushRouteButton.svelte";
+    const file$j = "src/docs/components/SCR_PushRouteButton.svelte";
 
-    function create_fragment$i(ctx) {
+    function create_fragment$j(ctx) {
     	let button;
     	let t;
     	let mounted;
@@ -11210,7 +11496,7 @@ var app = (function () {
     			attr_dev(button, "style", /*style*/ ctx[1]);
     			attr_dev(button, "type", "button");
     			attr_dev(button, "class", "btn scr-button");
-    			add_location(button, file$i, 12, 0, 238);
+    			add_location(button, file$j, 12, 0, 238);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11246,7 +11532,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$i.name,
+    		id: create_fragment$j.name,
     		type: "component",
     		source: "",
     		ctx
@@ -11255,7 +11541,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$i($$self, $$props, $$invalidate) {
+    function instance$j($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_PushRouteButton", slots, []);
     	let { routeName = "rootRoute" } = $$props;
@@ -11307,7 +11593,7 @@ var app = (function () {
     	constructor(options) {
     		super(options);
 
-    		init(this, options, instance$i, create_fragment$i, safe_not_equal, {
+    		init(this, options, instance$j, create_fragment$j, safe_not_equal, {
     			routeName: 4,
     			text: 0,
     			style: 1,
@@ -11318,7 +11604,7 @@ var app = (function () {
     			component: this,
     			tagName: "SCR_PushRouteButton",
     			options,
-    			id: create_fragment$i.name
+    			id: create_fragment$j.name
     		});
 
     		const { ctx } = this.$$;
@@ -11363,10 +11649,10 @@ var app = (function () {
     }
 
     /* src/docs/pages/SCR_Presentation.svelte generated by Svelte v3.37.0 */
-    const file$h = "src/docs/pages/SCR_Presentation.svelte";
+    const file$i = "src/docs/pages/SCR_Presentation.svelte";
 
     // (71:2) <SCR_PageFooter>
-    function create_default_slot$f(ctx) {
+    function create_default_slot$g(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton;
@@ -11387,9 +11673,9 @@ var app = (function () {
     			div0 = element("div");
     			create_component(scr_pushroutebutton.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$h, 72, 6, 2604);
+    			add_location(div0, file$i, 72, 6, 2604);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$h, 71, 4, 2580);
+    			add_location(div1, file$i, 71, 4, 2580);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -11415,7 +11701,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$f.name,
+    		id: create_default_slot$g.name,
     		type: "slot",
     		source: "(71:2) <SCR_PageFooter>",
     		ctx
@@ -11424,7 +11710,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$h(ctx) {
+    function create_fragment$i(ctx) {
     	let div;
     	let h4;
     	let t1;
@@ -11491,7 +11777,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$f] },
+    				$$slots: { default: [create_default_slot$g] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -11577,55 +11863,55 @@ var app = (function () {
     			t44 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$h, 6, 2, 180);
-    			add_location(br0, file$h, 10, 4, 370);
-    			add_location(br1, file$h, 11, 4, 381);
-    			add_location(br2, file$h, 15, 4, 575);
-    			add_location(br3, file$h, 16, 4, 586);
+    			add_location(h4, file$i, 6, 2, 180);
+    			add_location(br0, file$i, 10, 4, 370);
+    			add_location(br1, file$i, 11, 4, 381);
+    			add_location(br2, file$i, 15, 4, 575);
+    			add_location(br3, file$i, 16, 4, 586);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$h, 7, 2, 219);
+    			add_location(p0, file$i, 7, 2, 219);
     			attr_dev(li0, "class", "scr-li svelte-1kf261k");
-    			add_location(li0, file$h, 20, 4, 644);
+    			add_location(li0, file$i, 20, 4, 644);
     			attr_dev(li1, "class", "scr-li svelte-1kf261k");
-    			add_location(li1, file$h, 21, 4, 705);
-    			add_location(u0, file$h, 23, 40, 821);
-    			add_location(b0, file$h, 23, 37, 818);
+    			add_location(li1, file$i, 21, 4, 705);
+    			add_location(u0, file$i, 23, 40, 821);
+    			add_location(b0, file$i, 23, 37, 818);
     			attr_dev(li2, "class", "scr-li svelte-1kf261k");
-    			add_location(li2, file$h, 22, 4, 761);
-    			add_location(u1, file$h, 26, 40, 916);
-    			add_location(b1, file$h, 26, 37, 913);
+    			add_location(li2, file$i, 22, 4, 761);
+    			add_location(u1, file$i, 26, 40, 916);
+    			add_location(b1, file$i, 26, 37, 913);
     			attr_dev(li3, "class", "scr-li svelte-1kf261k");
-    			add_location(li3, file$h, 25, 4, 856);
+    			add_location(li3, file$i, 25, 4, 856);
     			attr_dev(li4, "class", "scr-li svelte-1kf261k");
-    			add_location(li4, file$h, 28, 4, 952);
+    			add_location(li4, file$i, 28, 4, 952);
     			attr_dev(li5, "class", "scr-li svelte-1kf261k");
-    			add_location(li5, file$h, 31, 4, 1056);
+    			add_location(li5, file$i, 31, 4, 1056);
     			attr_dev(li6, "class", "scr-li svelte-1kf261k");
-    			add_location(li6, file$h, 32, 4, 1130);
+    			add_location(li6, file$i, 32, 4, 1130);
     			attr_dev(li7, "class", "scr-li svelte-1kf261k");
-    			add_location(li7, file$h, 33, 4, 1210);
+    			add_location(li7, file$i, 33, 4, 1210);
     			attr_dev(li8, "class", "scr-li svelte-1kf261k");
-    			add_location(li8, file$h, 37, 4, 1334);
+    			add_location(li8, file$i, 37, 4, 1334);
     			attr_dev(li9, "class", "scr-li svelte-1kf261k");
-    			add_location(li9, file$h, 38, 4, 1411);
+    			add_location(li9, file$i, 38, 4, 1411);
     			attr_dev(li10, "class", "scr-li svelte-1kf261k");
-    			add_location(li10, file$h, 39, 4, 1470);
+    			add_location(li10, file$i, 39, 4, 1470);
     			attr_dev(li11, "class", "scr-li svelte-1kf261k");
-    			add_location(li11, file$h, 43, 4, 1602);
-    			add_location(ul, file$h, 19, 2, 635);
-    			add_location(br4, file$h, 50, 4, 1955);
-    			add_location(br5, file$h, 51, 4, 1966);
-    			add_location(br6, file$h, 55, 4, 2171);
+    			add_location(li11, file$i, 43, 4, 1602);
+    			add_location(ul, file$i, 19, 2, 635);
+    			add_location(br4, file$i, 50, 4, 1955);
+    			add_location(br5, file$i, 51, 4, 1966);
+    			add_location(br6, file$i, 55, 4, 2171);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$h, 45, 2, 1672);
+    			add_location(p1, file$i, 45, 2, 1672);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$h, 59, 4, 2248);
+    			add_location(small, file$i, 59, 4, 2248);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$h, 58, 2, 2216);
+    			add_location(center, file$i, 58, 2, 2216);
     			attr_dev(pre, "class", "scr-pre");
-    			add_location(pre, file$h, 61, 2, 2329);
+    			add_location(pre, file$i, 61, 2, 2329);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$h, 5, 0, 155);
+    			add_location(div, file$i, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11721,7 +12007,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$h.name,
+    		id: create_fragment$i.name,
     		type: "component",
     		source: "",
     		ctx
@@ -11730,7 +12016,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$h($$self, $$props, $$invalidate) {
+    function instance$i($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_Presentation", slots, []);
     	const writable_props = [];
@@ -11746,13 +12032,13 @@ var app = (function () {
     class SCR_Presentation extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$h, create_fragment$h, safe_not_equal, {});
+    		init(this, options, instance$i, create_fragment$i, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_Presentation",
     			options,
-    			id: create_fragment$h.name
+    			id: create_fragment$i.name
     		});
     	}
     }
@@ -11763,10 +12049,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_Installation.svelte generated by Svelte v3.37.0 */
-    const file$g = "src/docs/pages/SCR_Installation.svelte";
+    const file$h = "src/docs/pages/SCR_Installation.svelte";
 
     // (45:2) <SCR_PageFooter>
-    function create_default_slot$e(ctx) {
+    function create_default_slot$f(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -11800,9 +12086,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$g, 46, 6, 1246);
+    			add_location(div0, file$h, 46, 6, 1246);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$g, 45, 4, 1222);
+    			add_location(div1, file$h, 45, 4, 1222);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -11833,7 +12119,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$e.name,
+    		id: create_default_slot$f.name,
     		type: "slot",
     		source: "(45:2) <SCR_PageFooter>",
     		ctx
@@ -11842,7 +12128,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$g(ctx) {
+    function create_fragment$h(ctx) {
     	let div;
     	let h4;
     	let t1;
@@ -11868,7 +12154,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$e] },
+    				$$slots: { default: [create_default_slot$f] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -11905,25 +12191,25 @@ var app = (function () {
     			t15 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$g, 6, 2, 180);
-    			add_location(h50, file$g, 7, 2, 219);
+    			add_location(h4, file$h, 6, 2, 180);
+    			add_location(h50, file$h, 7, 2, 219);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$g, 8, 2, 239);
-    			add_location(h51, file$g, 11, 2, 309);
+    			add_location(pre0, file$h, 8, 2, 239);
+    			add_location(h51, file$h, 11, 2, 309);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$g, 14, 4, 374);
+    			add_location(b0, file$h, 14, 4, 374);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$g, 12, 2, 344);
+    			add_location(pre1, file$h, 12, 2, 344);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$g, 28, 4, 718);
+    			add_location(small, file$h, 28, 4, 718);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$g, 27, 2, 686);
+    			add_location(center, file$h, 27, 2, 686);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$g, 32, 4, 829);
+    			add_location(b1, file$h, 32, 4, 829);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$g, 30, 2, 799);
+    			add_location(pre2, file$h, 30, 2, 799);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$g, 5, 0, 155);
+    			add_location(div, file$h, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11978,7 +12264,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$g.name,
+    		id: create_fragment$h.name,
     		type: "component",
     		source: "",
     		ctx
@@ -11987,7 +12273,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$g($$self, $$props, $$invalidate) {
+    function instance$h($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_Installation", slots, []);
     	const writable_props = [];
@@ -12003,13 +12289,13 @@ var app = (function () {
     class SCR_Installation extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$g, create_fragment$g, safe_not_equal, {});
+    		init(this, options, instance$h, create_fragment$h, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_Installation",
     			options,
-    			id: create_fragment$g.name
+    			id: create_fragment$h.name
     		});
     	}
     }
@@ -12020,10 +12306,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_GettingStarted.svelte generated by Svelte v3.37.0 */
-    const file$f = "src/docs/pages/SCR_GettingStarted.svelte";
+    const file$g = "src/docs/pages/SCR_GettingStarted.svelte";
 
     // (147:2) <SCR_PageFooter>
-    function create_default_slot$d(ctx) {
+    function create_default_slot$e(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -12057,9 +12343,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$f, 148, 6, 4596);
+    			add_location(div0, file$g, 148, 6, 4596);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$f, 147, 4, 4572);
+    			add_location(div1, file$g, 147, 4, 4572);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -12090,7 +12376,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$d.name,
+    		id: create_default_slot$e.name,
     		type: "slot",
     		source: "(147:2) <SCR_PageFooter>",
     		ctx
@@ -12099,7 +12385,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$f(ctx) {
+    function create_fragment$g(ctx) {
     	let div;
     	let h4;
     	let t1;
@@ -12167,7 +12453,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$d] },
+    				$$slots: { default: [create_default_slot$e] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -12258,60 +12544,60 @@ var app = (function () {
     			t49 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$f, 6, 2, 180);
-    			add_location(h50, file$f, 7, 2, 222);
+    			add_location(h4, file$g, 6, 2, 180);
+    			add_location(h50, file$g, 7, 2, 222);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$f, 20, 0, 493);
+    			add_location(b0, file$g, 20, 0, 493);
     			attr_dev(a0, "href", "https://svelte.dev/tutorial/slots");
     			attr_dev(a0, "target", "_blank");
-    			add_location(a0, file$f, 21, 20, 624);
+    			add_location(a0, file$g, 21, 20, 624);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$f, 21, 0, 604);
+    			add_location(b1, file$g, 21, 0, 604);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$f, 8, 2, 266);
-    			add_location(br0, file$f, 24, 2, 791);
-    			add_location(h51, file$f, 25, 2, 800);
+    			add_location(pre0, file$g, 8, 2, 266);
+    			add_location(br0, file$g, 24, 2, 791);
+    			add_location(h51, file$g, 25, 2, 800);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$f, 26, 2, 828);
-    			add_location(br1, file$f, 59, 2, 1796);
-    			add_location(h52, file$f, 60, 2, 1805);
+    			add_location(pre1, file$g, 26, 2, 828);
+    			add_location(br1, file$g, 59, 2, 1796);
+    			add_location(h52, file$g, 60, 2, 1805);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$f, 61, 2, 1836);
-    			add_location(br2, file$f, 67, 4, 2053);
-    			add_location(br3, file$f, 68, 4, 2064);
+    			add_location(pre2, file$g, 61, 2, 1836);
+    			add_location(br2, file$g, 67, 4, 2053);
+    			add_location(br3, file$g, 68, 4, 2064);
     			attr_dev(p, "class", "scr-text-justify");
-    			add_location(p, file$f, 65, 2, 1965);
-    			add_location(br4, file$f, 72, 2, 2209);
-    			add_location(h53, file$f, 73, 2, 2218);
+    			add_location(p, file$g, 65, 2, 1965);
+    			add_location(br4, file$g, 72, 2, 2209);
+    			add_location(h53, file$g, 73, 2, 2218);
     			attr_dev(b2, "class", "scr-b");
-    			add_location(b2, file$f, 76, 0, 2268);
+    			add_location(b2, file$g, 76, 0, 2268);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$f, 79, 0, 2325);
+    			add_location(b3, file$g, 79, 0, 2325);
     			attr_dev(b4, "class", "scr-b");
-    			add_location(b4, file$f, 90, 0, 2577);
+    			add_location(b4, file$g, 90, 0, 2577);
     			attr_dev(a1, "href", "https://svelte.dev/tutorial/slots");
     			attr_dev(a1, "target", "_blank");
-    			add_location(a1, file$f, 91, 20, 2708);
+    			add_location(a1, file$g, 91, 20, 2708);
     			attr_dev(b5, "class", "scr-b");
-    			add_location(b5, file$f, 91, 0, 2688);
+    			add_location(b5, file$g, 91, 0, 2688);
     			attr_dev(b6, "class", "scr-b");
-    			add_location(b6, file$f, 92, 0, 2809);
+    			add_location(b6, file$g, 92, 0, 2809);
     			attr_dev(b7, "class", "scr-b");
-    			add_location(b7, file$f, 95, 0, 2919);
+    			add_location(b7, file$g, 95, 0, 2919);
     			attr_dev(b8, "class", "scr-b");
-    			add_location(b8, file$f, 98, 6, 2992);
+    			add_location(b8, file$g, 98, 6, 2992);
     			attr_dev(b9, "class", "scr-b");
-    			add_location(b9, file$f, 130, 0, 3987);
+    			add_location(b9, file$g, 130, 0, 3987);
     			attr_dev(pre3, "class", "scr-pre");
-    			add_location(pre3, file$f, 74, 2, 2242);
+    			add_location(pre3, file$g, 74, 2, 2242);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$f, 134, 4, 4219);
+    			add_location(small, file$g, 134, 4, 4219);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$f, 133, 2, 4187);
+    			add_location(center, file$g, 133, 2, 4187);
     			attr_dev(pre4, "class", "scr-pre");
-    			add_location(pre4, file$f, 136, 2, 4300);
+    			add_location(pre4, file$g, 136, 2, 4300);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$f, 5, 0, 155);
+    			add_location(div, file$g, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -12408,7 +12694,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$f.name,
+    		id: create_fragment$g.name,
     		type: "component",
     		source: "",
     		ctx
@@ -12417,7 +12703,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$f($$self, $$props, $$invalidate) {
+    function instance$g($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_GettingStarted", slots, []);
     	const writable_props = [];
@@ -12433,13 +12719,13 @@ var app = (function () {
     class SCR_GettingStarted extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$f, create_fragment$f, safe_not_equal, {});
+    		init(this, options, instance$g, create_fragment$g, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_GettingStarted",
     			options,
-    			id: create_fragment$f.name
+    			id: create_fragment$g.name
     		});
     	}
     }
@@ -12450,10 +12736,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_ConfigurationOptions.svelte generated by Svelte v3.37.0 */
-    const file$e = "src/docs/pages/SCR_ConfigurationOptions.svelte";
+    const file$f = "src/docs/pages/SCR_ConfigurationOptions.svelte";
 
     // (375:2) <SCR_PageFooter>
-    function create_default_slot$c(ctx) {
+    function create_default_slot$d(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -12487,9 +12773,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$e, 376, 6, 12556);
+    			add_location(div0, file$f, 376, 6, 12556);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$e, 375, 4, 12532);
+    			add_location(div1, file$f, 375, 4, 12532);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -12520,7 +12806,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$c.name,
+    		id: create_default_slot$d.name,
     		type: "slot",
     		source: "(375:2) <SCR_PageFooter>",
     		ctx
@@ -12529,7 +12815,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$e(ctx) {
+    function create_fragment$f(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -12797,7 +13083,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$c] },
+    				$$slots: { default: [create_default_slot$d] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -13135,209 +13421,209 @@ var app = (function () {
     			t199 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h40, "class", "scr-h4");
-    			add_location(h40, file$e, 6, 2, 180);
+    			add_location(h40, file$f, 6, 2, 180);
     			attr_dev(a, "href", "https://svelte.dev/tutorial/writable-stores");
     			attr_dev(a, "target", "_blank");
-    			add_location(a, file$e, 8, 39, 271);
-    			add_location(p0, file$e, 7, 2, 228);
-    			add_location(h5, file$e, 16, 2, 593);
+    			add_location(a, file$f, 8, 39, 271);
+    			add_location(p0, file$f, 7, 2, 228);
+    			add_location(h5, file$f, 16, 2, 593);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$e, 19, 0, 640);
+    			add_location(b0, file$f, 19, 0, 640);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$e, 17, 2, 614);
-    			add_location(p1, file$e, 22, 2, 771);
+    			add_location(pre0, file$f, 17, 2, 614);
+    			add_location(p1, file$f, 22, 2, 771);
     			attr_dev(hr0, "class", "scr-hr");
-    			add_location(hr0, file$e, 24, 2, 922);
+    			add_location(hr0, file$f, 24, 2, 922);
     			attr_dev(h41, "class", "scr-h4");
-    			add_location(h41, file$e, 25, 2, 946);
-    			add_location(b1, file$e, 27, 8, 1019);
-    			add_location(b2, file$e, 28, 39, 1131);
-    			add_location(br0, file$e, 30, 4, 1224);
-    			add_location(br1, file$e, 31, 4, 1235);
+    			add_location(h41, file$f, 25, 2, 946);
+    			add_location(b1, file$f, 27, 8, 1019);
+    			add_location(b2, file$f, 28, 39, 1131);
+    			add_location(br0, file$f, 30, 4, 1224);
+    			add_location(br1, file$f, 31, 4, 1235);
     			attr_dev(p2, "class", "scr-text-justify");
-    			add_location(p2, file$e, 26, 2, 982);
+    			add_location(p2, file$f, 26, 2, 982);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$e, 37, 0, 1422);
+    			add_location(b3, file$f, 37, 0, 1422);
     			attr_dev(b4, "class", "scr-b");
-    			add_location(b4, file$e, 48, 0, 1705);
+    			add_location(b4, file$f, 48, 0, 1705);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$e, 35, 2, 1396);
+    			add_location(pre1, file$f, 35, 2, 1396);
     			attr_dev(hr1, "class", "scr-hr");
-    			add_location(hr1, file$e, 53, 2, 1982);
+    			add_location(hr1, file$f, 53, 2, 1982);
     			attr_dev(h42, "class", "scr-h4");
-    			add_location(h42, file$e, 54, 2, 2006);
-    			add_location(b5, file$e, 56, 8, 2094);
-    			add_location(br2, file$e, 60, 4, 2364);
-    			add_location(br3, file$e, 61, 4, 2375);
+    			add_location(h42, file$f, 54, 2, 2006);
+    			add_location(b5, file$f, 56, 8, 2094);
+    			add_location(br2, file$f, 60, 4, 2364);
+    			add_location(br3, file$f, 61, 4, 2375);
     			attr_dev(p3, "class", "scr-text-justify");
-    			add_location(p3, file$e, 55, 2, 2057);
+    			add_location(p3, file$f, 55, 2, 2057);
     			attr_dev(b6, "class", "scr-b");
-    			add_location(b6, file$e, 66, 0, 2474);
+    			add_location(b6, file$f, 66, 0, 2474);
     			attr_dev(b7, "class", "scr-b");
-    			add_location(b7, file$e, 77, 0, 2732);
+    			add_location(b7, file$f, 77, 0, 2732);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$e, 64, 2, 2448);
+    			add_location(pre2, file$f, 64, 2, 2448);
     			attr_dev(hr2, "class", "scr-hr");
-    			add_location(hr2, file$e, 82, 2, 3021);
+    			add_location(hr2, file$f, 82, 2, 3021);
     			attr_dev(h43, "class", "scr-h4");
-    			add_location(h43, file$e, 83, 2, 3045);
-    			add_location(b8, file$e, 85, 8, 3118);
+    			add_location(h43, file$f, 83, 2, 3045);
+    			add_location(b8, file$f, 85, 8, 3118);
     			attr_dev(p4, "class", "scr-text-justify");
-    			add_location(p4, file$e, 84, 2, 3081);
-    			add_location(b9, file$e, 89, 6, 3197);
-    			add_location(li0, file$e, 88, 4, 3186);
-    			add_location(b10, file$e, 91, 8, 3290);
-    			add_location(li1, file$e, 91, 4, 3286);
-    			add_location(b11, file$e, 92, 8, 3369);
-    			add_location(li2, file$e, 92, 4, 3365);
-    			add_location(ul0, file$e, 87, 2, 3177);
-    			add_location(p5, file$e, 94, 2, 3430);
+    			add_location(p4, file$f, 84, 2, 3081);
+    			add_location(b9, file$f, 89, 6, 3197);
+    			add_location(li0, file$f, 88, 4, 3186);
+    			add_location(b10, file$f, 91, 8, 3290);
+    			add_location(li1, file$f, 91, 4, 3286);
+    			add_location(b11, file$f, 92, 8, 3369);
+    			add_location(li2, file$f, 92, 4, 3365);
+    			add_location(ul0, file$f, 87, 2, 3177);
+    			add_location(p5, file$f, 94, 2, 3430);
     			attr_dev(b12, "class", "scr-b");
-    			add_location(b12, file$e, 101, 0, 3634);
+    			add_location(b12, file$f, 101, 0, 3634);
     			attr_dev(b13, "class", "scr-b");
-    			add_location(b13, file$e, 114, 0, 4058);
+    			add_location(b13, file$f, 114, 0, 4058);
     			attr_dev(pre3, "class", "scr-pre");
-    			add_location(pre3, file$e, 99, 2, 3608);
+    			add_location(pre3, file$f, 99, 2, 3608);
     			attr_dev(hr3, "class", "scr-hr");
-    			add_location(hr3, file$e, 119, 2, 4345);
+    			add_location(hr3, file$f, 119, 2, 4345);
     			attr_dev(h44, "class", "scr-h4");
-    			add_location(h44, file$e, 120, 2, 4369);
-    			add_location(b14, file$e, 122, 8, 4448);
-    			add_location(br4, file$e, 124, 4, 4559);
-    			add_location(br5, file$e, 125, 4, 4570);
-    			add_location(b15, file$e, 126, 4, 4581);
+    			add_location(h44, file$f, 120, 2, 4369);
+    			add_location(b14, file$f, 122, 8, 4448);
+    			add_location(br4, file$f, 124, 4, 4559);
+    			add_location(br5, file$f, 125, 4, 4570);
+    			add_location(b15, file$f, 126, 4, 4581);
     			attr_dev(p6, "class", "scr-text-justify");
-    			add_location(p6, file$e, 121, 2, 4411);
+    			add_location(p6, file$f, 121, 2, 4411);
     			attr_dev(b16, "class", "scr-b");
-    			add_location(b16, file$e, 130, 0, 4654);
+    			add_location(b16, file$f, 130, 0, 4654);
     			attr_dev(b17, "class", "scr-b");
-    			add_location(b17, file$e, 140, 0, 4888);
+    			add_location(b17, file$f, 140, 0, 4888);
     			attr_dev(pre4, "class", "scr-pre");
-    			add_location(pre4, file$e, 128, 2, 4628);
+    			add_location(pre4, file$f, 128, 2, 4628);
     			attr_dev(hr4, "class", "scr-hr");
-    			add_location(hr4, file$e, 145, 2, 5177);
+    			add_location(hr4, file$f, 145, 2, 5177);
     			attr_dev(h45, "class", "scr-h4");
-    			add_location(h45, file$e, 146, 2, 5201);
-    			add_location(b18, file$e, 148, 8, 5276);
-    			add_location(br6, file$e, 150, 4, 5361);
-    			add_location(br7, file$e, 151, 4, 5372);
-    			add_location(b19, file$e, 152, 4, 5383);
+    			add_location(h45, file$f, 146, 2, 5201);
+    			add_location(b18, file$f, 148, 8, 5276);
+    			add_location(br6, file$f, 150, 4, 5361);
+    			add_location(br7, file$f, 151, 4, 5372);
+    			add_location(b19, file$f, 152, 4, 5383);
     			attr_dev(p7, "class", "scr-text-justify");
-    			add_location(p7, file$e, 147, 2, 5239);
+    			add_location(p7, file$f, 147, 2, 5239);
     			attr_dev(b20, "class", "scr-b");
-    			add_location(b20, file$e, 156, 0, 5456);
+    			add_location(b20, file$f, 156, 0, 5456);
     			attr_dev(b21, "class", "scr-b");
-    			add_location(b21, file$e, 166, 0, 5679);
+    			add_location(b21, file$f, 166, 0, 5679);
     			attr_dev(pre5, "class", "scr-pre");
-    			add_location(pre5, file$e, 154, 2, 5430);
+    			add_location(pre5, file$f, 154, 2, 5430);
     			attr_dev(hr5, "class", "scr-hr");
-    			add_location(hr5, file$e, 171, 2, 5962);
+    			add_location(hr5, file$f, 171, 2, 5962);
     			attr_dev(h46, "class", "scr-h4");
-    			add_location(h46, file$e, 172, 2, 5986);
-    			add_location(b22, file$e, 174, 8, 6076);
-    			add_location(br8, file$e, 176, 4, 6181);
-    			add_location(br9, file$e, 177, 4, 6192);
+    			add_location(h46, file$f, 172, 2, 5986);
+    			add_location(b22, file$f, 174, 8, 6076);
+    			add_location(br8, file$f, 176, 4, 6181);
+    			add_location(br9, file$f, 177, 4, 6192);
     			attr_dev(p8, "class", "scr-text-justify");
-    			add_location(p8, file$e, 173, 2, 6039);
+    			add_location(p8, file$f, 173, 2, 6039);
     			attr_dev(b23, "class", "scr-b");
-    			add_location(b23, file$e, 182, 0, 6320);
+    			add_location(b23, file$f, 182, 0, 6320);
     			attr_dev(b24, "class", "scr-b");
-    			add_location(b24, file$e, 192, 0, 6538);
+    			add_location(b24, file$f, 192, 0, 6538);
     			attr_dev(pre6, "class", "scr-pre");
-    			add_location(pre6, file$e, 180, 2, 6294);
+    			add_location(pre6, file$f, 180, 2, 6294);
     			attr_dev(hr6, "class", "scr-hr");
-    			add_location(hr6, file$e, 197, 2, 6828);
+    			add_location(hr6, file$f, 197, 2, 6828);
     			attr_dev(h47, "class", "scr-h4");
-    			add_location(h47, file$e, 198, 2, 6852);
-    			add_location(b25, file$e, 200, 8, 6934);
-    			add_location(br10, file$e, 202, 4, 7019);
-    			add_location(br11, file$e, 203, 4, 7030);
+    			add_location(h47, file$f, 198, 2, 6852);
+    			add_location(b25, file$f, 200, 8, 6934);
+    			add_location(br10, file$f, 202, 4, 7019);
+    			add_location(br11, file$f, 203, 4, 7030);
     			attr_dev(p9, "class", "scr-text-justify");
-    			add_location(p9, file$e, 199, 2, 6897);
+    			add_location(p9, file$f, 199, 2, 6897);
     			attr_dev(b26, "class", "scr-b");
-    			add_location(b26, file$e, 208, 0, 7114);
+    			add_location(b26, file$f, 208, 0, 7114);
     			attr_dev(b27, "class", "scr-b");
-    			add_location(b27, file$e, 218, 0, 7329);
+    			add_location(b27, file$f, 218, 0, 7329);
     			attr_dev(pre7, "class", "scr-pre");
-    			add_location(pre7, file$e, 206, 2, 7088);
+    			add_location(pre7, file$f, 206, 2, 7088);
     			attr_dev(hr7, "class", "scr-hr");
-    			add_location(hr7, file$e, 223, 2, 7614);
+    			add_location(hr7, file$f, 223, 2, 7614);
     			attr_dev(h48, "class", "scr-h4");
-    			add_location(h48, file$e, 224, 2, 7638);
-    			add_location(b28, file$e, 226, 8, 7719);
-    			add_location(br12, file$e, 228, 4, 7814);
-    			add_location(br13, file$e, 229, 4, 7825);
-    			add_location(br14, file$e, 232, 4, 7977);
-    			add_location(br15, file$e, 233, 4, 7988);
+    			add_location(h48, file$f, 224, 2, 7638);
+    			add_location(b28, file$f, 226, 8, 7719);
+    			add_location(br12, file$f, 228, 4, 7814);
+    			add_location(br13, file$f, 229, 4, 7825);
+    			add_location(br14, file$f, 232, 4, 7977);
+    			add_location(br15, file$f, 233, 4, 7988);
     			attr_dev(p10, "class", "scr-text-justify");
-    			add_location(p10, file$e, 225, 2, 7682);
+    			add_location(p10, file$f, 225, 2, 7682);
     			attr_dev(b29, "class", "scr-b");
-    			add_location(b29, file$e, 239, 0, 8197);
+    			add_location(b29, file$f, 239, 0, 8197);
     			attr_dev(b30, "class", "scr-b");
-    			add_location(b30, file$e, 249, 0, 8421);
+    			add_location(b30, file$f, 249, 0, 8421);
     			attr_dev(pre8, "class", "scr-pre");
-    			add_location(pre8, file$e, 237, 2, 8171);
+    			add_location(pre8, file$f, 237, 2, 8171);
     			attr_dev(hr8, "class", "scr-hr");
-    			add_location(hr8, file$e, 254, 2, 8705);
+    			add_location(hr8, file$f, 254, 2, 8705);
     			attr_dev(h49, "class", "scr-h4");
-    			add_location(h49, file$e, 255, 2, 8729);
-    			add_location(b31, file$e, 257, 8, 8834);
+    			add_location(h49, file$f, 255, 2, 8729);
+    			add_location(b31, file$f, 257, 8, 8834);
     			attr_dev(p11, "class", "scr-text-justify");
-    			add_location(p11, file$e, 256, 2, 8797);
+    			add_location(p11, file$f, 256, 2, 8797);
     			attr_dev(b32, "class", "scr-b");
-    			add_location(b32, file$e, 262, 0, 9025);
+    			add_location(b32, file$f, 262, 0, 9025);
     			attr_dev(b33, "class", "scr-b");
-    			add_location(b33, file$e, 272, 0, 9279);
+    			add_location(b33, file$f, 272, 0, 9279);
     			attr_dev(pre9, "class", "scr-pre");
-    			add_location(pre9, file$e, 260, 2, 8999);
+    			add_location(pre9, file$f, 260, 2, 8999);
     			attr_dev(hr9, "class", "scr-hr");
-    			add_location(hr9, file$e, 277, 2, 9584);
+    			add_location(hr9, file$f, 277, 2, 9584);
     			attr_dev(h410, "class", "scr-h4");
-    			add_location(h410, file$e, 278, 2, 9608);
-    			add_location(b34, file$e, 280, 8, 9682);
-    			add_location(b35, file$e, 281, 61, 9808);
-    			add_location(b36, file$e, 283, 4, 9913);
-    			add_location(b37, file$e, 284, 25, 9957);
+    			add_location(h410, file$f, 278, 2, 9608);
+    			add_location(b34, file$f, 280, 8, 9682);
+    			add_location(b35, file$f, 281, 61, 9808);
+    			add_location(b36, file$f, 283, 4, 9913);
+    			add_location(b37, file$f, 284, 25, 9957);
     			attr_dev(p12, "class", "scr-text-justify");
-    			add_location(p12, file$e, 279, 2, 9645);
+    			add_location(p12, file$f, 279, 2, 9645);
     			attr_dev(b38, "class", "scr-b");
-    			add_location(b38, file$e, 288, 0, 10022);
+    			add_location(b38, file$f, 288, 0, 10022);
     			attr_dev(b39, "class", "scr-b");
-    			add_location(b39, file$e, 297, 0, 10188);
+    			add_location(b39, file$f, 297, 0, 10188);
     			attr_dev(pre10, "class", "scr-pre");
-    			add_location(pre10, file$e, 286, 2, 9996);
+    			add_location(pre10, file$f, 286, 2, 9996);
     			attr_dev(hr10, "class", "scr-hr");
-    			add_location(hr10, file$e, 302, 2, 10466);
+    			add_location(hr10, file$f, 302, 2, 10466);
     			attr_dev(h411, "class", "scr-h4");
-    			add_location(h411, file$e, 303, 2, 10490);
-    			add_location(b40, file$e, 305, 8, 10566);
+    			add_location(h411, file$f, 303, 2, 10490);
+    			add_location(b40, file$f, 305, 8, 10566);
     			attr_dev(p13, "class", "scr-text-justify");
-    			add_location(p13, file$e, 304, 2, 10529);
-    			add_location(b41, file$e, 309, 8, 10704);
-    			add_location(li3, file$e, 309, 4, 10700);
-    			add_location(b42, file$e, 310, 8, 10771);
-    			add_location(li4, file$e, 310, 4, 10767);
-    			add_location(b43, file$e, 312, 6, 10847);
-    			add_location(li5, file$e, 311, 4, 10836);
-    			add_location(b44, file$e, 316, 6, 10959);
-    			add_location(li6, file$e, 315, 4, 10948);
-    			add_location(ul1, file$e, 308, 2, 10691);
+    			add_location(p13, file$f, 304, 2, 10529);
+    			add_location(b41, file$f, 309, 8, 10704);
+    			add_location(li3, file$f, 309, 4, 10700);
+    			add_location(b42, file$f, 310, 8, 10771);
+    			add_location(li4, file$f, 310, 4, 10767);
+    			add_location(b43, file$f, 312, 6, 10847);
+    			add_location(li5, file$f, 311, 4, 10836);
+    			add_location(b44, file$f, 316, 6, 10959);
+    			add_location(li6, file$f, 315, 4, 10948);
+    			add_location(ul1, file$f, 308, 2, 10691);
     			attr_dev(b45, "class", "scr-b");
-    			add_location(b45, file$e, 322, 0, 11153);
+    			add_location(b45, file$f, 322, 0, 11153);
     			attr_dev(b46, "class", "scr-b");
-    			add_location(b46, file$e, 348, 0, 11750);
+    			add_location(b46, file$f, 348, 0, 11750);
     			attr_dev(pre11, "class", "scr-pre");
-    			add_location(pre11, file$e, 320, 2, 11127);
+    			add_location(pre11, file$f, 320, 2, 11127);
     			attr_dev(p14, "class", "scr-text-justify");
-    			add_location(p14, file$e, 356, 2, 11913);
+    			add_location(p14, file$f, 356, 2, 11913);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$e, 363, 4, 12156);
+    			add_location(small, file$f, 363, 4, 12156);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$e, 362, 2, 12124);
+    			add_location(center, file$f, 362, 2, 12124);
     			attr_dev(pre12, "class", "scr-pre");
-    			add_location(pre12, file$e, 365, 2, 12237);
+    			add_location(pre12, file$f, 365, 2, 12237);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$e, 5, 0, 155);
+    			add_location(div, file$f, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -13634,7 +13920,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$e.name,
+    		id: create_fragment$f.name,
     		type: "component",
     		source: "",
     		ctx
@@ -13643,7 +13929,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$e($$self, $$props, $$invalidate) {
+    function instance$f($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_ConfigurationOptions", slots, []);
     	const writable_props = [];
@@ -13659,13 +13945,13 @@ var app = (function () {
     class SCR_ConfigurationOptions extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$e, create_fragment$e, safe_not_equal, {});
+    		init(this, options, instance$f, create_fragment$f, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_ConfigurationOptions",
     			options,
-    			id: create_fragment$e.name
+    			id: create_fragment$f.name
     		});
     	}
     }
@@ -13677,9 +13963,9 @@ var app = (function () {
 
     /* src/docs/components/SCR_BeforeEnterRouteAnatomy.svelte generated by Svelte v3.37.0 */
 
-    const file$d = "src/docs/components/SCR_BeforeEnterRouteAnatomy.svelte";
+    const file$e = "src/docs/components/SCR_BeforeEnterRouteAnatomy.svelte";
 
-    function create_fragment$d(ctx) {
+    function create_fragment$e(ctx) {
     	let h4;
     	let t1;
     	let p0;
@@ -13999,88 +14285,88 @@ var app = (function () {
     			p1 = element("p");
     			p1.textContent = "So that is it for this section. This is a powerfull feature enables us to\n  control for each route necessary security of overall behaviour.";
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$d, 0, 0, 0);
+    			add_location(h4, file$e, 0, 0, 0);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$d, 1, 0, 61);
+    			add_location(p0, file$e, 1, 0, 61);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$d, 7, 0, 266);
+    			add_location(b0, file$e, 7, 0, 266);
     			attr_dev(pre, "class", "scr-pre");
-    			add_location(pre, file$d, 5, 0, 242);
-    			add_location(b1, file$d, 14, 4, 458);
-    			add_location(br0, file$d, 17, 4, 657);
-    			add_location(b2, file$d, 22, 8, 810);
-    			add_location(li0, file$d, 21, 6, 797);
-    			add_location(b3, file$d, 26, 8, 943);
-    			add_location(li1, file$d, 25, 6, 930);
-    			add_location(b4, file$d, 30, 8, 1091);
-    			add_location(br1, file$d, 33, 8, 1308);
-    			add_location(br2, file$d, 35, 8, 1388);
-    			add_location(br3, file$d, 36, 8, 1403);
-    			add_location(li2, file$d, 29, 6, 1078);
-    			add_location(b5, file$d, 39, 8, 1441);
-    			add_location(br4, file$d, 42, 8, 1654);
-    			add_location(br5, file$d, 44, 8, 1730);
-    			add_location(br6, file$d, 45, 8, 1745);
-    			add_location(li3, file$d, 38, 6, 1428);
-    			add_location(b6, file$d, 48, 8, 1783);
-    			add_location(br7, file$d, 51, 8, 2010);
-    			add_location(br8, file$d, 53, 8, 2090);
-    			add_location(br9, file$d, 54, 8, 2105);
-    			add_location(li4, file$d, 47, 6, 1770);
-    			add_location(ul0, file$d, 20, 4, 786);
-    			add_location(li5, file$d, 13, 2, 449);
-    			add_location(b7, file$d, 59, 4, 2153);
-    			add_location(b8, file$d, 62, 10, 2307);
-    			add_location(li6, file$d, 62, 6, 2303);
-    			add_location(b9, file$d, 63, 10, 2357);
-    			add_location(li7, file$d, 63, 6, 2353);
-    			add_location(b10, file$d, 65, 8, 2422);
-    			add_location(li8, file$d, 64, 6, 2409);
-    			add_location(b11, file$d, 68, 8, 2522);
-    			add_location(li9, file$d, 67, 6, 2509);
-    			add_location(b12, file$d, 72, 8, 2638);
-    			add_location(li10, file$d, 71, 6, 2625);
-    			add_location(b13, file$d, 76, 8, 2777);
-    			add_location(li11, file$d, 75, 6, 2764);
-    			add_location(b14, file$d, 79, 10, 2909);
-    			add_location(li12, file$d, 79, 6, 2905);
-    			add_location(b15, file$d, 80, 10, 2979);
-    			add_location(li13, file$d, 80, 6, 2975);
-    			add_location(ul1, file$d, 61, 4, 2292);
-    			add_location(li14, file$d, 58, 2, 2144);
-    			add_location(br10, file$d, 83, 2, 3061);
-    			add_location(b16, file$d, 85, 4, 3079);
-    			add_location(b17, file$d, 88, 10, 3228);
-    			add_location(li15, file$d, 88, 6, 3224);
-    			add_location(b18, file$d, 89, 10, 3278);
-    			add_location(li16, file$d, 89, 6, 3274);
-    			add_location(b19, file$d, 91, 8, 3343);
-    			add_location(li17, file$d, 90, 6, 3330);
-    			add_location(b20, file$d, 94, 8, 3443);
-    			add_location(li18, file$d, 93, 6, 3430);
-    			add_location(b21, file$d, 98, 8, 3559);
-    			add_location(li19, file$d, 97, 6, 3546);
-    			add_location(b22, file$d, 102, 8, 3698);
-    			add_location(li20, file$d, 101, 6, 3685);
-    			add_location(b23, file$d, 105, 10, 3830);
-    			add_location(li21, file$d, 105, 6, 3826);
-    			add_location(b24, file$d, 106, 10, 3900);
-    			add_location(li22, file$d, 106, 6, 3896);
-    			add_location(ul2, file$d, 87, 4, 3213);
-    			add_location(li23, file$d, 84, 2, 3070);
-    			add_location(br11, file$d, 109, 2, 3982);
-    			add_location(b25, file$d, 111, 4, 4000);
-    			add_location(li24, file$d, 110, 2, 3991);
-    			add_location(br12, file$d, 115, 2, 4238);
-    			add_location(b26, file$d, 117, 4, 4256);
-    			add_location(br13, file$d, 120, 4, 4482);
-    			add_location(b27, file$d, 122, 6, 4524);
+    			add_location(pre, file$e, 5, 0, 242);
+    			add_location(b1, file$e, 14, 4, 458);
+    			add_location(br0, file$e, 17, 4, 657);
+    			add_location(b2, file$e, 22, 8, 810);
+    			add_location(li0, file$e, 21, 6, 797);
+    			add_location(b3, file$e, 26, 8, 943);
+    			add_location(li1, file$e, 25, 6, 930);
+    			add_location(b4, file$e, 30, 8, 1091);
+    			add_location(br1, file$e, 33, 8, 1308);
+    			add_location(br2, file$e, 35, 8, 1388);
+    			add_location(br3, file$e, 36, 8, 1403);
+    			add_location(li2, file$e, 29, 6, 1078);
+    			add_location(b5, file$e, 39, 8, 1441);
+    			add_location(br4, file$e, 42, 8, 1654);
+    			add_location(br5, file$e, 44, 8, 1730);
+    			add_location(br6, file$e, 45, 8, 1745);
+    			add_location(li3, file$e, 38, 6, 1428);
+    			add_location(b6, file$e, 48, 8, 1783);
+    			add_location(br7, file$e, 51, 8, 2010);
+    			add_location(br8, file$e, 53, 8, 2090);
+    			add_location(br9, file$e, 54, 8, 2105);
+    			add_location(li4, file$e, 47, 6, 1770);
+    			add_location(ul0, file$e, 20, 4, 786);
+    			add_location(li5, file$e, 13, 2, 449);
+    			add_location(b7, file$e, 59, 4, 2153);
+    			add_location(b8, file$e, 62, 10, 2307);
+    			add_location(li6, file$e, 62, 6, 2303);
+    			add_location(b9, file$e, 63, 10, 2357);
+    			add_location(li7, file$e, 63, 6, 2353);
+    			add_location(b10, file$e, 65, 8, 2422);
+    			add_location(li8, file$e, 64, 6, 2409);
+    			add_location(b11, file$e, 68, 8, 2522);
+    			add_location(li9, file$e, 67, 6, 2509);
+    			add_location(b12, file$e, 72, 8, 2638);
+    			add_location(li10, file$e, 71, 6, 2625);
+    			add_location(b13, file$e, 76, 8, 2777);
+    			add_location(li11, file$e, 75, 6, 2764);
+    			add_location(b14, file$e, 79, 10, 2909);
+    			add_location(li12, file$e, 79, 6, 2905);
+    			add_location(b15, file$e, 80, 10, 2979);
+    			add_location(li13, file$e, 80, 6, 2975);
+    			add_location(ul1, file$e, 61, 4, 2292);
+    			add_location(li14, file$e, 58, 2, 2144);
+    			add_location(br10, file$e, 83, 2, 3061);
+    			add_location(b16, file$e, 85, 4, 3079);
+    			add_location(b17, file$e, 88, 10, 3228);
+    			add_location(li15, file$e, 88, 6, 3224);
+    			add_location(b18, file$e, 89, 10, 3278);
+    			add_location(li16, file$e, 89, 6, 3274);
+    			add_location(b19, file$e, 91, 8, 3343);
+    			add_location(li17, file$e, 90, 6, 3330);
+    			add_location(b20, file$e, 94, 8, 3443);
+    			add_location(li18, file$e, 93, 6, 3430);
+    			add_location(b21, file$e, 98, 8, 3559);
+    			add_location(li19, file$e, 97, 6, 3546);
+    			add_location(b22, file$e, 102, 8, 3698);
+    			add_location(li20, file$e, 101, 6, 3685);
+    			add_location(b23, file$e, 105, 10, 3830);
+    			add_location(li21, file$e, 105, 6, 3826);
+    			add_location(b24, file$e, 106, 10, 3900);
+    			add_location(li22, file$e, 106, 6, 3896);
+    			add_location(ul2, file$e, 87, 4, 3213);
+    			add_location(li23, file$e, 84, 2, 3070);
+    			add_location(br11, file$e, 109, 2, 3982);
+    			add_location(b25, file$e, 111, 4, 4000);
+    			add_location(li24, file$e, 110, 2, 3991);
+    			add_location(br12, file$e, 115, 2, 4238);
+    			add_location(b26, file$e, 117, 4, 4256);
+    			add_location(br13, file$e, 120, 4, 4482);
+    			add_location(b27, file$e, 122, 6, 4524);
     			set_style(span, "color", "red");
-    			add_location(span, file$d, 121, 4, 4493);
-    			add_location(li25, file$d, 116, 2, 4247);
-    			add_location(ul3, file$d, 12, 0, 442);
+    			add_location(span, file$e, 121, 4, 4493);
+    			add_location(li25, file$e, 116, 2, 4247);
+    			add_location(ul3, file$e, 12, 0, 442);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$d, 128, 0, 4746);
+    			add_location(p1, file$e, 128, 0, 4746);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -14247,7 +14533,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$d.name,
+    		id: create_fragment$e.name,
     		type: "component",
     		source: "",
     		ctx
@@ -14256,7 +14542,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$d($$self, $$props) {
+    function instance$e($$self, $$props) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_BeforeEnterRouteAnatomy", slots, []);
     	const writable_props = [];
@@ -14271,22 +14557,22 @@ var app = (function () {
     class SCR_BeforeEnterRouteAnatomy extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$d, create_fragment$d, safe_not_equal, {});
+    		init(this, options, instance$e, create_fragment$e, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_BeforeEnterRouteAnatomy",
     			options,
-    			id: create_fragment$d.name
+    			id: create_fragment$e.name
     		});
     	}
     }
 
     /* src/docs/pages/SCR_ConfigurationBeforeEnter.svelte generated by Svelte v3.37.0 */
-    const file$c = "src/docs/pages/SCR_ConfigurationBeforeEnter.svelte";
+    const file$d = "src/docs/pages/SCR_ConfigurationBeforeEnter.svelte";
 
     // (29:12) <SCR_ROUTER_LINK       to={{ name: "routeObjectOptionsRoute" }}       elementProps={{ style: "display: inline; cursor: pointer;" }}     >
-    function create_default_slot_1$4(ctx) {
+    function create_default_slot_1$5(ctx) {
     	let a;
 
     	const block = {
@@ -14295,7 +14581,7 @@ var app = (function () {
     			a.textContent = "Route Object Properties";
     			attr_dev(a, "href", "/");
     			set_style(a, "pointer-events", "none");
-    			add_location(a, file$c, 32, 6, 1468);
+    			add_location(a, file$d, 32, 6, 1468);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, a, anchor);
@@ -14307,7 +14593,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot_1$4.name,
+    		id: create_default_slot_1$5.name,
     		type: "slot",
     		source: "(29:12) <SCR_ROUTER_LINK       to={{ name: \\\"routeObjectOptionsRoute\\\" }}       elementProps={{ style: \\\"display: inline; cursor: pointer;\\\" }}     >",
     		ctx
@@ -14317,7 +14603,7 @@ var app = (function () {
     }
 
     // (73:2) <SCR_PageFooter>
-    function create_default_slot$b(ctx) {
+    function create_default_slot$c(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -14351,9 +14637,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$c, 74, 6, 2958);
+    			add_location(div0, file$d, 74, 6, 2958);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$c, 73, 4, 2934);
+    			add_location(div1, file$d, 73, 4, 2934);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -14384,7 +14670,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$b.name,
+    		id: create_default_slot$c.name,
     		type: "slot",
     		source: "(73:2) <SCR_PageFooter>",
     		ctx
@@ -14393,7 +14679,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$c(ctx) {
+    function create_fragment$d(ctx) {
     	let div;
     	let h4;
     	let t1;
@@ -14458,7 +14744,7 @@ var app = (function () {
     				elementProps: {
     					style: "display: inline; cursor: pointer;"
     				},
-    				$$slots: { default: [create_default_slot_1$4] },
+    				$$slots: { default: [create_default_slot_1$5] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -14468,7 +14754,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$b] },
+    				$$slots: { default: [create_default_slot$c] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -14546,45 +14832,45 @@ var app = (function () {
     			t39 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$c, 8, 2, 326);
-    			add_location(b0, file$c, 10, 8, 427);
-    			add_location(b1, file$c, 12, 4, 565);
-    			add_location(br0, file$c, 14, 4, 649);
-    			add_location(br1, file$c, 15, 4, 660);
-    			add_location(br2, file$c, 20, 4, 963);
-    			add_location(br3, file$c, 21, 4, 974);
-    			add_location(b2, file$c, 23, 4, 1057);
-    			add_location(br4, file$c, 26, 4, 1294);
-    			add_location(br5, file$c, 27, 4, 1305);
-    			add_location(br6, file$c, 34, 4, 1580);
-    			add_location(br7, file$c, 35, 4, 1591);
+    			add_location(h4, file$d, 8, 2, 326);
+    			add_location(b0, file$d, 10, 8, 427);
+    			add_location(b1, file$d, 12, 4, 565);
+    			add_location(br0, file$d, 14, 4, 649);
+    			add_location(br1, file$d, 15, 4, 660);
+    			add_location(br2, file$d, 20, 4, 963);
+    			add_location(br3, file$d, 21, 4, 974);
+    			add_location(b2, file$d, 23, 4, 1057);
+    			add_location(br4, file$d, 26, 4, 1294);
+    			add_location(br5, file$d, 27, 4, 1305);
+    			add_location(br6, file$d, 34, 4, 1580);
+    			add_location(br7, file$d, 35, 4, 1591);
     			attr_dev(p, "class", "scr-text-justify");
-    			add_location(p, file$c, 9, 2, 390);
+    			add_location(p, file$d, 9, 2, 390);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$c, 40, 0, 1685);
+    			add_location(b3, file$d, 40, 0, 1685);
     			attr_dev(b4, "class", "scr-b");
-    			add_location(b4, file$c, 43, 0, 1820);
+    			add_location(b4, file$d, 43, 0, 1820);
     			attr_dev(b5, "class", "scr-b");
-    			add_location(b5, file$c, 44, 0, 1878);
+    			add_location(b5, file$d, 44, 0, 1878);
     			attr_dev(b6, "class", "scr-b");
-    			add_location(b6, file$c, 47, 0, 2019);
+    			add_location(b6, file$d, 47, 0, 2019);
     			attr_dev(b7, "class", "scr-b");
-    			add_location(b7, file$c, 49, 0, 2048);
+    			add_location(b7, file$d, 49, 0, 2048);
     			attr_dev(b8, "class", "scr-b");
-    			add_location(b8, file$c, 50, 0, 2117);
+    			add_location(b8, file$d, 50, 0, 2117);
     			attr_dev(b9, "class", "scr-b");
-    			add_location(b9, file$c, 51, 0, 2179);
+    			add_location(b9, file$d, 51, 0, 2179);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$c, 38, 2, 1659);
-    			add_location(br8, file$c, 58, 2, 2452);
+    			add_location(pre0, file$d, 38, 2, 1659);
+    			add_location(br8, file$d, 58, 2, 2452);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$c, 61, 4, 2527);
+    			add_location(small, file$d, 61, 4, 2527);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$c, 60, 2, 2495);
+    			add_location(center, file$d, 60, 2, 2495);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$c, 63, 2, 2608);
+    			add_location(pre1, file$d, 63, 2, 2608);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$c, 7, 0, 301);
+    			add_location(div, file$d, 7, 0, 301);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -14687,7 +14973,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$c.name,
+    		id: create_fragment$d.name,
     		type: "component",
     		source: "",
     		ctx
@@ -14696,7 +14982,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$c($$self, $$props, $$invalidate) {
+    function instance$d($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_ConfigurationBeforeEnter", slots, []);
     	const writable_props = [];
@@ -14718,13 +15004,13 @@ var app = (function () {
     class SCR_ConfigurationBeforeEnter extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$c, create_fragment$c, safe_not_equal, {});
+    		init(this, options, instance$d, create_fragment$d, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_ConfigurationBeforeEnter",
     			options,
-    			id: create_fragment$c.name
+    			id: create_fragment$d.name
     		});
     	}
     }
@@ -14736,9 +15022,9 @@ var app = (function () {
 
     /* src/docs/components/SCR_OnErrorAnatomy.svelte generated by Svelte v3.37.0 */
 
-    const file$b = "src/docs/components/SCR_OnErrorAnatomy.svelte";
+    const file$c = "src/docs/components/SCR_OnErrorAnatomy.svelte";
 
-    function create_fragment$b(ctx) {
+    function create_fragment$c(ctx) {
     	let h4;
     	let t1;
     	let p;
@@ -14968,63 +15254,63 @@ var app = (function () {
     			b21.textContent = "routeObjParams:";
     			t69 = text(" all the parameters passed until the moment of the\n        error, including any defined payload properties.");
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$b, 0, 0, 0);
-    			add_location(br0, file$b, 4, 2, 195);
+    			add_location(h4, file$c, 0, 0, 0);
+    			add_location(br0, file$c, 4, 2, 195);
     			attr_dev(p, "class", "scr-text-justify");
-    			add_location(p, file$b, 1, 0, 57);
+    			add_location(p, file$c, 1, 0, 57);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$b, 9, 0, 274);
+    			add_location(b0, file$c, 9, 0, 274);
     			attr_dev(pre, "class", "scr-pre");
-    			add_location(pre, file$b, 7, 0, 250);
-    			add_location(b1, file$b, 16, 4, 429);
-    			add_location(li0, file$b, 15, 2, 420);
-    			add_location(b2, file$b, 19, 4, 511);
-    			add_location(br1, file$b, 21, 4, 599);
-    			add_location(b3, file$b, 25, 8, 701);
-    			add_location(b4, file$b, 29, 14, 906);
-    			add_location(li1, file$b, 29, 10, 902);
-    			add_location(b5, file$b, 30, 14, 960);
-    			add_location(li2, file$b, 30, 10, 956);
-    			add_location(b6, file$b, 32, 12, 1033);
-    			add_location(li3, file$b, 31, 10, 1016);
-    			add_location(b7, file$b, 35, 12, 1145);
-    			add_location(li4, file$b, 34, 10, 1128);
-    			add_location(b8, file$b, 39, 12, 1277);
-    			add_location(li5, file$b, 38, 10, 1260);
-    			add_location(b9, file$b, 43, 12, 1432);
-    			add_location(li6, file$b, 42, 10, 1415);
-    			add_location(b10, file$b, 46, 14, 1576);
-    			add_location(li7, file$b, 46, 10, 1572);
-    			add_location(b11, file$b, 47, 14, 1650);
-    			add_location(li8, file$b, 47, 10, 1646);
-    			add_location(ul0, file$b, 28, 8, 887);
-    			add_location(li9, file$b, 24, 6, 688);
-    			add_location(br2, file$b, 50, 6, 1744);
-    			add_location(b12, file$b, 52, 8, 1770);
-    			add_location(b13, file$b, 56, 14, 1971);
-    			add_location(li10, file$b, 56, 10, 1967);
-    			add_location(b14, file$b, 57, 14, 2025);
-    			add_location(li11, file$b, 57, 10, 2021);
-    			add_location(b15, file$b, 59, 12, 2098);
-    			add_location(li12, file$b, 58, 10, 2081);
-    			add_location(b16, file$b, 62, 12, 2210);
-    			add_location(li13, file$b, 61, 10, 2193);
-    			add_location(b17, file$b, 66, 12, 2342);
-    			add_location(li14, file$b, 65, 10, 2325);
-    			add_location(b18, file$b, 70, 12, 2497);
-    			add_location(li15, file$b, 69, 10, 2480);
-    			add_location(b19, file$b, 73, 14, 2641);
-    			add_location(li16, file$b, 73, 10, 2637);
-    			add_location(b20, file$b, 74, 14, 2715);
-    			add_location(li17, file$b, 74, 10, 2711);
-    			add_location(ul1, file$b, 55, 8, 1952);
-    			add_location(li18, file$b, 51, 6, 1757);
-    			add_location(br3, file$b, 77, 6, 2809);
-    			add_location(b21, file$b, 79, 8, 2835);
-    			add_location(li19, file$b, 78, 6, 2822);
-    			add_location(ul2, file$b, 23, 4, 677);
-    			add_location(li20, file$b, 18, 2, 502);
-    			add_location(ul3, file$b, 14, 0, 413);
+    			add_location(pre, file$c, 7, 0, 250);
+    			add_location(b1, file$c, 16, 4, 429);
+    			add_location(li0, file$c, 15, 2, 420);
+    			add_location(b2, file$c, 19, 4, 511);
+    			add_location(br1, file$c, 21, 4, 599);
+    			add_location(b3, file$c, 25, 8, 701);
+    			add_location(b4, file$c, 29, 14, 906);
+    			add_location(li1, file$c, 29, 10, 902);
+    			add_location(b5, file$c, 30, 14, 960);
+    			add_location(li2, file$c, 30, 10, 956);
+    			add_location(b6, file$c, 32, 12, 1033);
+    			add_location(li3, file$c, 31, 10, 1016);
+    			add_location(b7, file$c, 35, 12, 1145);
+    			add_location(li4, file$c, 34, 10, 1128);
+    			add_location(b8, file$c, 39, 12, 1277);
+    			add_location(li5, file$c, 38, 10, 1260);
+    			add_location(b9, file$c, 43, 12, 1432);
+    			add_location(li6, file$c, 42, 10, 1415);
+    			add_location(b10, file$c, 46, 14, 1576);
+    			add_location(li7, file$c, 46, 10, 1572);
+    			add_location(b11, file$c, 47, 14, 1650);
+    			add_location(li8, file$c, 47, 10, 1646);
+    			add_location(ul0, file$c, 28, 8, 887);
+    			add_location(li9, file$c, 24, 6, 688);
+    			add_location(br2, file$c, 50, 6, 1744);
+    			add_location(b12, file$c, 52, 8, 1770);
+    			add_location(b13, file$c, 56, 14, 1971);
+    			add_location(li10, file$c, 56, 10, 1967);
+    			add_location(b14, file$c, 57, 14, 2025);
+    			add_location(li11, file$c, 57, 10, 2021);
+    			add_location(b15, file$c, 59, 12, 2098);
+    			add_location(li12, file$c, 58, 10, 2081);
+    			add_location(b16, file$c, 62, 12, 2210);
+    			add_location(li13, file$c, 61, 10, 2193);
+    			add_location(b17, file$c, 66, 12, 2342);
+    			add_location(li14, file$c, 65, 10, 2325);
+    			add_location(b18, file$c, 70, 12, 2497);
+    			add_location(li15, file$c, 69, 10, 2480);
+    			add_location(b19, file$c, 73, 14, 2641);
+    			add_location(li16, file$c, 73, 10, 2637);
+    			add_location(b20, file$c, 74, 14, 2715);
+    			add_location(li17, file$c, 74, 10, 2711);
+    			add_location(ul1, file$c, 55, 8, 1952);
+    			add_location(li18, file$c, 51, 6, 1757);
+    			add_location(br3, file$c, 77, 6, 2809);
+    			add_location(b21, file$c, 79, 8, 2835);
+    			add_location(li19, file$c, 78, 6, 2822);
+    			add_location(ul2, file$c, 23, 4, 677);
+    			add_location(li20, file$c, 18, 2, 502);
+    			add_location(ul3, file$c, 14, 0, 413);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -15148,7 +15434,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$b.name,
+    		id: create_fragment$c.name,
     		type: "component",
     		source: "",
     		ctx
@@ -15157,7 +15443,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$b($$self, $$props) {
+    function instance$c($$self, $$props) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_OnErrorAnatomy", slots, []);
     	const writable_props = [];
@@ -15172,22 +15458,22 @@ var app = (function () {
     class SCR_OnErrorAnatomy extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$b, create_fragment$b, safe_not_equal, {});
+    		init(this, options, instance$c, create_fragment$c, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_OnErrorAnatomy",
     			options,
-    			id: create_fragment$b.name
+    			id: create_fragment$c.name
     		});
     	}
     }
 
     /* src/docs/pages/SCR_ConfigurationOnError.svelte generated by Svelte v3.37.0 */
-    const file$a = "src/docs/pages/SCR_ConfigurationOnError.svelte";
+    const file$b = "src/docs/pages/SCR_ConfigurationOnError.svelte";
 
     // (19:12) <SCR_ROUTER_LINK       to={{ name: "routeComponentComponentsRoute" }}       elementProps={{ style: "display: inline; cursor: pointer;" }}     >
-    function create_default_slot_1$3(ctx) {
+    function create_default_slot_1$4(ctx) {
     	let a;
 
     	const block = {
@@ -15196,7 +15482,7 @@ var app = (function () {
     			a.textContent = "Route Component Components";
     			attr_dev(a, "href", "/");
     			set_style(a, "pointer-events", "none");
-    			add_location(a, file$a, 22, 6, 941);
+    			add_location(a, file$b, 22, 6, 941);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, a, anchor);
@@ -15208,7 +15494,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot_1$3.name,
+    		id: create_default_slot_1$4.name,
     		type: "slot",
     		source: "(19:12) <SCR_ROUTER_LINK       to={{ name: \\\"routeComponentComponentsRoute\\\" }}       elementProps={{ style: \\\"display: inline; cursor: pointer;\\\" }}     >",
     		ctx
@@ -15218,7 +15504,7 @@ var app = (function () {
     }
 
     // (53:2) <SCR_PageFooter>
-    function create_default_slot$a(ctx) {
+    function create_default_slot$b(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -15252,9 +15538,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$a, 54, 6, 2029);
+    			add_location(div0, file$b, 54, 6, 2029);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$a, 53, 4, 2005);
+    			add_location(div1, file$b, 53, 4, 2005);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -15285,7 +15571,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$a.name,
+    		id: create_default_slot$b.name,
     		type: "slot",
     		source: "(53:2) <SCR_PageFooter>",
     		ctx
@@ -15294,7 +15580,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$a(ctx) {
+    function create_fragment$b(ctx) {
     	let div;
     	let h4;
     	let t1;
@@ -15337,7 +15623,7 @@ var app = (function () {
     				elementProps: {
     					style: "display: inline; cursor: pointer;"
     				},
-    				$$slots: { default: [create_default_slot_1$3] },
+    				$$slots: { default: [create_default_slot_1$4] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -15347,7 +15633,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$a] },
+    				$$slots: { default: [create_default_slot$b] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -15397,30 +15683,30 @@ var app = (function () {
     			t22 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$a, 8, 2, 308);
-    			add_location(b0, file$a, 10, 8, 405);
-    			add_location(br0, file$a, 12, 4, 521);
-    			add_location(br1, file$a, 13, 4, 532);
-    			add_location(br2, file$a, 17, 4, 772);
+    			add_location(h4, file$b, 8, 2, 308);
+    			add_location(b0, file$b, 10, 8, 405);
+    			add_location(br0, file$b, 12, 4, 521);
+    			add_location(br1, file$b, 13, 4, 532);
+    			add_location(br2, file$b, 17, 4, 772);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$a, 9, 2, 368);
+    			add_location(p0, file$b, 9, 2, 368);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$a, 27, 0, 1087);
+    			add_location(b1, file$b, 27, 0, 1087);
     			attr_dev(b2, "class", "scr-b");
-    			add_location(b2, file$a, 30, 0, 1222);
+    			add_location(b2, file$b, 30, 0, 1222);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$a, 25, 2, 1061);
-    			add_location(br3, file$a, 33, 2, 1381);
+    			add_location(pre0, file$b, 25, 2, 1061);
+    			add_location(br3, file$b, 33, 2, 1381);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$a, 36, 2, 1418);
+    			add_location(p1, file$b, 36, 2, 1418);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$a, 41, 4, 1620);
+    			add_location(small, file$b, 41, 4, 1620);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$a, 40, 2, 1588);
+    			add_location(center, file$b, 40, 2, 1588);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$a, 43, 2, 1701);
+    			add_location(pre1, file$b, 43, 2, 1701);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$a, 7, 0, 283);
+    			add_location(div, file$b, 7, 0, 283);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -15501,7 +15787,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$a.name,
+    		id: create_fragment$b.name,
     		type: "component",
     		source: "",
     		ctx
@@ -15510,7 +15796,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$a($$self, $$props, $$invalidate) {
+    function instance$b($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_ConfigurationOnError", slots, []);
     	const writable_props = [];
@@ -15532,13 +15818,13 @@ var app = (function () {
     class SCR_ConfigurationOnError extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$a, create_fragment$a, safe_not_equal, {});
+    		init(this, options, instance$b, create_fragment$b, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_ConfigurationOnError",
     			options,
-    			id: create_fragment$a.name
+    			id: create_fragment$b.name
     		});
     	}
     }
@@ -15549,10 +15835,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_RouteObjectProperties.svelte generated by Svelte v3.37.0 */
-    const file$9 = "src/docs/pages/SCR_RouteObjectProperties.svelte";
+    const file$a = "src/docs/pages/SCR_RouteObjectProperties.svelte";
 
-    // (398:2) <SCR_PageFooter>
-    function create_default_slot$9(ctx) {
+    // (421:2) <SCR_PageFooter>
+    function create_default_slot$a(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -15586,9 +15872,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$9, 399, 6, 13405);
+    			add_location(div0, file$a, 422, 6, 14094);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$9, 398, 4, 13381);
+    			add_location(div1, file$a, 421, 4, 14070);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -15619,16 +15905,16 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$9.name,
+    		id: create_default_slot$a.name,
     		type: "slot",
-    		source: "(398:2) <SCR_PageFooter>",
+    		source: "(421:2) <SCR_PageFooter>",
     		ctx
     	});
 
     	return block;
     }
 
-    function create_fragment$9(ctx) {
+    function create_fragment$a(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -15664,237 +15950,253 @@ var app = (function () {
     	let t22;
     	let br3;
     	let t23;
+    	let br4;
     	let t24;
-    	let pre1;
-    	let b3;
+    	let br5;
+    	let t25;
+    	let br6;
     	let t26;
-    	let t27;
-    	let hr2;
+    	let b3;
     	let t28;
-    	let h43;
+    	let br7;
+    	let t29;
+    	let br8;
     	let t30;
-    	let p3;
     	let t31;
+    	let pre1;
     	let b4;
     	let t33;
-    	let br4;
-    	let t34;
-    	let br5;
-    	let t35;
-    	let t36;
-    	let pre2;
     	let b5;
-    	let t38;
+    	let t35;
     	let b6;
-    	let t40;
-    	let b7;
+    	let t37;
+    	let t38;
+    	let hr2;
+    	let t39;
+    	let h43;
+    	let t41;
+    	let p3;
     	let t42;
-    	let t43;
-    	let hr3;
+    	let b7;
     	let t44;
-    	let h44;
+    	let br9;
+    	let t45;
+    	let br10;
     	let t46;
-    	let p4;
     	let t47;
+    	let pre2;
     	let b8;
     	let t49;
-    	let br6;
-    	let t50;
-    	let br7;
-    	let t51;
-    	let t52;
-    	let pre3;
     	let b9;
-    	let t54;
+    	let t51;
     	let b10;
-    	let t56;
+    	let t53;
+    	let t54;
+    	let hr3;
+    	let t55;
+    	let h44;
     	let t57;
-    	let hr4;
+    	let p4;
     	let t58;
-    	let h45;
-    	let t60;
-    	let p5;
-    	let t61;
     	let b11;
+    	let t60;
+    	let br11;
+    	let t61;
+    	let br12;
+    	let t62;
     	let t63;
-    	let br8;
-    	let t64;
-    	let br9;
-    	let t65;
-    	let t66;
-    	let pre4;
+    	let pre3;
     	let b12;
-    	let t68;
+    	let t65;
     	let b13;
-    	let t70;
-    	let b14;
+    	let t67;
+    	let t68;
+    	let hr4;
+    	let t69;
+    	let h45;
+    	let t71;
+    	let p5;
     	let t72;
-    	let t73;
-    	let hr5;
+    	let b14;
     	let t74;
-    	let h46;
+    	let br13;
+    	let t75;
+    	let br14;
     	let t76;
-    	let p6;
     	let t77;
+    	let pre4;
     	let b15;
     	let t79;
-    	let br10;
-    	let t80;
-    	let br11;
-    	let t81;
-    	let t82;
-    	let pre5;
     	let b16;
-    	let t84;
+    	let t81;
     	let b17;
-    	let t86;
+    	let t83;
+    	let t84;
+    	let hr5;
+    	let t85;
+    	let h46;
     	let t87;
-    	let hr6;
+    	let p6;
     	let t88;
-    	let h47;
-    	let t90;
-    	let p7;
-    	let t91;
     	let b18;
+    	let t90;
+    	let br15;
+    	let t91;
+    	let br16;
+    	let t92;
     	let t93;
-    	let br12;
-    	let t94;
-    	let t95;
-    	let pre6;
+    	let pre5;
     	let b19;
+    	let t95;
+    	let b20;
     	let t97;
     	let t98;
-    	let hr7;
+    	let hr6;
     	let t99;
-    	let h48;
+    	let h47;
     	let t101;
-    	let p8;
+    	let p7;
     	let t102;
-    	let b20;
-    	let t104;
-    	let br13;
-    	let t105;
-    	let br14;
-    	let t106;
-    	let br15;
-    	let t107;
-    	let t108;
-    	let pre7;
     	let b21;
-    	let t110;
-    	let t111;
-    	let hr8;
-    	let t112;
-    	let h49;
-    	let t114;
-    	let p9;
-    	let t115;
+    	let t104;
+    	let br17;
+    	let t105;
+    	let t106;
+    	let pre6;
     	let b22;
-    	let t117;
-    	let t118;
-    	let pre8;
+    	let t108;
+    	let t109;
+    	let hr7;
+    	let t110;
+    	let h48;
+    	let t112;
+    	let p8;
+    	let t113;
     	let b23;
-    	let t120;
-    	let t121;
-    	let hr9;
-    	let t122;
-    	let h410;
-    	let t124;
-    	let p10;
-    	let t125;
+    	let t115;
+    	let br18;
+    	let t116;
+    	let br19;
+    	let t117;
+    	let br20;
+    	let t118;
+    	let t119;
+    	let pre7;
     	let b24;
-    	let t127;
-    	let t128;
-    	let pre9;
+    	let t121;
+    	let t122;
+    	let hr8;
+    	let t123;
+    	let h49;
+    	let t125;
+    	let p9;
+    	let t126;
     	let b25;
-    	let t130;
-    	let t131;
-    	let hr10;
-    	let t132;
-    	let h411;
-    	let t134;
-    	let p11;
-    	let t135;
+    	let t128;
+    	let t129;
+    	let pre8;
     	let b26;
-    	let t137;
+    	let t131;
+    	let t132;
+    	let hr9;
+    	let t133;
+    	let h410;
+    	let t135;
+    	let p10;
+    	let t136;
     	let b27;
+    	let t138;
     	let t139;
-    	let t140;
-    	let pre10;
+    	let pre9;
     	let b28;
+    	let t141;
     	let t142;
+    	let hr10;
     	let t143;
-    	let hr11;
-    	let t144;
-    	let h412;
+    	let h411;
+    	let t145;
+    	let p11;
     	let t146;
-    	let p12;
-    	let t147;
     	let b29;
-    	let t149;
-    	let t150;
-    	let pre11;
+    	let t148;
     	let b30;
-    	let t152;
-    	let t153;
-    	let hr12;
-    	let t154;
-    	let h413;
-    	let t156;
-    	let p13;
-    	let t157;
+    	let t150;
+    	let t151;
+    	let pre10;
     	let b31;
-    	let t159;
-    	let t160;
-    	let pre12;
+    	let t153;
+    	let t154;
+    	let hr11;
+    	let t155;
+    	let h412;
+    	let t157;
+    	let p12;
+    	let t158;
     	let b32;
-    	let t162;
-    	let t163;
-    	let hr13;
-    	let t164;
-    	let h414;
-    	let t166;
-    	let p14;
-    	let t167;
+    	let t160;
+    	let t161;
+    	let pre11;
     	let b33;
-    	let t169;
-    	let br16;
+    	let t163;
+    	let t164;
+    	let hr12;
+    	let t165;
+    	let h413;
+    	let t167;
+    	let p13;
+    	let t168;
+    	let b34;
     	let t170;
     	let t171;
-    	let pre13;
-    	let b34;
+    	let pre12;
+    	let b35;
     	let t173;
     	let t174;
-    	let hr14;
+    	let hr13;
     	let t175;
-    	let h415;
+    	let h414;
     	let t177;
-    	let p15;
+    	let p14;
     	let t178;
-    	let b35;
-    	let t180;
-    	let br17;
-    	let t181;
-    	let br18;
-    	let t182;
-    	let t183;
-    	let pre14;
     	let b36;
+    	let t180;
+    	let br21;
+    	let t181;
+    	let t182;
+    	let pre13;
+    	let b37;
+    	let t184;
     	let t185;
+    	let hr14;
     	let t186;
-    	let p16;
+    	let h415;
     	let t188;
+    	let p15;
+    	let t189;
+    	let b38;
+    	let t191;
+    	let br22;
+    	let t192;
+    	let br23;
+    	let t193;
+    	let t194;
+    	let pre14;
+    	let b39;
+    	let t196;
+    	let t197;
+    	let p16;
+    	let t199;
     	let center;
     	let small;
-    	let t190;
+    	let t201;
     	let pre15;
-    	let t192;
+    	let t203;
     	let scr_pagefooter;
     	let current;
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$9] },
+    				$$slots: { default: [create_default_slot$a] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -15942,494 +16244,523 @@ var app = (function () {
     			br2 = element("br");
     			t22 = space();
     			br3 = element("br");
-    			t23 = text("\n    As it is an identification property must be unique. If some route is declared\n    with the same path, it will always find the first route with that path and route\n    to it.");
+    			t23 = text("\n    As it is an identification property must be unique. If some route is declared\n    with the same path, it will always find the first route with that path and route\n    to it.\n    ");
+    			br4 = element("br");
     			t24 = space();
-    			pre1 = element("pre");
+    			br5 = element("br");
+    			t25 = text("\n    You can use regex in your route like \":myVar\". For example:\n    ");
+    			br6 = element("br");
+    			t26 = space();
     			b3 = element("b");
-    			b3.textContent = "// ## Route Path\n// ## The path identifying this route\n// ## String - Obrigatory\n// ## Default value: none";
-    			t26 = text("\n{\n  path: \"/path/to/my/route\",\n}");
-    			t27 = space();
-    			hr2 = element("hr");
+    			b3.textContent = "path: \"/path/:someVar/my/route/:someOtherVar\",";
     			t28 = space();
+    			br7 = element("br");
+    			t29 = space();
+    			br8 = element("br");
+    			t30 = text("\n    It will be made available on all beforeEnter Functions, After Enter Function and Components;");
+    			t31 = space();
+    			pre1 = element("pre");
+    			b4 = element("b");
+    			b4.textContent = "// ## Route Path\n// ## The path identifying this route\n// ## String - Obrigatory\n// ## Can declare regex like /test1/:paramA/test2/:paramB\n// ## The regex must have the format \":string\"\n// ## Default value: none";
+    			t33 = text("\n{\n  path: \"/path/to/my/route\",\n\n  ");
+    			b5 = element("b");
+    			b5.textContent = "// OR Can declare regex path\n  // it will be made available on all beforeEnter Functions, After Enter Function and Component";
+    			t35 = text("\n  path: \"/path/:to/:my/route\",\n\n  ");
+    			b6 = element("b");
+    			b6.textContent = "// pathParams: {\n  //  to: \"myroutedefinedvalue\"\n  //  my: \"myroutedefinedvalue\"\n  // }";
+    			t37 = text("\n}");
+    			t38 = space();
+    			hr2 = element("hr");
+    			t39 = space();
     			h43 = element("h4");
     			h43.textContent = "Component";
-    			t30 = space();
+    			t41 = space();
     			p3 = element("p");
-    			t31 = text("The ");
-    			b4 = element("b");
-    			b4.textContent = "component";
-    			t33 = text(" is partially mandatory. This is because if the route\n    only redirects, it will not use the loaded component.\n    ");
-    			br4 = element("br");
-    			t34 = space();
-    			br5 = element("br");
-    			t35 = text("\n    The component specified will be included inside the default slot of the Layout\n    Component.");
-    			t36 = space();
-    			pre2 = element("pre");
-    			b5 = element("b");
-    			b5.textContent = "// ## Component - the loaded component that is going to be used \n// for this route\n// ## Function - Imported component for this route\n// ## Default value: none";
-    			t38 = text("\n\n");
-    			b6 = element("b");
-    			b6.textContent = "// Import your component";
-    			t40 = text("\nimport SCR_C1 from \"./testComponents/SCR_C1.svelte\";\n\n{\n  ");
+    			t42 = text("The ");
     			b7 = element("b");
-    			b7.textContent = "// Setting your route component";
-    			t42 = text("\n  component: SCR_C1,\n}");
-    			t43 = space();
+    			b7.textContent = "component";
+    			t44 = text(" is partially mandatory. This is because if the route\n    only redirects, it will not use the loaded component.\n    ");
+    			br9 = element("br");
+    			t45 = space();
+    			br10 = element("br");
+    			t46 = text("\n    The component specified will be included inside the default slot of the Layout\n    Component.");
+    			t47 = space();
+    			pre2 = element("pre");
+    			b8 = element("b");
+    			b8.textContent = "// ## Component - the loaded component that is going to be used \n// for this route\n// ## Function - Imported component for this route\n// ## Default value: none";
+    			t49 = text("\n\n");
+    			b9 = element("b");
+    			b9.textContent = "// Import your component";
+    			t51 = text("\nimport SCR_C1 from \"./testComponents/SCR_C1.svelte\";\n\n{\n  ");
+    			b10 = element("b");
+    			b10.textContent = "// Setting your route component";
+    			t53 = text("\n  component: SCR_C1,\n}");
+    			t54 = space();
     			hr3 = element("hr");
-    			t44 = space();
+    			t55 = space();
     			h44 = element("h4");
     			h44.textContent = "Lazy Load Component";
-    			t46 = space();
-    			p4 = element("p");
-    			t47 = text("The ");
-    			b8 = element("b");
-    			b8.textContent = "lazyLoadComponent";
-    			t49 = text(" is partially mandatory. This is because if the\n    route only redirects, it will not load any component.\n    ");
-    			br6 = element("br");
-    			t50 = space();
-    			br7 = element("br");
-    			t51 = text("\n    The component specified will be included inside the default slot of the Layout\n    Component.");
-    			t52 = space();
-    			pre3 = element("pre");
-    			b9 = element("b");
-    			b9.textContent = "// ## Lazy Load Component - the component that must be loaded to be used \n// ## for this route\n// ## Function - Function to load the component for this route\n// ## Default value: none";
-    			t54 = text("\n\n{\n  ");
-    			b10 = element("b");
-    			b10.textContent = "// Lazy loading your route component";
-    			t56 = text("\n  lazyLoadComponent: () => import(\"./testComponents/SCR_C1.svelte\"),\n}");
     			t57 = space();
+    			p4 = element("p");
+    			t58 = text("The ");
+    			b11 = element("b");
+    			b11.textContent = "lazyLoadComponent";
+    			t60 = text(" is partially mandatory. This is because if the\n    route only redirects, it will not load any component.\n    ");
+    			br11 = element("br");
+    			t61 = space();
+    			br12 = element("br");
+    			t62 = text("\n    The component specified will be included inside the default slot of the Layout\n    Component.");
+    			t63 = space();
+    			pre3 = element("pre");
+    			b12 = element("b");
+    			b12.textContent = "// ## Lazy Load Component - the component that must be loaded to be used \n// ## for this route\n// ## Function - Function to load the component for this route\n// ## Default value: none";
+    			t65 = text("\n\n{\n  ");
+    			b13 = element("b");
+    			b13.textContent = "// Lazy loading your route component";
+    			t67 = text("\n  lazyLoadComponent: () => import(\"./testComponents/SCR_C1.svelte\"),\n}");
+    			t68 = space();
     			hr4 = element("hr");
-    			t58 = space();
+    			t69 = space();
     			h45 = element("h4");
     			h45.textContent = "Layout Component";
-    			t60 = space();
+    			t71 = space();
     			p5 = element("p");
-    			t61 = text("The ");
-    			b11 = element("b");
-    			b11.textContent = "layoutComponent";
-    			t63 = text(" is a custom loaded layout to use with this\n    specific route. When set it will override any global layout set for this\n    route only.\n    ");
-    			br8 = element("br");
-    			t64 = space();
-    			br9 = element("br");
-    			t65 = text("\n    The layout component specified must have a default slot declared to include route\n    component.");
-    			t66 = space();
-    			pre4 = element("pre");
-    			b12 = element("b");
-    			b12.textContent = "// ## Layout Component - the layout component that is going to be used \n// ## for this route\n// ## Function - Imported layout component for this route\n// ## Default value: none";
-    			t68 = text("\n\n");
-    			b13 = element("b");
-    			b13.textContent = "// Import your component";
-    			t70 = text("\nimport SRC_Layout from \"./testComponents/SRC_Layout.svelte\";\n\n{\n  ");
+    			t72 = text("The ");
     			b14 = element("b");
-    			b14.textContent = "// Setting your route layout component";
-    			t72 = text("\n  layoutComponent: SRC_Layout,\n}");
-    			t73 = space();
+    			b14.textContent = "layoutComponent";
+    			t74 = text(" is a custom loaded layout to use with this\n    specific route. When set it will override any global layout set for this\n    route only.\n    ");
+    			br13 = element("br");
+    			t75 = space();
+    			br14 = element("br");
+    			t76 = text("\n    The layout component specified must have a default slot declared to include route\n    component.");
+    			t77 = space();
+    			pre4 = element("pre");
+    			b15 = element("b");
+    			b15.textContent = "// ## Layout Component - the layout component that is going to be used \n// ## for this route\n// ## Function - Imported layout component for this route\n// ## Default value: none";
+    			t79 = text("\n\n");
+    			b16 = element("b");
+    			b16.textContent = "// Import your component";
+    			t81 = text("\nimport SRC_Layout from \"./testComponents/SRC_Layout.svelte\";\n\n{\n  ");
+    			b17 = element("b");
+    			b17.textContent = "// Setting your route layout component";
+    			t83 = text("\n  layoutComponent: SRC_Layout,\n}");
+    			t84 = space();
     			hr5 = element("hr");
-    			t74 = space();
+    			t85 = space();
     			h46 = element("h4");
     			h46.textContent = "Lazy Load Layout Component";
-    			t76 = space();
-    			p6 = element("p");
-    			t77 = text("The ");
-    			b15 = element("b");
-    			b15.textContent = "lazyLoadLayoutComponent";
-    			t79 = text(" is a custom layout to be loaded to use\n    with this specific route. When set it will override any global layout set\n    for this route only.\n    ");
-    			br10 = element("br");
-    			t80 = space();
-    			br11 = element("br");
-    			t81 = text("\n    The lazy layout component specified must have a default slot declared to include\n    route component.");
-    			t82 = space();
-    			pre5 = element("pre");
-    			b16 = element("b");
-    			b16.textContent = "// ## Lazy Load Layout Component - the layout component that must be loaded to be used \n// ## for this route\n// ## Function - Function to load the layout component for this route\n// ## Default value: none";
-    			t84 = text("\n\n{\n  ");
-    			b17 = element("b");
-    			b17.textContent = "// Lazy loading your route layout component";
-    			t86 = text("\n  lazyLoadLayoutComponent: () => import(\"./testComponents/SRC_Layout.svelte\"),\n}");
     			t87 = space();
+    			p6 = element("p");
+    			t88 = text("The ");
+    			b18 = element("b");
+    			b18.textContent = "lazyLoadLayoutComponent";
+    			t90 = text(" is a custom layout to be loaded to use\n    with this specific route. When set it will override any global layout set\n    for this route only.\n    ");
+    			br15 = element("br");
+    			t91 = space();
+    			br16 = element("br");
+    			t92 = text("\n    The lazy layout component specified must have a default slot declared to include\n    route component.");
+    			t93 = space();
+    			pre5 = element("pre");
+    			b19 = element("b");
+    			b19.textContent = "// ## Lazy Load Layout Component - the layout component that must be loaded to be used \n// ## for this route\n// ## Function - Function to load the layout component for this route\n// ## Default value: none";
+    			t95 = text("\n\n{\n  ");
+    			b20 = element("b");
+    			b20.textContent = "// Lazy loading your route layout component";
+    			t97 = text("\n  lazyLoadLayoutComponent: () => import(\"./testComponents/SRC_Layout.svelte\"),\n}");
+    			t98 = space();
     			hr6 = element("hr");
-    			t88 = space();
+    			t99 = space();
     			h47 = element("h4");
     			h47.textContent = "Params";
-    			t90 = space();
+    			t101 = space();
     			p7 = element("p");
-    			t91 = text("The ");
-    			b18 = element("b");
-    			b18.textContent = "params";
-    			t93 = text(" option is an object that must be available on before enter\n    functions or even the components.\n    ");
-    			br12 = element("br");
-    			t94 = text("\n    It will be available at any moment for you. Of course this is some fixed values.\n    See the payload param in the before enter sections to pass some custom values\n    between functions.");
-    			t95 = space();
+    			t102 = text("The ");
+    			b21 = element("b");
+    			b21.textContent = "params";
+    			t104 = text(" option is an object that must be available on before enter\n    functions or even the components.\n    ");
+    			br17 = element("br");
+    			t105 = text("\n    It will be available at any moment for you. Of course this is some fixed values.\n    See the payload param in the before enter sections to pass some custom values\n    between functions.");
+    			t106 = space();
     			pre6 = element("pre");
-    			b19 = element("b");
-    			b19.textContent = "// ## Params - all the params the should be available\n// for this route on any Before Enter Execution or \n// After Before Enter Execution\n// ## Object\n// ## Default value: {}";
-    			t97 = text("\n{\n  params: { \n    myParam: \"My Custom Param\", \n  },\n}");
-    			t98 = space();
+    			b22 = element("b");
+    			b22.textContent = "// ## Params - all the params the should be available\n// for this route on any Before Enter Execution or \n// After Before Enter Execution\n// ## Object\n// ## Default value: {}";
+    			t108 = text("\n{\n  params: { \n    myParam: \"My Custom Param\", \n  },\n}");
+    			t109 = space();
     			hr7 = element("hr");
-    			t99 = space();
+    			t110 = space();
     			h48 = element("h4");
     			h48.textContent = "Loading Props";
-    			t101 = space();
-    			p8 = element("p");
-    			t102 = text("The ");
-    			b20 = element("b");
-    			b20.textContent = "loadingProps";
-    			t104 = text(" option is an object that will be available on\n    loading component.\n    ");
-    			br13 = element("br");
-    			t105 = text("\n    When routing the user may be waiting for some request to return and for that\n    SCR makes available a loading component. Of course you can override it and you\n    are encouraged to do so.\n    ");
-    			br14 = element("br");
-    			t106 = space();
-    			br15 = element("br");
-    			t107 = text("\n    Any properties set here will be delivered to the loading component.");
-    			t108 = space();
-    			pre7 = element("pre");
-    			b21 = element("b");
-    			b21.textContent = "// ## Loading Props - all props that must be available to\n// loading component when it is triggered\n// ## Object\n// ## Default value: {}";
-    			t110 = text("\n{\n  loadingProps: { loadingText: \"Carregando...\" },\n}");
-    			t111 = space();
-    			hr8 = element("hr");
     			t112 = space();
+    			p8 = element("p");
+    			t113 = text("The ");
+    			b23 = element("b");
+    			b23.textContent = "loadingProps";
+    			t115 = text(" option is an object that will be available on\n    loading component.\n    ");
+    			br18 = element("br");
+    			t116 = text("\n    When routing the user may be waiting for some request to return and for that\n    SCR makes available a loading component. Of course you can override it and you\n    are encouraged to do so.\n    ");
+    			br19 = element("br");
+    			t117 = space();
+    			br20 = element("br");
+    			t118 = text("\n    Any properties set here will be delivered to the loading component.");
+    			t119 = space();
+    			pre7 = element("pre");
+    			b24 = element("b");
+    			b24.textContent = "// ## Loading Props - all props that must be available to\n// loading component when it is triggered\n// ## Object\n// ## Default value: {}";
+    			t121 = text("\n{\n  loadingProps: { loadingText: \"Carregando...\" },\n}");
+    			t122 = space();
+    			hr8 = element("hr");
+    			t123 = space();
     			h49 = element("h4");
     			h49.textContent = "Ignore Layout";
-    			t114 = space();
+    			t125 = space();
     			p9 = element("p");
-    			t115 = text("The ");
-    			b22 = element("b");
-    			b22.textContent = "ignoreLayout";
-    			t117 = text(" option when set to true, ignores any layout defined to\n    this specific route.");
-    			t118 = space();
+    			t126 = text("The ");
+    			b25 = element("b");
+    			b25.textContent = "ignoreLayout";
+    			t128 = text(" option when set to true, ignores any layout defined to\n    this specific route.");
+    			t129 = space();
     			pre8 = element("pre");
-    			b23 = element("b");
-    			b23.textContent = "// ## Ignore Layout - if should ignore layout component\n// ## when you do not want to use global or local layout component\n// ## Boolean\n// ## Default value: false";
-    			t120 = text("\n{\n  ignoreLayout: false,\n}");
-    			t121 = space();
+    			b26 = element("b");
+    			b26.textContent = "// ## Ignore Layout - if should ignore layout component\n// ## when you do not want to use global or local layout component\n// ## Boolean\n// ## Default value: false";
+    			t131 = text("\n{\n  ignoreLayout: false,\n}");
+    			t132 = space();
     			hr9 = element("hr");
-    			t122 = space();
+    			t133 = space();
     			h410 = element("h4");
     			h410.textContent = "Ignore Scroll";
-    			t124 = space();
+    			t135 = space();
     			p10 = element("p");
-    			t125 = text("The ");
-    			b24 = element("b");
-    			b24.textContent = "ignoreScroll";
-    			t127 = text(" option when set to true, ignores any scroll behaviour\n    defined.");
-    			t128 = space();
+    			t136 = text("The ");
+    			b27 = element("b");
+    			b27.textContent = "ignoreScroll";
+    			t138 = text(" option when set to true, ignores any scroll behaviour\n    defined.");
+    			t139 = space();
     			pre9 = element("pre");
-    			b25 = element("b");
-    			b25.textContent = "// ## Ignore Scroll - if this route should ignore scrolling\n// ## Boolean\n// ## Default value: false";
-    			t130 = text("\n{\n  ignoreScroll: false,\n}");
-    			t131 = space();
+    			b28 = element("b");
+    			b28.textContent = "// ## Ignore Scroll - if this route should ignore scrolling\n// ## Boolean\n// ## Default value: false";
+    			t141 = text("\n{\n  ignoreScroll: false,\n}");
+    			t142 = space();
     			hr10 = element("hr");
-    			t132 = space();
+    			t143 = space();
     			h411 = element("h4");
     			h411.textContent = "Scroll Props";
-    			t134 = space();
+    			t145 = space();
     			p11 = element("p");
-    			t135 = text("The ");
-    			b26 = element("b");
-    			b26.textContent = "scrollProps";
-    			t137 = text(" option overrides the store ");
-    			b27 = element("b");
-    			b27.textContent = "scrollProps";
-    			t139 = text(" configuration\n    for this specific route.");
-    			t140 = space();
+    			t146 = text("The ");
+    			b29 = element("b");
+    			b29.textContent = "scrollProps";
+    			t148 = text(" option overrides the store ");
+    			b30 = element("b");
+    			b30.textContent = "scrollProps";
+    			t150 = text(" configuration\n    for this specific route.");
+    			t151 = space();
     			pre10 = element("pre");
-    			b28 = element("b");
-    			b28.textContent = "// ## Scroll Props\n// ## The scrolling props on entering the route if enabled\n// ## Default Values: \n// ## Object\n// ## Default value: configuration store";
-    			t142 = text("\n{\n  scrollProps: {\n    top: 0,\n    left: 0,\n    behavior: \"smooth\",\n    timeout: 10, // timeout must be greater than 10 milliseconds\n  },\n}");
-    			t143 = space();
+    			b31 = element("b");
+    			b31.textContent = "// ## Scroll Props\n// ## The scrolling props on entering the route if enabled\n// ## Default Values: \n// ## Object\n// ## Default value: configuration store";
+    			t153 = text("\n{\n  scrollProps: {\n    top: 0,\n    left: 0,\n    behavior: \"smooth\",\n    timeout: 10, // timeout must be greater than 10 milliseconds\n  },\n}");
+    			t154 = space();
     			hr11 = element("hr");
-    			t144 = space();
+    			t155 = space();
     			h412 = element("h4");
     			h412.textContent = "Title";
-    			t146 = space();
+    			t157 = space();
     			p12 = element("p");
-    			t147 = text("The ");
-    			b29 = element("b");
-    			b29.textContent = "title";
-    			t149 = text(" option sets when enters the route the page title.");
-    			t150 = space();
+    			t158 = text("The ");
+    			b32 = element("b");
+    			b32.textContent = "title";
+    			t160 = text(" option sets when enters the route the page title.");
+    			t161 = space();
     			pre11 = element("pre");
-    			b30 = element("b");
-    			b30.textContent = "// ## Title - it defines the route title\n// ## String\n// ## Default value: none";
-    			t152 = text("\n{\n  title: \"Route Object - Options\",\n}");
-    			t153 = space();
+    			b33 = element("b");
+    			b33.textContent = "// ## Title - it defines the route title\n// ## String\n// ## Default value: none";
+    			t163 = text("\n{\n  title: \"Route Object - Options\",\n}");
+    			t164 = space();
     			hr12 = element("hr");
-    			t154 = space();
+    			t165 = space();
     			h413 = element("h4");
     			h413.textContent = "Ignore Global Before Function";
-    			t156 = space();
+    			t167 = space();
     			p13 = element("p");
-    			t157 = text("The ");
-    			b31 = element("b");
-    			b31.textContent = "ignoreGlobalBeforeFunction";
-    			t159 = text(" option when is true will not execute any\n    Global Before Enter functions for this specific route.");
-    			t160 = space();
+    			t168 = text("The ");
+    			b34 = element("b");
+    			b34.textContent = "ignoreGlobalBeforeFunction";
+    			t170 = text(" option when is true will not execute any\n    Global Before Enter functions for this specific route.");
+    			t171 = space();
     			pre12 = element("pre");
-    			b32 = element("b");
-    			b32.textContent = "// ## Ignore Global Before Function - \n// ## if should ignore defined global before function \n// ## Boolean\n// ## Default value: false";
-    			t162 = text("\n{\n  ignoreGlobalBeforeFunction: false,\n}");
-    			t163 = space();
+    			b35 = element("b");
+    			b35.textContent = "// ## Ignore Global Before Function - \n// ## if should ignore defined global before function \n// ## Boolean\n// ## Default value: false";
+    			t173 = text("\n{\n  ignoreGlobalBeforeFunction: false,\n}");
+    			t174 = space();
     			hr13 = element("hr");
-    			t164 = space();
+    			t175 = space();
     			h414 = element("h4");
     			h414.textContent = "Execute Route BEF Before Global BEF";
-    			t166 = space();
+    			t177 = space();
     			p14 = element("p");
-    			t167 = text("The ");
-    			b33 = element("b");
-    			b33.textContent = "executeRouteBEFBeforeGlobalBEF";
-    			t169 = text(" option when is true will modify\n    the default behaviour of the SCR. The SCR always runs Global Before Enter\n    Functions before Route Before Enter Functions, but is different when this\n    option is true.\n    ");
-    			br16 = element("br");
-    			t170 = text("\n    When set to true it will execute Route Before Functions before Global Before\n    Functions.");
-    			t171 = space();
+    			t178 = text("The ");
+    			b36 = element("b");
+    			b36.textContent = "executeRouteBEFBeforeGlobalBEF";
+    			t180 = text(" option when is true will modify\n    the default behaviour of the SCR. The SCR always runs Global Before Enter\n    Functions before Route Before Enter Functions, but is different when this\n    option is true.\n    ");
+    			br21 = element("br");
+    			t181 = text("\n    When set to true it will execute Route Before Functions before Global Before\n    Functions.");
+    			t182 = space();
     			pre13 = element("pre");
-    			b34 = element("b");
-    			b34.textContent = "// ## Execute Route Before Enter Function Before Global Before Function \n// ## if should execute route before function sequence before \n// ## global before enter execution\n// ## Boolean \n// ## Default value: false";
-    			t173 = text("\n{\n  executeRouteBEFBeforeGlobalBEF: false,\n}");
-    			t174 = space();
+    			b37 = element("b");
+    			b37.textContent = "// ## Execute Route Before Enter Function Before Global Before Function \n// ## if should execute route before function sequence before \n// ## global before enter execution\n// ## Boolean \n// ## Default value: false";
+    			t184 = text("\n{\n  executeRouteBEFBeforeGlobalBEF: false,\n}");
+    			t185 = space();
     			hr14 = element("hr");
-    			t175 = space();
+    			t186 = space();
     			h415 = element("h4");
     			h415.textContent = "Force Reload";
-    			t177 = space();
+    			t188 = space();
     			p15 = element("p");
-    			t178 = text("The ");
-    			b35 = element("b");
-    			b35.textContent = "forceReload";
-    			t180 = text(" option when is true will not reload the route when\n    the route is already loaded. The user may click in a button that pushes to\n    the current route. The default behaviour is just not to reload the route.\n    ");
-    			br17 = element("br");
-    			t181 = space();
-    			br18 = element("br");
-    			t182 = text("\n    But maybe this is a feature you want to execute.");
-    			t183 = space();
+    			t189 = text("The ");
+    			b38 = element("b");
+    			b38.textContent = "forceReload";
+    			t191 = text(" option when is true will not reload the route when\n    the route is already loaded. The user may click in a button that pushes to\n    the current route. The default behaviour is just not to reload the route.\n    ");
+    			br22 = element("br");
+    			t192 = space();
+    			br23 = element("br");
+    			t193 = text("\n    But maybe this is a feature you want to execute.");
+    			t194 = space();
     			pre14 = element("pre");
-    			b36 = element("b");
-    			b36.textContent = "// ## Force Reload - when in opened route try to push the same route\n// by using pushRoute function\n// When enabled it will reload the current route as if it was not opened\n// ## Boolean\n// ## Default value: false";
-    			t185 = text("\n{\n  forceReload: false,\n}");
-    			t186 = space();
+    			b39 = element("b");
+    			b39.textContent = "// ## Force Reload - when in opened route try to push the same route\n// by using pushRoute function\n// When enabled it will reload the current route as if it was not opened\n// ## Boolean\n// ## Default value: false";
+    			t196 = text("\n{\n  forceReload: false,\n}");
+    			t197 = space();
     			p16 = element("p");
     			p16.textContent = "So that is it for this section. But it is not the end of the Route Options.\n    See the next section to more info.";
-    			t188 = space();
+    			t199 = space();
     			center = element("center");
     			small = element("small");
     			small.textContent = "The configuration for this route.";
-    			t190 = space();
+    			t201 = space();
     			pre15 = element("pre");
     			pre15.textContent = "{\n    name: \"routeObjectOptionsRoute\",\n    path: \"/svelte-client-router/routeObjectOptions\",\n    lazyLoadComponent: () => import(\"./docs/pages/SCR_RouteObjectProperties.svelte\"),\n    title: \"SCR - Route Object - Options\",\n}";
-    			t192 = space();
+    			t203 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h40, "class", "scr-h4");
-    			add_location(h40, file$9, 6, 2, 180);
-    			add_location(br0, file$9, 10, 4, 372);
+    			add_location(h40, file$a, 6, 2, 180);
+    			add_location(br0, file$a, 10, 4, 372);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$9, 7, 2, 232);
+    			add_location(p0, file$a, 7, 2, 232);
     			attr_dev(hr0, "class", "scr-hr");
-    			add_location(hr0, file$9, 15, 2, 589);
+    			add_location(hr0, file$a, 15, 2, 589);
     			attr_dev(h41, "class", "scr-h4");
-    			add_location(h41, file$9, 16, 2, 613);
-    			add_location(b0, file$9, 18, 8, 681);
-    			add_location(br1, file$9, 20, 4, 774);
+    			add_location(h41, file$a, 16, 2, 613);
+    			add_location(b0, file$a, 18, 8, 681);
+    			add_location(br1, file$a, 20, 4, 774);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$9, 17, 2, 644);
+    			add_location(p1, file$a, 17, 2, 644);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$9, 27, 0, 994);
+    			add_location(b1, file$a, 27, 0, 994);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$9, 25, 2, 968);
+    			add_location(pre0, file$a, 25, 2, 968);
     			attr_dev(hr1, "class", "scr-hr");
-    			add_location(hr1, file$9, 39, 2, 1357);
+    			add_location(hr1, file$a, 39, 2, 1357);
     			attr_dev(h42, "class", "scr-h4");
-    			add_location(h42, file$9, 40, 2, 1381);
-    			add_location(b2, file$9, 42, 8, 1449);
-    			add_location(br2, file$9, 43, 4, 1510);
-    			add_location(br3, file$9, 44, 4, 1521);
+    			add_location(h42, file$a, 40, 2, 1381);
+    			add_location(b2, file$a, 42, 8, 1449);
+    			add_location(br2, file$a, 43, 4, 1510);
+    			add_location(br3, file$a, 44, 4, 1521);
+    			add_location(br4, file$a, 48, 4, 1710);
+    			add_location(br5, file$a, 49, 4, 1721);
+    			add_location(br6, file$a, 51, 4, 1796);
+    			add_location(b3, file$a, 52, 4, 1807);
+    			add_location(br7, file$a, 53, 4, 1865);
+    			add_location(br8, file$a, 54, 4, 1876);
     			attr_dev(p2, "class", "scr-text-justify");
-    			add_location(p2, file$9, 41, 2, 1412);
-    			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$9, 51, 0, 1741);
-    			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$9, 49, 2, 1715);
-    			attr_dev(hr2, "class", "scr-hr");
-    			add_location(hr2, file$9, 63, 2, 2103);
-    			attr_dev(h43, "class", "scr-h4");
-    			add_location(h43, file$9, 64, 2, 2127);
-    			add_location(b4, file$9, 66, 8, 2200);
-    			add_location(br4, file$9, 68, 4, 2332);
-    			add_location(br5, file$9, 69, 4, 2343);
-    			attr_dev(p3, "class", "scr-text-justify");
-    			add_location(p3, file$9, 65, 2, 2163);
+    			add_location(p2, file$a, 41, 2, 1412);
+    			attr_dev(b4, "class", "scr-b");
+    			add_location(b4, file$a, 59, 0, 2015);
     			attr_dev(b5, "class", "scr-b");
-    			add_location(b5, file$9, 75, 0, 2483);
+    			add_location(b5, file$a, 70, 2, 2289);
     			attr_dev(b6, "class", "scr-b");
-    			add_location(b6, file$9, 82, 0, 2667);
-    			attr_dev(b7, "class", "scr-b");
-    			add_location(b7, file$9, 86, 2, 2776);
-    			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$9, 73, 2, 2457);
-    			attr_dev(hr3, "class", "scr-hr");
-    			add_location(hr3, file$9, 92, 2, 3044);
-    			attr_dev(h44, "class", "scr-h4");
-    			add_location(h44, file$9, 93, 2, 3068);
-    			add_location(b8, file$9, 95, 8, 3151);
-    			add_location(br6, file$9, 97, 4, 3285);
-    			add_location(br7, file$9, 98, 4, 3296);
-    			attr_dev(p4, "class", "scr-text-justify");
-    			add_location(p4, file$9, 94, 2, 3114);
+    			add_location(b6, file$a, 76, 2, 2473);
+    			attr_dev(pre1, "class", "scr-pre");
+    			add_location(pre1, file$a, 57, 2, 1989);
+    			attr_dev(hr2, "class", "scr-hr");
+    			add_location(hr2, file$a, 86, 2, 2792);
+    			attr_dev(h43, "class", "scr-h4");
+    			add_location(h43, file$a, 87, 2, 2816);
+    			add_location(b7, file$a, 89, 8, 2889);
+    			add_location(br9, file$a, 91, 4, 3021);
+    			add_location(br10, file$a, 92, 4, 3032);
+    			attr_dev(p3, "class", "scr-text-justify");
+    			add_location(p3, file$a, 88, 2, 2852);
+    			attr_dev(b8, "class", "scr-b");
+    			add_location(b8, file$a, 98, 0, 3172);
     			attr_dev(b9, "class", "scr-b");
-    			add_location(b9, file$9, 104, 0, 3436);
+    			add_location(b9, file$a, 105, 0, 3356);
     			attr_dev(b10, "class", "scr-b");
-    			add_location(b10, file$9, 112, 2, 3653);
-    			attr_dev(pre3, "class", "scr-pre");
-    			add_location(pre3, file$9, 102, 2, 3410);
-    			attr_dev(hr4, "class", "scr-hr");
-    			add_location(hr4, file$9, 118, 2, 3976);
-    			attr_dev(h45, "class", "scr-h4");
-    			add_location(h45, file$9, 119, 2, 4000);
-    			add_location(b11, file$9, 121, 8, 4080);
-    			add_location(br8, file$9, 124, 4, 4243);
-    			add_location(br9, file$9, 125, 4, 4254);
-    			attr_dev(p5, "class", "scr-text-justify");
-    			add_location(p5, file$9, 120, 2, 4043);
+    			add_location(b10, file$a, 109, 2, 3465);
+    			attr_dev(pre2, "class", "scr-pre");
+    			add_location(pre2, file$a, 96, 2, 3146);
+    			attr_dev(hr3, "class", "scr-hr");
+    			add_location(hr3, file$a, 115, 2, 3733);
+    			attr_dev(h44, "class", "scr-h4");
+    			add_location(h44, file$a, 116, 2, 3757);
+    			add_location(b11, file$a, 118, 8, 3840);
+    			add_location(br11, file$a, 120, 4, 3974);
+    			add_location(br12, file$a, 121, 4, 3985);
+    			attr_dev(p4, "class", "scr-text-justify");
+    			add_location(p4, file$a, 117, 2, 3803);
     			attr_dev(b12, "class", "scr-b");
-    			add_location(b12, file$9, 131, 0, 4397);
+    			add_location(b12, file$a, 127, 0, 4125);
     			attr_dev(b13, "class", "scr-b");
-    			add_location(b13, file$9, 138, 0, 4598);
-    			attr_dev(b14, "class", "scr-b");
-    			add_location(b14, file$9, 142, 2, 4715);
-    			attr_dev(pre4, "class", "scr-pre");
-    			add_location(pre4, file$9, 129, 2, 4371);
-    			attr_dev(hr5, "class", "scr-hr");
-    			add_location(hr5, file$9, 148, 2, 5002);
-    			attr_dev(h46, "class", "scr-h4");
-    			add_location(h46, file$9, 149, 2, 5026);
-    			add_location(b15, file$9, 151, 8, 5116);
-    			add_location(br10, file$9, 154, 4, 5293);
-    			add_location(br11, file$9, 155, 4, 5304);
-    			attr_dev(p6, "class", "scr-text-justify");
-    			add_location(p6, file$9, 150, 2, 5079);
+    			add_location(b13, file$a, 135, 2, 4342);
+    			attr_dev(pre3, "class", "scr-pre");
+    			add_location(pre3, file$a, 125, 2, 4099);
+    			attr_dev(hr4, "class", "scr-hr");
+    			add_location(hr4, file$a, 141, 2, 4665);
+    			attr_dev(h45, "class", "scr-h4");
+    			add_location(h45, file$a, 142, 2, 4689);
+    			add_location(b14, file$a, 144, 8, 4769);
+    			add_location(br13, file$a, 147, 4, 4932);
+    			add_location(br14, file$a, 148, 4, 4943);
+    			attr_dev(p5, "class", "scr-text-justify");
+    			add_location(p5, file$a, 143, 2, 4732);
+    			attr_dev(b15, "class", "scr-b");
+    			add_location(b15, file$a, 154, 0, 5086);
     			attr_dev(b16, "class", "scr-b");
-    			add_location(b16, file$9, 161, 0, 5452);
+    			add_location(b16, file$a, 161, 0, 5287);
     			attr_dev(b17, "class", "scr-b");
-    			add_location(b17, file$9, 169, 2, 5690);
-    			attr_dev(pre5, "class", "scr-pre");
-    			add_location(pre5, file$9, 159, 2, 5426);
-    			attr_dev(hr6, "class", "scr-hr");
-    			add_location(hr6, file$9, 175, 2, 6030);
-    			attr_dev(h47, "class", "scr-h4");
-    			add_location(h47, file$9, 176, 2, 6054);
-    			add_location(b18, file$9, 178, 8, 6124);
-    			add_location(br12, file$9, 180, 4, 6239);
-    			attr_dev(p7, "class", "scr-text-justify");
-    			add_location(p7, file$9, 177, 2, 6087);
+    			add_location(b17, file$a, 165, 2, 5404);
+    			attr_dev(pre4, "class", "scr-pre");
+    			add_location(pre4, file$a, 152, 2, 5060);
+    			attr_dev(hr5, "class", "scr-hr");
+    			add_location(hr5, file$a, 171, 2, 5691);
+    			attr_dev(h46, "class", "scr-h4");
+    			add_location(h46, file$a, 172, 2, 5715);
+    			add_location(b18, file$a, 174, 8, 5805);
+    			add_location(br15, file$a, 177, 4, 5982);
+    			add_location(br16, file$a, 178, 4, 5993);
+    			attr_dev(p6, "class", "scr-text-justify");
+    			add_location(p6, file$a, 173, 2, 5768);
     			attr_dev(b19, "class", "scr-b");
-    			add_location(b19, file$9, 187, 0, 6471);
+    			add_location(b19, file$a, 184, 0, 6141);
+    			attr_dev(b20, "class", "scr-b");
+    			add_location(b20, file$a, 192, 2, 6379);
+    			attr_dev(pre5, "class", "scr-pre");
+    			add_location(pre5, file$a, 182, 2, 6115);
+    			attr_dev(hr6, "class", "scr-hr");
+    			add_location(hr6, file$a, 198, 2, 6719);
+    			attr_dev(h47, "class", "scr-h4");
+    			add_location(h47, file$a, 199, 2, 6743);
+    			add_location(b21, file$a, 201, 8, 6813);
+    			add_location(br17, file$a, 203, 4, 6928);
+    			attr_dev(p7, "class", "scr-text-justify");
+    			add_location(p7, file$a, 200, 2, 6776);
+    			attr_dev(b22, "class", "scr-b");
+    			add_location(b22, file$a, 210, 0, 7160);
     			attr_dev(pre6, "class", "scr-pre");
-    			add_location(pre6, file$9, 185, 2, 6445);
+    			add_location(pre6, file$a, 208, 2, 7134);
     			attr_dev(hr7, "class", "scr-hr");
-    			add_location(hr7, file$9, 202, 2, 6943);
+    			add_location(hr7, file$a, 225, 2, 7632);
     			attr_dev(h48, "class", "scr-h4");
-    			add_location(h48, file$9, 203, 2, 6967);
-    			add_location(b20, file$9, 205, 8, 7044);
-    			add_location(br13, file$9, 207, 4, 7137);
-    			add_location(br14, file$9, 211, 4, 7341);
-    			add_location(br15, file$9, 212, 4, 7352);
+    			add_location(h48, file$a, 226, 2, 7656);
+    			add_location(b23, file$a, 228, 8, 7733);
+    			add_location(br18, file$a, 230, 4, 7826);
+    			add_location(br19, file$a, 234, 4, 8030);
+    			add_location(br20, file$a, 235, 4, 8041);
     			attr_dev(p8, "class", "scr-text-justify");
-    			add_location(p8, file$9, 204, 2, 7007);
-    			attr_dev(b21, "class", "scr-b");
-    			add_location(b21, file$9, 217, 0, 7466);
+    			add_location(p8, file$a, 227, 2, 7696);
+    			attr_dev(b24, "class", "scr-b");
+    			add_location(b24, file$a, 240, 0, 8155);
     			attr_dev(pre7, "class", "scr-pre");
-    			add_location(pre7, file$9, 215, 2, 7440);
+    			add_location(pre7, file$a, 238, 2, 8129);
     			attr_dev(hr8, "class", "scr-hr");
-    			add_location(hr8, file$9, 229, 2, 7899);
+    			add_location(hr8, file$a, 252, 2, 8588);
     			attr_dev(h49, "class", "scr-h4");
-    			add_location(h49, file$9, 230, 2, 7923);
-    			add_location(b22, file$9, 232, 8, 8000);
+    			add_location(h49, file$a, 253, 2, 8612);
+    			add_location(b25, file$a, 255, 8, 8689);
     			attr_dev(p9, "class", "scr-text-justify");
-    			add_location(p9, file$9, 231, 2, 7963);
-    			attr_dev(b23, "class", "scr-b");
-    			add_location(b23, file$9, 237, 0, 8135);
+    			add_location(p9, file$a, 254, 2, 8652);
+    			attr_dev(b26, "class", "scr-b");
+    			add_location(b26, file$a, 260, 0, 8824);
     			attr_dev(pre8, "class", "scr-pre");
-    			add_location(pre8, file$9, 235, 2, 8109);
+    			add_location(pre8, file$a, 258, 2, 8798);
     			attr_dev(hr9, "class", "scr-hr");
-    			add_location(hr9, file$9, 249, 2, 8548);
+    			add_location(hr9, file$a, 272, 2, 9237);
     			attr_dev(h410, "class", "scr-h4");
-    			add_location(h410, file$9, 250, 2, 8572);
-    			add_location(b24, file$9, 252, 8, 8649);
+    			add_location(h410, file$a, 273, 2, 9261);
+    			add_location(b27, file$a, 275, 8, 9338);
     			attr_dev(p10, "class", "scr-text-justify");
-    			add_location(p10, file$9, 251, 2, 8612);
-    			attr_dev(b25, "class", "scr-b");
-    			add_location(b25, file$9, 257, 0, 8771);
-    			attr_dev(pre9, "class", "scr-pre");
-    			add_location(pre9, file$9, 255, 2, 8745);
-    			attr_dev(hr10, "class", "scr-hr");
-    			add_location(hr10, file$9, 268, 2, 9121);
-    			attr_dev(h411, "class", "scr-h4");
-    			add_location(h411, file$9, 269, 2, 9145);
-    			add_location(b26, file$9, 271, 8, 9221);
-    			add_location(b27, file$9, 271, 54, 9267);
-    			attr_dev(p11, "class", "scr-text-justify");
-    			add_location(p11, file$9, 270, 2, 9184);
+    			add_location(p10, file$a, 274, 2, 9301);
     			attr_dev(b28, "class", "scr-b");
-    			add_location(b28, file$9, 276, 0, 9364);
+    			add_location(b28, file$a, 280, 0, 9460);
+    			attr_dev(pre9, "class", "scr-pre");
+    			add_location(pre9, file$a, 278, 2, 9434);
+    			attr_dev(hr10, "class", "scr-hr");
+    			add_location(hr10, file$a, 291, 2, 9810);
+    			attr_dev(h411, "class", "scr-h4");
+    			add_location(h411, file$a, 292, 2, 9834);
+    			add_location(b29, file$a, 294, 8, 9910);
+    			add_location(b30, file$a, 294, 54, 9956);
+    			attr_dev(p11, "class", "scr-text-justify");
+    			add_location(p11, file$a, 293, 2, 9873);
+    			attr_dev(b31, "class", "scr-b");
+    			add_location(b31, file$a, 299, 0, 10053);
     			attr_dev(pre10, "class", "scr-pre");
-    			add_location(pre10, file$9, 274, 2, 9338);
+    			add_location(pre10, file$a, 297, 2, 10027);
     			attr_dev(hr11, "class", "scr-hr");
-    			add_location(hr11, file$9, 294, 2, 9891);
+    			add_location(hr11, file$a, 317, 2, 10580);
     			attr_dev(h412, "class", "scr-h4");
-    			add_location(h412, file$9, 295, 2, 9915);
-    			add_location(b29, file$9, 297, 8, 9984);
+    			add_location(h412, file$a, 318, 2, 10604);
+    			add_location(b32, file$a, 320, 8, 10673);
     			attr_dev(p12, "class", "scr-text-justify");
-    			add_location(p12, file$9, 296, 2, 9947);
-    			attr_dev(b30, "class", "scr-b");
-    			add_location(b30, file$9, 301, 0, 10082);
+    			add_location(p12, file$a, 319, 2, 10636);
+    			attr_dev(b33, "class", "scr-b");
+    			add_location(b33, file$a, 324, 0, 10771);
     			attr_dev(pre11, "class", "scr-pre");
-    			add_location(pre11, file$9, 299, 2, 10056);
+    			add_location(pre11, file$a, 322, 2, 10745);
     			attr_dev(hr12, "class", "scr-hr");
-    			add_location(hr12, file$9, 312, 2, 10423);
+    			add_location(hr12, file$a, 335, 2, 11112);
     			attr_dev(h413, "class", "scr-h4");
-    			add_location(h413, file$9, 313, 2, 10447);
-    			add_location(b31, file$9, 315, 8, 10540);
+    			add_location(h413, file$a, 336, 2, 11136);
+    			add_location(b34, file$a, 338, 8, 11229);
     			attr_dev(p13, "class", "scr-text-justify");
-    			add_location(p13, file$9, 314, 2, 10503);
-    			attr_dev(b32, "class", "scr-b");
-    			add_location(b32, file$9, 320, 0, 10709);
+    			add_location(p13, file$a, 337, 2, 11192);
+    			attr_dev(b35, "class", "scr-b");
+    			add_location(b35, file$a, 343, 0, 11398);
     			attr_dev(pre12, "class", "scr-pre");
-    			add_location(pre12, file$9, 318, 2, 10683);
+    			add_location(pre12, file$a, 341, 2, 11372);
     			attr_dev(hr13, "class", "scr-hr");
-    			add_location(hr13, file$9, 332, 2, 11107);
+    			add_location(hr13, file$a, 355, 2, 11796);
     			attr_dev(h414, "class", "scr-h4");
-    			add_location(h414, file$9, 333, 2, 11131);
-    			add_location(b33, file$9, 335, 8, 11230);
-    			add_location(br16, file$9, 339, 4, 11480);
+    			add_location(h414, file$a, 356, 2, 11820);
+    			add_location(b36, file$a, 358, 8, 11919);
+    			add_location(br21, file$a, 362, 4, 12169);
     			attr_dev(p14, "class", "scr-text-justify");
-    			add_location(p14, file$9, 334, 2, 11193);
-    			attr_dev(b34, "class", "scr-b");
-    			add_location(b34, file$9, 345, 0, 11618);
+    			add_location(p14, file$a, 357, 2, 11882);
+    			attr_dev(b37, "class", "scr-b");
+    			add_location(b37, file$a, 368, 0, 12307);
     			attr_dev(pre13, "class", "scr-pre");
-    			add_location(pre13, file$9, 343, 2, 11592);
+    			add_location(pre13, file$a, 366, 2, 12281);
     			attr_dev(hr14, "class", "scr-hr");
-    			add_location(hr14, file$9, 358, 2, 12099);
+    			add_location(hr14, file$a, 381, 2, 12788);
     			attr_dev(h415, "class", "scr-h4");
-    			add_location(h415, file$9, 359, 2, 12123);
-    			add_location(b35, file$9, 361, 8, 12199);
-    			add_location(br17, file$9, 364, 4, 12430);
-    			add_location(br18, file$9, 365, 4, 12441);
+    			add_location(h415, file$a, 382, 2, 12812);
+    			add_location(b38, file$a, 384, 8, 12888);
+    			add_location(br22, file$a, 387, 4, 13119);
+    			add_location(br23, file$a, 388, 4, 13130);
     			attr_dev(p15, "class", "scr-text-justify");
-    			add_location(p15, file$9, 360, 2, 12162);
-    			attr_dev(b36, "class", "scr-b");
-    			add_location(b36, file$9, 370, 0, 12536);
+    			add_location(p15, file$a, 383, 2, 12851);
+    			attr_dev(b39, "class", "scr-b");
+    			add_location(b39, file$a, 393, 0, 13225);
     			attr_dev(pre14, "class", "scr-pre");
-    			add_location(pre14, file$9, 368, 2, 12510);
+    			add_location(pre14, file$a, 391, 2, 13199);
     			attr_dev(p16, "class", "scr-text-justify");
-    			add_location(p16, file$9, 381, 2, 12818);
+    			add_location(p16, file$a, 404, 2, 13507);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$9, 386, 4, 13007);
+    			add_location(small, file$a, 409, 4, 13696);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$9, 385, 2, 12975);
+    			add_location(center, file$a, 408, 2, 13664);
     			attr_dev(pre15, "class", "scr-pre");
-    			add_location(pre15, file$9, 388, 2, 13088);
+    			add_location(pre15, file$a, 411, 2, 13777);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$9, 5, 0, 155);
+    			add_location(div, file$a, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -16470,231 +16801,247 @@ var app = (function () {
     			append_dev(p2, t22);
     			append_dev(p2, br3);
     			append_dev(p2, t23);
-    			append_dev(div, t24);
+    			append_dev(p2, br4);
+    			append_dev(p2, t24);
+    			append_dev(p2, br5);
+    			append_dev(p2, t25);
+    			append_dev(p2, br6);
+    			append_dev(p2, t26);
+    			append_dev(p2, b3);
+    			append_dev(p2, t28);
+    			append_dev(p2, br7);
+    			append_dev(p2, t29);
+    			append_dev(p2, br8);
+    			append_dev(p2, t30);
+    			append_dev(div, t31);
     			append_dev(div, pre1);
-    			append_dev(pre1, b3);
-    			append_dev(pre1, t26);
-    			append_dev(div, t27);
+    			append_dev(pre1, b4);
+    			append_dev(pre1, t33);
+    			append_dev(pre1, b5);
+    			append_dev(pre1, t35);
+    			append_dev(pre1, b6);
+    			append_dev(pre1, t37);
+    			append_dev(div, t38);
     			append_dev(div, hr2);
-    			append_dev(div, t28);
+    			append_dev(div, t39);
     			append_dev(div, h43);
-    			append_dev(div, t30);
+    			append_dev(div, t41);
     			append_dev(div, p3);
-    			append_dev(p3, t31);
-    			append_dev(p3, b4);
-    			append_dev(p3, t33);
-    			append_dev(p3, br4);
-    			append_dev(p3, t34);
-    			append_dev(p3, br5);
-    			append_dev(p3, t35);
-    			append_dev(div, t36);
+    			append_dev(p3, t42);
+    			append_dev(p3, b7);
+    			append_dev(p3, t44);
+    			append_dev(p3, br9);
+    			append_dev(p3, t45);
+    			append_dev(p3, br10);
+    			append_dev(p3, t46);
+    			append_dev(div, t47);
     			append_dev(div, pre2);
-    			append_dev(pre2, b5);
-    			append_dev(pre2, t38);
-    			append_dev(pre2, b6);
-    			append_dev(pre2, t40);
-    			append_dev(pre2, b7);
-    			append_dev(pre2, t42);
-    			append_dev(div, t43);
+    			append_dev(pre2, b8);
+    			append_dev(pre2, t49);
+    			append_dev(pre2, b9);
+    			append_dev(pre2, t51);
+    			append_dev(pre2, b10);
+    			append_dev(pre2, t53);
+    			append_dev(div, t54);
     			append_dev(div, hr3);
-    			append_dev(div, t44);
+    			append_dev(div, t55);
     			append_dev(div, h44);
-    			append_dev(div, t46);
-    			append_dev(div, p4);
-    			append_dev(p4, t47);
-    			append_dev(p4, b8);
-    			append_dev(p4, t49);
-    			append_dev(p4, br6);
-    			append_dev(p4, t50);
-    			append_dev(p4, br7);
-    			append_dev(p4, t51);
-    			append_dev(div, t52);
-    			append_dev(div, pre3);
-    			append_dev(pre3, b9);
-    			append_dev(pre3, t54);
-    			append_dev(pre3, b10);
-    			append_dev(pre3, t56);
     			append_dev(div, t57);
+    			append_dev(div, p4);
+    			append_dev(p4, t58);
+    			append_dev(p4, b11);
+    			append_dev(p4, t60);
+    			append_dev(p4, br11);
+    			append_dev(p4, t61);
+    			append_dev(p4, br12);
+    			append_dev(p4, t62);
+    			append_dev(div, t63);
+    			append_dev(div, pre3);
+    			append_dev(pre3, b12);
+    			append_dev(pre3, t65);
+    			append_dev(pre3, b13);
+    			append_dev(pre3, t67);
+    			append_dev(div, t68);
     			append_dev(div, hr4);
-    			append_dev(div, t58);
+    			append_dev(div, t69);
     			append_dev(div, h45);
-    			append_dev(div, t60);
+    			append_dev(div, t71);
     			append_dev(div, p5);
-    			append_dev(p5, t61);
-    			append_dev(p5, b11);
-    			append_dev(p5, t63);
-    			append_dev(p5, br8);
-    			append_dev(p5, t64);
-    			append_dev(p5, br9);
-    			append_dev(p5, t65);
-    			append_dev(div, t66);
+    			append_dev(p5, t72);
+    			append_dev(p5, b14);
+    			append_dev(p5, t74);
+    			append_dev(p5, br13);
+    			append_dev(p5, t75);
+    			append_dev(p5, br14);
+    			append_dev(p5, t76);
+    			append_dev(div, t77);
     			append_dev(div, pre4);
-    			append_dev(pre4, b12);
-    			append_dev(pre4, t68);
-    			append_dev(pre4, b13);
-    			append_dev(pre4, t70);
-    			append_dev(pre4, b14);
-    			append_dev(pre4, t72);
-    			append_dev(div, t73);
+    			append_dev(pre4, b15);
+    			append_dev(pre4, t79);
+    			append_dev(pre4, b16);
+    			append_dev(pre4, t81);
+    			append_dev(pre4, b17);
+    			append_dev(pre4, t83);
+    			append_dev(div, t84);
     			append_dev(div, hr5);
-    			append_dev(div, t74);
+    			append_dev(div, t85);
     			append_dev(div, h46);
-    			append_dev(div, t76);
-    			append_dev(div, p6);
-    			append_dev(p6, t77);
-    			append_dev(p6, b15);
-    			append_dev(p6, t79);
-    			append_dev(p6, br10);
-    			append_dev(p6, t80);
-    			append_dev(p6, br11);
-    			append_dev(p6, t81);
-    			append_dev(div, t82);
-    			append_dev(div, pre5);
-    			append_dev(pre5, b16);
-    			append_dev(pre5, t84);
-    			append_dev(pre5, b17);
-    			append_dev(pre5, t86);
     			append_dev(div, t87);
-    			append_dev(div, hr6);
-    			append_dev(div, t88);
-    			append_dev(div, h47);
-    			append_dev(div, t90);
-    			append_dev(div, p7);
-    			append_dev(p7, t91);
-    			append_dev(p7, b18);
-    			append_dev(p7, t93);
-    			append_dev(p7, br12);
-    			append_dev(p7, t94);
-    			append_dev(div, t95);
-    			append_dev(div, pre6);
-    			append_dev(pre6, b19);
-    			append_dev(pre6, t97);
+    			append_dev(div, p6);
+    			append_dev(p6, t88);
+    			append_dev(p6, b18);
+    			append_dev(p6, t90);
+    			append_dev(p6, br15);
+    			append_dev(p6, t91);
+    			append_dev(p6, br16);
+    			append_dev(p6, t92);
+    			append_dev(div, t93);
+    			append_dev(div, pre5);
+    			append_dev(pre5, b19);
+    			append_dev(pre5, t95);
+    			append_dev(pre5, b20);
+    			append_dev(pre5, t97);
     			append_dev(div, t98);
-    			append_dev(div, hr7);
+    			append_dev(div, hr6);
     			append_dev(div, t99);
-    			append_dev(div, h48);
+    			append_dev(div, h47);
     			append_dev(div, t101);
-    			append_dev(div, p8);
-    			append_dev(p8, t102);
-    			append_dev(p8, b20);
-    			append_dev(p8, t104);
-    			append_dev(p8, br13);
-    			append_dev(p8, t105);
-    			append_dev(p8, br14);
-    			append_dev(p8, t106);
-    			append_dev(p8, br15);
-    			append_dev(p8, t107);
-    			append_dev(div, t108);
-    			append_dev(div, pre7);
-    			append_dev(pre7, b21);
-    			append_dev(pre7, t110);
-    			append_dev(div, t111);
-    			append_dev(div, hr8);
+    			append_dev(div, p7);
+    			append_dev(p7, t102);
+    			append_dev(p7, b21);
+    			append_dev(p7, t104);
+    			append_dev(p7, br17);
+    			append_dev(p7, t105);
+    			append_dev(div, t106);
+    			append_dev(div, pre6);
+    			append_dev(pre6, b22);
+    			append_dev(pre6, t108);
+    			append_dev(div, t109);
+    			append_dev(div, hr7);
+    			append_dev(div, t110);
+    			append_dev(div, h48);
     			append_dev(div, t112);
-    			append_dev(div, h49);
-    			append_dev(div, t114);
-    			append_dev(div, p9);
-    			append_dev(p9, t115);
-    			append_dev(p9, b22);
-    			append_dev(p9, t117);
-    			append_dev(div, t118);
-    			append_dev(div, pre8);
-    			append_dev(pre8, b23);
-    			append_dev(pre8, t120);
-    			append_dev(div, t121);
-    			append_dev(div, hr9);
+    			append_dev(div, p8);
+    			append_dev(p8, t113);
+    			append_dev(p8, b23);
+    			append_dev(p8, t115);
+    			append_dev(p8, br18);
+    			append_dev(p8, t116);
+    			append_dev(p8, br19);
+    			append_dev(p8, t117);
+    			append_dev(p8, br20);
+    			append_dev(p8, t118);
+    			append_dev(div, t119);
+    			append_dev(div, pre7);
+    			append_dev(pre7, b24);
+    			append_dev(pre7, t121);
     			append_dev(div, t122);
-    			append_dev(div, h410);
-    			append_dev(div, t124);
-    			append_dev(div, p10);
-    			append_dev(p10, t125);
-    			append_dev(p10, b24);
-    			append_dev(p10, t127);
-    			append_dev(div, t128);
-    			append_dev(div, pre9);
-    			append_dev(pre9, b25);
-    			append_dev(pre9, t130);
-    			append_dev(div, t131);
-    			append_dev(div, hr10);
+    			append_dev(div, hr8);
+    			append_dev(div, t123);
+    			append_dev(div, h49);
+    			append_dev(div, t125);
+    			append_dev(div, p9);
+    			append_dev(p9, t126);
+    			append_dev(p9, b25);
+    			append_dev(p9, t128);
+    			append_dev(div, t129);
+    			append_dev(div, pre8);
+    			append_dev(pre8, b26);
+    			append_dev(pre8, t131);
     			append_dev(div, t132);
-    			append_dev(div, h411);
-    			append_dev(div, t134);
-    			append_dev(div, p11);
-    			append_dev(p11, t135);
-    			append_dev(p11, b26);
-    			append_dev(p11, t137);
-    			append_dev(p11, b27);
-    			append_dev(p11, t139);
-    			append_dev(div, t140);
-    			append_dev(div, pre10);
-    			append_dev(pre10, b28);
-    			append_dev(pre10, t142);
+    			append_dev(div, hr9);
+    			append_dev(div, t133);
+    			append_dev(div, h410);
+    			append_dev(div, t135);
+    			append_dev(div, p10);
+    			append_dev(p10, t136);
+    			append_dev(p10, b27);
+    			append_dev(p10, t138);
+    			append_dev(div, t139);
+    			append_dev(div, pre9);
+    			append_dev(pre9, b28);
+    			append_dev(pre9, t141);
+    			append_dev(div, t142);
+    			append_dev(div, hr10);
     			append_dev(div, t143);
-    			append_dev(div, hr11);
-    			append_dev(div, t144);
-    			append_dev(div, h412);
-    			append_dev(div, t146);
-    			append_dev(div, p12);
-    			append_dev(p12, t147);
-    			append_dev(p12, b29);
-    			append_dev(p12, t149);
-    			append_dev(div, t150);
-    			append_dev(div, pre11);
-    			append_dev(pre11, b30);
-    			append_dev(pre11, t152);
-    			append_dev(div, t153);
-    			append_dev(div, hr12);
+    			append_dev(div, h411);
+    			append_dev(div, t145);
+    			append_dev(div, p11);
+    			append_dev(p11, t146);
+    			append_dev(p11, b29);
+    			append_dev(p11, t148);
+    			append_dev(p11, b30);
+    			append_dev(p11, t150);
+    			append_dev(div, t151);
+    			append_dev(div, pre10);
+    			append_dev(pre10, b31);
+    			append_dev(pre10, t153);
     			append_dev(div, t154);
-    			append_dev(div, h413);
-    			append_dev(div, t156);
-    			append_dev(div, p13);
-    			append_dev(p13, t157);
-    			append_dev(p13, b31);
-    			append_dev(p13, t159);
-    			append_dev(div, t160);
-    			append_dev(div, pre12);
-    			append_dev(pre12, b32);
-    			append_dev(pre12, t162);
-    			append_dev(div, t163);
-    			append_dev(div, hr13);
+    			append_dev(div, hr11);
+    			append_dev(div, t155);
+    			append_dev(div, h412);
+    			append_dev(div, t157);
+    			append_dev(div, p12);
+    			append_dev(p12, t158);
+    			append_dev(p12, b32);
+    			append_dev(p12, t160);
+    			append_dev(div, t161);
+    			append_dev(div, pre11);
+    			append_dev(pre11, b33);
+    			append_dev(pre11, t163);
     			append_dev(div, t164);
-    			append_dev(div, h414);
-    			append_dev(div, t166);
-    			append_dev(div, p14);
-    			append_dev(p14, t167);
-    			append_dev(p14, b33);
-    			append_dev(p14, t169);
-    			append_dev(p14, br16);
-    			append_dev(p14, t170);
+    			append_dev(div, hr12);
+    			append_dev(div, t165);
+    			append_dev(div, h413);
+    			append_dev(div, t167);
+    			append_dev(div, p13);
+    			append_dev(p13, t168);
+    			append_dev(p13, b34);
+    			append_dev(p13, t170);
     			append_dev(div, t171);
-    			append_dev(div, pre13);
-    			append_dev(pre13, b34);
-    			append_dev(pre13, t173);
+    			append_dev(div, pre12);
+    			append_dev(pre12, b35);
+    			append_dev(pre12, t173);
     			append_dev(div, t174);
-    			append_dev(div, hr14);
+    			append_dev(div, hr13);
     			append_dev(div, t175);
-    			append_dev(div, h415);
+    			append_dev(div, h414);
     			append_dev(div, t177);
-    			append_dev(div, p15);
-    			append_dev(p15, t178);
-    			append_dev(p15, b35);
-    			append_dev(p15, t180);
-    			append_dev(p15, br17);
-    			append_dev(p15, t181);
-    			append_dev(p15, br18);
-    			append_dev(p15, t182);
-    			append_dev(div, t183);
-    			append_dev(div, pre14);
-    			append_dev(pre14, b36);
-    			append_dev(pre14, t185);
+    			append_dev(div, p14);
+    			append_dev(p14, t178);
+    			append_dev(p14, b36);
+    			append_dev(p14, t180);
+    			append_dev(p14, br21);
+    			append_dev(p14, t181);
+    			append_dev(div, t182);
+    			append_dev(div, pre13);
+    			append_dev(pre13, b37);
+    			append_dev(pre13, t184);
+    			append_dev(div, t185);
+    			append_dev(div, hr14);
     			append_dev(div, t186);
-    			append_dev(div, p16);
+    			append_dev(div, h415);
     			append_dev(div, t188);
+    			append_dev(div, p15);
+    			append_dev(p15, t189);
+    			append_dev(p15, b38);
+    			append_dev(p15, t191);
+    			append_dev(p15, br22);
+    			append_dev(p15, t192);
+    			append_dev(p15, br23);
+    			append_dev(p15, t193);
+    			append_dev(div, t194);
+    			append_dev(div, pre14);
+    			append_dev(pre14, b39);
+    			append_dev(pre14, t196);
+    			append_dev(div, t197);
+    			append_dev(div, p16);
+    			append_dev(div, t199);
     			append_dev(div, center);
     			append_dev(center, small);
-    			append_dev(div, t190);
+    			append_dev(div, t201);
     			append_dev(div, pre15);
-    			append_dev(div, t192);
+    			append_dev(div, t203);
     			mount_component(scr_pagefooter, div, null);
     			current = true;
     		},
@@ -16724,7 +17071,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$9.name,
+    		id: create_fragment$a.name,
     		type: "component",
     		source: "",
     		ctx
@@ -16733,7 +17080,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$9($$self, $$props, $$invalidate) {
+    function instance$a($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouteObjectProperties", slots, []);
     	const writable_props = [];
@@ -16749,13 +17096,13 @@ var app = (function () {
     class SCR_RouteObjectProperties extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$9, create_fragment$9, safe_not_equal, {});
+    		init(this, options, instance$a, create_fragment$a, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_RouteObjectProperties",
     			options,
-    			id: create_fragment$9.name
+    			id: create_fragment$a.name
     		});
     	}
     }
@@ -16766,10 +17113,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_RouteObjectBeforeEnter.svelte generated by Svelte v3.37.0 */
-    const file$8 = "src/docs/pages/SCR_RouteObjectBeforeEnter.svelte";
+    const file$9 = "src/docs/pages/SCR_RouteObjectBeforeEnter.svelte";
 
     // (29:12) <SCR_ROUTER_LINK       to={{ name: "routeObjectOptionsRoute" }}       elementProps={{ style: "display: inline; cursor: pointer;" }}     >
-    function create_default_slot_1$2(ctx) {
+    function create_default_slot_1$3(ctx) {
     	let a;
 
     	const block = {
@@ -16778,7 +17125,7 @@ var app = (function () {
     			a.textContent = "Route Object Properties";
     			attr_dev(a, "href", "/");
     			set_style(a, "pointer-events", "none");
-    			add_location(a, file$8, 32, 6, 1468);
+    			add_location(a, file$9, 32, 6, 1468);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, a, anchor);
@@ -16790,7 +17137,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot_1$2.name,
+    		id: create_default_slot_1$3.name,
     		type: "slot",
     		source: "(29:12) <SCR_ROUTER_LINK       to={{ name: \\\"routeObjectOptionsRoute\\\" }}       elementProps={{ style: \\\"display: inline; cursor: pointer;\\\" }}     >",
     		ctx
@@ -16800,7 +17147,7 @@ var app = (function () {
     }
 
     // (73:2) <SCR_PageFooter>
-    function create_default_slot$8(ctx) {
+    function create_default_slot$9(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -16834,9 +17181,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$8, 74, 6, 2803);
+    			add_location(div0, file$9, 74, 6, 2803);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$8, 73, 4, 2779);
+    			add_location(div1, file$9, 73, 4, 2779);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -16867,7 +17214,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$8.name,
+    		id: create_default_slot$9.name,
     		type: "slot",
     		source: "(73:2) <SCR_PageFooter>",
     		ctx
@@ -16876,7 +17223,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$8(ctx) {
+    function create_fragment$9(ctx) {
     	let div;
     	let h4;
     	let t1;
@@ -16937,7 +17284,7 @@ var app = (function () {
     				elementProps: {
     					style: "display: inline; cursor: pointer;"
     				},
-    				$$slots: { default: [create_default_slot_1$2] },
+    				$$slots: { default: [create_default_slot_1$3] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -16947,7 +17294,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$8] },
+    				$$slots: { default: [create_default_slot$9] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -17020,42 +17367,42 @@ var app = (function () {
     			t36 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$8, 8, 2, 326);
-    			add_location(b0, file$8, 10, 8, 427);
-    			add_location(b1, file$8, 12, 4, 565);
-    			add_location(br0, file$8, 14, 4, 649);
-    			add_location(br1, file$8, 15, 4, 660);
-    			add_location(br2, file$8, 20, 4, 963);
-    			add_location(br3, file$8, 21, 4, 974);
-    			add_location(b2, file$8, 23, 4, 1057);
-    			add_location(br4, file$8, 26, 4, 1294);
-    			add_location(br5, file$8, 27, 4, 1305);
-    			add_location(br6, file$8, 34, 4, 1580);
-    			add_location(br7, file$8, 35, 4, 1591);
+    			add_location(h4, file$9, 8, 2, 326);
+    			add_location(b0, file$9, 10, 8, 427);
+    			add_location(b1, file$9, 12, 4, 565);
+    			add_location(br0, file$9, 14, 4, 649);
+    			add_location(br1, file$9, 15, 4, 660);
+    			add_location(br2, file$9, 20, 4, 963);
+    			add_location(br3, file$9, 21, 4, 974);
+    			add_location(b2, file$9, 23, 4, 1057);
+    			add_location(br4, file$9, 26, 4, 1294);
+    			add_location(br5, file$9, 27, 4, 1305);
+    			add_location(br6, file$9, 34, 4, 1580);
+    			add_location(br7, file$9, 35, 4, 1591);
     			attr_dev(p, "class", "scr-text-justify");
-    			add_location(p, file$8, 9, 2, 390);
+    			add_location(p, file$9, 9, 2, 390);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$8, 40, 0, 1685);
+    			add_location(b3, file$9, 40, 0, 1685);
     			attr_dev(b4, "class", "scr-b");
-    			add_location(b4, file$8, 41, 0, 1743);
+    			add_location(b4, file$9, 41, 0, 1743);
     			attr_dev(b5, "class", "scr-b");
-    			add_location(b5, file$8, 45, 0, 1878);
+    			add_location(b5, file$9, 45, 0, 1878);
     			attr_dev(b6, "class", "scr-b");
-    			add_location(b6, file$8, 47, 0, 1907);
+    			add_location(b6, file$9, 47, 0, 1907);
     			attr_dev(b7, "class", "scr-b");
-    			add_location(b7, file$8, 48, 0, 1976);
+    			add_location(b7, file$9, 48, 0, 1976);
     			attr_dev(b8, "class", "scr-b");
-    			add_location(b8, file$8, 49, 0, 2037);
+    			add_location(b8, file$9, 49, 0, 2037);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$8, 38, 2, 1659);
+    			add_location(pre0, file$9, 38, 2, 1659);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$8, 61, 4, 2381);
+    			add_location(small, file$9, 61, 4, 2381);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$8, 60, 2, 2349);
+    			add_location(center, file$9, 60, 2, 2349);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$8, 63, 2, 2462);
+    			add_location(pre1, file$9, 63, 2, 2462);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$8, 7, 0, 301);
+    			add_location(div, file$9, 7, 0, 301);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -17154,7 +17501,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$8.name,
+    		id: create_fragment$9.name,
     		type: "component",
     		source: "",
     		ctx
@@ -17163,7 +17510,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$8($$self, $$props, $$invalidate) {
+    function instance$9($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouteObjectBeforeEnter", slots, []);
     	const writable_props = [];
@@ -17185,13 +17532,13 @@ var app = (function () {
     class SCR_RouteObjectBeforeEnter extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$8, create_fragment$8, safe_not_equal, {});
+    		init(this, options, instance$9, create_fragment$9, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_RouteObjectBeforeEnter",
     			options,
-    			id: create_fragment$8.name
+    			id: create_fragment$9.name
     		});
     	}
     }
@@ -17202,10 +17549,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_RouteObjectAfterBeforeEnter.svelte generated by Svelte v3.37.0 */
-    const file$7 = "src/docs/pages/SCR_RouteObjectAfterBeforeEnter.svelte";
+    const file$8 = "src/docs/pages/SCR_RouteObjectAfterBeforeEnter.svelte";
 
     // (128:2) <SCR_PageFooter>
-    function create_default_slot$7(ctx) {
+    function create_default_slot$8(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -17239,9 +17586,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$7, 129, 6, 4687);
+    			add_location(div0, file$8, 129, 6, 4687);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$7, 128, 4, 4663);
+    			add_location(div1, file$8, 128, 4, 4663);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -17272,7 +17619,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$7.name,
+    		id: create_default_slot$8.name,
     		type: "slot",
     		source: "(128:2) <SCR_PageFooter>",
     		ctx
@@ -17281,7 +17628,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$7(ctx) {
+    function create_fragment$8(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -17414,7 +17761,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$7] },
+    				$$slots: { default: [create_default_slot$8] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -17579,86 +17926,86 @@ var app = (function () {
     			t87 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h40, "class", "scr-h4");
-    			add_location(h40, file$7, 6, 2, 180);
-    			add_location(b0, file$7, 8, 8, 286);
-    			add_location(br0, file$7, 12, 4, 566);
-    			add_location(br1, file$7, 13, 4, 577);
-    			add_location(br2, file$7, 17, 4, 783);
-    			add_location(br3, file$7, 18, 4, 794);
+    			add_location(h40, file$8, 6, 2, 180);
+    			add_location(b0, file$8, 8, 8, 286);
+    			add_location(br0, file$8, 12, 4, 566);
+    			add_location(br1, file$8, 13, 4, 577);
+    			add_location(br2, file$8, 17, 4, 783);
+    			add_location(br3, file$8, 18, 4, 794);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$7, 7, 2, 249);
+    			add_location(p0, file$8, 7, 2, 249);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$7, 23, 0, 888);
+    			add_location(b1, file$8, 23, 0, 888);
     			attr_dev(b2, "class", "scr-b");
-    			add_location(b2, file$7, 24, 0, 946);
+    			add_location(b2, file$8, 24, 0, 946);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$7, 21, 2, 862);
+    			add_location(pre0, file$8, 21, 2, 862);
     			attr_dev(hr, "class", "scr-hr");
-    			add_location(hr, file$7, 29, 2, 1111);
+    			add_location(hr, file$8, 29, 2, 1111);
     			attr_dev(h41, "class", "scr-h4");
-    			add_location(h41, file$7, 30, 2, 1135);
-    			add_location(br4, file$7, 34, 4, 1323);
+    			add_location(h41, file$8, 30, 2, 1135);
+    			add_location(br4, file$8, 34, 4, 1323);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$7, 31, 2, 1204);
+    			add_location(p1, file$8, 31, 2, 1204);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$7, 39, 0, 1384);
+    			add_location(b3, file$8, 39, 0, 1384);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$7, 37, 2, 1358);
-    			add_location(b4, file$7, 46, 6, 1559);
-    			add_location(br5, file$7, 48, 6, 1651);
-    			add_location(b5, file$7, 52, 10, 1761);
-    			add_location(b6, file$7, 56, 16, 1974);
-    			add_location(li0, file$7, 56, 12, 1970);
-    			add_location(b7, file$7, 57, 16, 2030);
-    			add_location(li1, file$7, 57, 12, 2026);
-    			add_location(b8, file$7, 59, 14, 2107);
-    			add_location(li2, file$7, 58, 12, 2088);
-    			add_location(b9, file$7, 63, 14, 2239);
-    			add_location(li3, file$7, 62, 12, 2220);
-    			add_location(b10, file$7, 67, 14, 2379);
-    			add_location(li4, file$7, 66, 12, 2360);
-    			add_location(b11, file$7, 71, 14, 2542);
-    			add_location(li5, file$7, 70, 12, 2523);
-    			add_location(b12, file$7, 74, 16, 2692);
-    			add_location(li6, file$7, 74, 12, 2688);
-    			add_location(b13, file$7, 75, 16, 2768);
-    			add_location(li7, file$7, 75, 12, 2764);
-    			add_location(ul0, file$7, 55, 10, 1953);
-    			add_location(li8, file$7, 51, 8, 1746);
-    			add_location(br6, file$7, 78, 8, 2868);
-    			add_location(b14, file$7, 80, 10, 2898);
-    			add_location(b15, file$7, 84, 16, 3107);
-    			add_location(li9, file$7, 84, 12, 3103);
-    			add_location(b16, file$7, 85, 16, 3163);
-    			add_location(li10, file$7, 85, 12, 3159);
-    			add_location(b17, file$7, 87, 14, 3240);
-    			add_location(li11, file$7, 86, 12, 3221);
-    			add_location(b18, file$7, 91, 14, 3372);
-    			add_location(li12, file$7, 90, 12, 3353);
-    			add_location(b19, file$7, 95, 14, 3512);
-    			add_location(li13, file$7, 94, 12, 3493);
-    			add_location(b20, file$7, 99, 14, 3675);
-    			add_location(li14, file$7, 98, 12, 3656);
-    			add_location(b21, file$7, 102, 16, 3825);
-    			add_location(li15, file$7, 102, 12, 3821);
-    			add_location(b22, file$7, 103, 16, 3901);
-    			add_location(li16, file$7, 103, 12, 3897);
-    			add_location(ul1, file$7, 83, 10, 3086);
-    			add_location(li17, file$7, 79, 8, 2883);
-    			add_location(br7, file$7, 106, 8, 4001);
-    			add_location(b23, file$7, 108, 10, 4031);
-    			add_location(li18, file$7, 107, 8, 4016);
-    			add_location(ul2, file$7, 50, 6, 1733);
-    			add_location(li19, file$7, 45, 4, 1548);
-    			add_location(ul3, file$7, 44, 2, 1539);
+    			add_location(pre1, file$8, 37, 2, 1358);
+    			add_location(b4, file$8, 46, 6, 1559);
+    			add_location(br5, file$8, 48, 6, 1651);
+    			add_location(b5, file$8, 52, 10, 1761);
+    			add_location(b6, file$8, 56, 16, 1974);
+    			add_location(li0, file$8, 56, 12, 1970);
+    			add_location(b7, file$8, 57, 16, 2030);
+    			add_location(li1, file$8, 57, 12, 2026);
+    			add_location(b8, file$8, 59, 14, 2107);
+    			add_location(li2, file$8, 58, 12, 2088);
+    			add_location(b9, file$8, 63, 14, 2239);
+    			add_location(li3, file$8, 62, 12, 2220);
+    			add_location(b10, file$8, 67, 14, 2379);
+    			add_location(li4, file$8, 66, 12, 2360);
+    			add_location(b11, file$8, 71, 14, 2542);
+    			add_location(li5, file$8, 70, 12, 2523);
+    			add_location(b12, file$8, 74, 16, 2692);
+    			add_location(li6, file$8, 74, 12, 2688);
+    			add_location(b13, file$8, 75, 16, 2768);
+    			add_location(li7, file$8, 75, 12, 2764);
+    			add_location(ul0, file$8, 55, 10, 1953);
+    			add_location(li8, file$8, 51, 8, 1746);
+    			add_location(br6, file$8, 78, 8, 2868);
+    			add_location(b14, file$8, 80, 10, 2898);
+    			add_location(b15, file$8, 84, 16, 3107);
+    			add_location(li9, file$8, 84, 12, 3103);
+    			add_location(b16, file$8, 85, 16, 3163);
+    			add_location(li10, file$8, 85, 12, 3159);
+    			add_location(b17, file$8, 87, 14, 3240);
+    			add_location(li11, file$8, 86, 12, 3221);
+    			add_location(b18, file$8, 91, 14, 3372);
+    			add_location(li12, file$8, 90, 12, 3353);
+    			add_location(b19, file$8, 95, 14, 3512);
+    			add_location(li13, file$8, 94, 12, 3493);
+    			add_location(b20, file$8, 99, 14, 3675);
+    			add_location(li14, file$8, 98, 12, 3656);
+    			add_location(b21, file$8, 102, 16, 3825);
+    			add_location(li15, file$8, 102, 12, 3821);
+    			add_location(b22, file$8, 103, 16, 3901);
+    			add_location(li16, file$8, 103, 12, 3897);
+    			add_location(ul1, file$8, 83, 10, 3086);
+    			add_location(li17, file$8, 79, 8, 2883);
+    			add_location(br7, file$8, 106, 8, 4001);
+    			add_location(b23, file$8, 108, 10, 4031);
+    			add_location(li18, file$8, 107, 8, 4016);
+    			add_location(ul2, file$8, 50, 6, 1733);
+    			add_location(li19, file$8, 45, 4, 1548);
+    			add_location(ul3, file$8, 44, 2, 1539);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$7, 116, 4, 4251);
+    			add_location(small, file$8, 116, 4, 4251);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$7, 115, 2, 4219);
+    			add_location(center, file$8, 115, 2, 4219);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$7, 118, 2, 4332);
+    			add_location(pre2, file$8, 118, 2, 4332);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$7, 5, 0, 155);
+    			add_location(div, file$8, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -17820,7 +18167,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$7.name,
+    		id: create_fragment$8.name,
     		type: "component",
     		source: "",
     		ctx
@@ -17829,7 +18176,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$7($$self, $$props, $$invalidate) {
+    function instance$8($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouteObjectAfterBeforeEnter", slots, []);
     	const writable_props = [];
@@ -17845,13 +18192,13 @@ var app = (function () {
     class SCR_RouteObjectAfterBeforeEnter extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$7, create_fragment$7, safe_not_equal, {});
+    		init(this, options, instance$8, create_fragment$8, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_RouteObjectAfterBeforeEnter",
     			options,
-    			id: create_fragment$7.name
+    			id: create_fragment$8.name
     		});
     	}
     }
@@ -17862,10 +18209,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_RouteObjectOnError.svelte generated by Svelte v3.37.0 */
-    const file$6 = "src/docs/pages/SCR_RouteObjectOnError.svelte";
+    const file$7 = "src/docs/pages/SCR_RouteObjectOnError.svelte";
 
     // (19:12) <SCR_ROUTER_LINK       to={{ name: "routeComponentComponentsRoute" }}       elementProps={{ style: "display: inline; cursor: pointer;" }}     >
-    function create_default_slot_1$1(ctx) {
+    function create_default_slot_1$2(ctx) {
     	let a;
 
     	const block = {
@@ -17874,7 +18221,7 @@ var app = (function () {
     			a.textContent = "Route Component Components";
     			attr_dev(a, "href", "/");
     			set_style(a, "pointer-events", "none");
-    			add_location(a, file$6, 22, 6, 949);
+    			add_location(a, file$7, 22, 6, 949);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, a, anchor);
@@ -17886,7 +18233,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot_1$1.name,
+    		id: create_default_slot_1$2.name,
     		type: "slot",
     		source: "(19:12) <SCR_ROUTER_LINK       to={{ name: \\\"routeComponentComponentsRoute\\\" }}       elementProps={{ style: \\\"display: inline; cursor: pointer;\\\" }}     >",
     		ctx
@@ -17896,7 +18243,7 @@ var app = (function () {
     }
 
     // (53:2) <SCR_PageFooter>
-    function create_default_slot$6(ctx) {
+    function create_default_slot$7(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -17930,9 +18277,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$6, 54, 6, 1899);
+    			add_location(div0, file$7, 54, 6, 1899);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$6, 53, 4, 1875);
+    			add_location(div1, file$7, 53, 4, 1875);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -17963,7 +18310,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$6.name,
+    		id: create_default_slot$7.name,
     		type: "slot",
     		source: "(53:2) <SCR_PageFooter>",
     		ctx
@@ -17972,7 +18319,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$6(ctx) {
+    function create_fragment$7(ctx) {
     	let div;
     	let h4;
     	let t1;
@@ -18013,7 +18360,7 @@ var app = (function () {
     				elementProps: {
     					style: "display: inline; cursor: pointer;"
     				},
-    				$$slots: { default: [create_default_slot_1$1] },
+    				$$slots: { default: [create_default_slot_1$2] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -18023,7 +18370,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$6] },
+    				$$slots: { default: [create_default_slot$7] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -18070,28 +18417,28 @@ var app = (function () {
     			t20 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$6, 8, 2, 308);
-    			add_location(b0, file$6, 10, 8, 404);
-    			add_location(br0, file$6, 12, 4, 529);
-    			add_location(br1, file$6, 13, 4, 540);
-    			add_location(br2, file$6, 17, 4, 780);
+    			add_location(h4, file$7, 8, 2, 308);
+    			add_location(b0, file$7, 10, 8, 404);
+    			add_location(br0, file$7, 12, 4, 529);
+    			add_location(br1, file$7, 13, 4, 540);
+    			add_location(br2, file$7, 17, 4, 780);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$6, 9, 2, 367);
+    			add_location(p0, file$7, 9, 2, 367);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$6, 28, 0, 1096);
+    			add_location(b1, file$7, 28, 0, 1096);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$6, 25, 2, 1069);
-    			add_location(br3, file$6, 33, 2, 1250);
+    			add_location(pre0, file$7, 25, 2, 1069);
+    			add_location(br3, file$7, 33, 2, 1250);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$6, 36, 2, 1285);
+    			add_location(p1, file$7, 36, 2, 1285);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$6, 41, 4, 1494);
+    			add_location(small, file$7, 41, 4, 1494);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$6, 40, 2, 1462);
+    			add_location(center, file$7, 40, 2, 1462);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$6, 43, 2, 1575);
+    			add_location(pre1, file$7, 43, 2, 1575);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$6, 7, 0, 283);
+    			add_location(div, file$7, 7, 0, 283);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -18170,7 +18517,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$6.name,
+    		id: create_fragment$7.name,
     		type: "component",
     		source: "",
     		ctx
@@ -18179,7 +18526,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$6($$self, $$props, $$invalidate) {
+    function instance$7($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouteObjectOnError", slots, []);
     	const writable_props = [];
@@ -18201,13 +18548,13 @@ var app = (function () {
     class SCR_RouteObjectOnError extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$6, create_fragment$6, safe_not_equal, {});
+    		init(this, options, instance$7, create_fragment$7, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_RouteObjectOnError",
     			options,
-    			id: create_fragment$6.name
+    			id: create_fragment$7.name
     		});
     	}
     }
@@ -18218,7 +18565,7 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_RouteComponentProperties.svelte generated by Svelte v3.37.0 */
-    const file$5 = "src/docs/pages/SCR_RouteComponentProperties.svelte";
+    const file$6 = "src/docs/pages/SCR_RouteComponentProperties.svelte";
 
     // (15:4) <SCR_ROUTER_LINK       to={{ name: "routeComponentComponentsRoute" }}       elementProps={{ style: "display: inline; cursor: pointer;" }}     >
     function create_default_slot_2(ctx) {
@@ -18232,7 +18579,7 @@ var app = (function () {
     			t1 = text(", and some are crucial for it to work correctly.");
     			attr_dev(a, "href", "/");
     			set_style(a, "pointer-events", "none");
-    			add_location(a, file$5, 18, 6, 679);
+    			add_location(a, file$6, 18, 6, 679);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, a, anchor);
@@ -18256,7 +18603,7 @@ var app = (function () {
     }
 
     // (63:33) <SCR_ROUTER_LINK       to={{ name: "routeObjectOptionsRoute" }}       elementProps={{ style: "display: inline; cursor: pointer;" }}     >
-    function create_default_slot_1(ctx) {
+    function create_default_slot_1$1(ctx) {
     	let a;
 
     	const block = {
@@ -18265,7 +18612,7 @@ var app = (function () {
     			a.textContent = "route object properties section.";
     			attr_dev(a, "href", "/");
     			set_style(a, "pointer-events", "none");
-    			add_location(a, file$5, 66, 6, 2447);
+    			add_location(a, file$6, 66, 6, 2447);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, a, anchor);
@@ -18277,7 +18624,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot_1.name,
+    		id: create_default_slot_1$1.name,
     		type: "slot",
     		source: "(63:33) <SCR_ROUTER_LINK       to={{ name: \\\"routeObjectOptionsRoute\\\" }}       elementProps={{ style: \\\"display: inline; cursor: pointer;\\\" }}     >",
     		ctx
@@ -18287,7 +18634,7 @@ var app = (function () {
     }
 
     // (168:2) <SCR_PageFooter>
-    function create_default_slot$5(ctx) {
+    function create_default_slot$6(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -18321,9 +18668,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$5, 169, 6, 5815);
+    			add_location(div0, file$6, 169, 6, 5815);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$5, 168, 4, 5791);
+    			add_location(div1, file$6, 168, 4, 5791);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -18354,7 +18701,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$5.name,
+    		id: create_default_slot$6.name,
     		type: "slot",
     		source: "(168:2) <SCR_PageFooter>",
     		ctx
@@ -18363,7 +18710,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$5(ctx) {
+    function create_fragment$6(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -18471,7 +18818,7 @@ var app = (function () {
     				elementProps: {
     					style: "display: inline; cursor: pointer;"
     				},
-    				$$slots: { default: [create_default_slot_1] },
+    				$$slots: { default: [create_default_slot_1$1] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -18479,7 +18826,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$5] },
+    				$$slots: { default: [create_default_slot$6] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -18597,79 +18944,79 @@ var app = (function () {
     			t65 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h40, "class", "scr-h4");
-    			add_location(h40, file$5, 7, 2, 232);
+    			add_location(h40, file$6, 7, 2, 232);
     			attr_dev(a, "href", "https://svelte.dev/tutorial/basics");
     			attr_dev(a, "target", "_blank");
-    			add_location(a, file$5, 9, 29, 345);
-    			add_location(br0, file$5, 22, 4, 869);
-    			add_location(br1, file$5, 23, 4, 880);
+    			add_location(a, file$6, 9, 29, 345);
+    			add_location(br0, file$6, 22, 4, 869);
+    			add_location(br1, file$6, 23, 4, 880);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$5, 8, 2, 287);
+    			add_location(p0, file$6, 8, 2, 287);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$5, 30, 0, 978);
+    			add_location(b0, file$6, 30, 0, 978);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$5, 37, 0, 1365);
+    			add_location(b1, file$6, 37, 0, 1365);
     			attr_dev(b2, "class", "scr-b");
-    			add_location(b2, file$5, 40, 8, 1454);
+    			add_location(b2, file$6, 40, 8, 1454);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$5, 44, 0, 1514);
+    			add_location(b3, file$6, 44, 0, 1514);
     			attr_dev(b4, "class", "scr-b");
-    			add_location(b4, file$5, 51, 21, 1792);
+    			add_location(b4, file$6, 51, 21, 1792);
     			attr_dev(b5, "class", "scr-b");
-    			add_location(b5, file$5, 52, 28, 1919);
+    			add_location(b5, file$6, 52, 28, 1919);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$5, 27, 2, 951);
+    			add_location(pre0, file$6, 27, 2, 951);
     			attr_dev(hr0, "class", "scr-hr");
-    			add_location(hr0, file$5, 56, 2, 2038);
+    			add_location(hr0, file$6, 56, 2, 2038);
     			attr_dev(h41, "class", "scr-h4");
-    			add_location(h41, file$5, 57, 2, 2062);
-    			add_location(br2, file$5, 61, 4, 2263);
-    			add_location(br3, file$5, 70, 4, 2569);
-    			add_location(br4, file$5, 71, 4, 2580);
+    			add_location(h41, file$6, 57, 2, 2062);
+    			add_location(br2, file$6, 61, 4, 2263);
+    			add_location(br3, file$6, 70, 4, 2569);
+    			add_location(br4, file$6, 71, 4, 2580);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$5, 58, 2, 2095);
+    			add_location(p1, file$6, 58, 2, 2095);
     			attr_dev(b6, "class", "scr-b");
-    			add_location(b6, file$5, 77, 0, 2703);
+    			add_location(b6, file$6, 77, 0, 2703);
     			attr_dev(b7, "class", "scr-b");
-    			add_location(b7, file$5, 84, 4, 2865);
+    			add_location(b7, file$6, 84, 4, 2865);
     			attr_dev(b8, "class", "scr-b");
-    			add_location(b8, file$5, 89, 4, 3069);
+    			add_location(b8, file$6, 89, 4, 3069);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$5, 74, 2, 2676);
+    			add_location(pre1, file$6, 74, 2, 2676);
     			attr_dev(p2, "class", "scr-text-justify");
-    			add_location(p2, file$5, 116, 2, 4123);
+    			add_location(p2, file$6, 116, 2, 4123);
     			attr_dev(hr1, "class", "scr-hr");
-    			add_location(hr1, file$5, 120, 2, 4316);
+    			add_location(hr1, file$6, 120, 2, 4316);
     			attr_dev(h42, "class", "scr-h4");
-    			add_location(h42, file$5, 121, 2, 4340);
-    			add_location(b9, file$5, 123, 8, 4413);
+    			add_location(h42, file$6, 121, 2, 4340);
+    			add_location(b9, file$6, 123, 8, 4413);
     			attr_dev(p3, "class", "scr-text-justify");
-    			add_location(p3, file$5, 122, 2, 4376);
+    			add_location(p3, file$6, 122, 2, 4376);
     			attr_dev(b10, "class", "scr-b");
-    			add_location(b10, file$5, 130, 0, 4668);
+    			add_location(b10, file$6, 130, 0, 4668);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$5, 127, 2, 4641);
+    			add_location(pre2, file$6, 127, 2, 4641);
     			attr_dev(hr2, "class", "scr-hr");
-    			add_location(hr2, file$5, 135, 2, 4760);
+    			add_location(hr2, file$6, 135, 2, 4760);
     			attr_dev(h43, "class", "scr-h4");
-    			add_location(h43, file$5, 136, 2, 4784);
-    			add_location(b11, file$5, 138, 8, 4865);
+    			add_location(h43, file$6, 136, 2, 4784);
+    			add_location(b11, file$6, 138, 8, 4865);
     			attr_dev(p4, "class", "scr-text-justify");
-    			add_location(p4, file$5, 137, 2, 4828);
+    			add_location(p4, file$6, 137, 2, 4828);
     			attr_dev(b12, "class", "scr-b");
-    			add_location(b12, file$5, 145, 0, 5091);
+    			add_location(b12, file$6, 145, 0, 5091);
     			attr_dev(pre3, "class", "scr-pre");
-    			add_location(pre3, file$5, 142, 2, 5064);
+    			add_location(pre3, file$6, 142, 2, 5064);
     			attr_dev(p5, "class", "scr-text-justify");
-    			add_location(p5, file$5, 150, 2, 5190);
+    			add_location(p5, file$6, 150, 2, 5190);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$5, 155, 4, 5400);
+    			add_location(small, file$6, 155, 4, 5400);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$5, 154, 2, 5368);
+    			add_location(center, file$6, 154, 2, 5368);
     			attr_dev(pre4, "class", "scr-pre");
-    			add_location(pre4, file$5, 157, 2, 5481);
+    			add_location(pre4, file$6, 157, 2, 5481);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$5, 6, 0, 207);
+    			add_location(div, file$6, 6, 0, 207);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -18810,7 +19157,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$5.name,
+    		id: create_fragment$6.name,
     		type: "component",
     		source: "",
     		ctx
@@ -18819,7 +19166,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$5($$self, $$props, $$invalidate) {
+    function instance$6($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouteComponentProperties", slots, []);
     	const writable_props = [];
@@ -18840,13 +19187,13 @@ var app = (function () {
     class SCR_RouteComponentProperties extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$5, create_fragment$5, safe_not_equal, {});
+    		init(this, options, instance$6, create_fragment$6, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_RouteComponentProperties",
     			options,
-    			id: create_fragment$5.name
+    			id: create_fragment$6.name
     		});
     	}
     }
@@ -18857,10 +19204,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_RouteComponentComponents.svelte generated by Svelte v3.37.0 */
-    const file$4 = "src/docs/pages/SCR_RouteComponentComponents.svelte";
+    const file$5 = "src/docs/pages/SCR_RouteComponentComponents.svelte";
 
     // (244:2) <SCR_PageFooter>
-    function create_default_slot$4(ctx) {
+    function create_default_slot$5(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -18894,9 +19241,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$4, 245, 6, 7263);
+    			add_location(div0, file$5, 245, 6, 7263);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$4, 244, 4, 7239);
+    			add_location(div1, file$5, 244, 4, 7239);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -18927,7 +19274,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$4.name,
+    		id: create_default_slot$5.name,
     		type: "slot",
     		source: "(244:2) <SCR_PageFooter>",
     		ctx
@@ -18936,7 +19283,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$4(ctx) {
+    function create_fragment$5(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -19075,7 +19422,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$4] },
+    				$$slots: { default: [create_default_slot$5] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -19257,126 +19604,126 @@ var app = (function () {
     			t106 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h40, "class", "scr-h4");
-    			add_location(h40, file$4, 6, 2, 180);
-    			add_location(br0, file$4, 11, 4, 489);
+    			add_location(h40, file$5, 6, 2, 180);
+    			add_location(br0, file$5, 11, 4, 489);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$4, 7, 2, 235);
+    			add_location(p0, file$5, 7, 2, 235);
     			attr_dev(hr0, "class", "scr-hr");
-    			add_location(hr0, file$4, 14, 2, 549);
+    			add_location(hr0, file$5, 14, 2, 549);
     			attr_dev(h41, "class", "scr-h4");
-    			add_location(h41, file$4, 15, 2, 573);
-    			add_location(br1, file$4, 20, 4, 826);
-    			add_location(br2, file$4, 23, 4, 960);
-    			add_location(br3, file$4, 24, 4, 971);
+    			add_location(h41, file$5, 15, 2, 573);
+    			add_location(br1, file$5, 20, 4, 826);
+    			add_location(br2, file$5, 23, 4, 960);
+    			add_location(br3, file$5, 24, 4, 971);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$4, 16, 2, 616);
+    			add_location(p1, file$5, 16, 2, 616);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$4, 30, 0, 1094);
+    			add_location(b0, file$5, 30, 0, 1094);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$4, 34, 0, 1277);
+    			add_location(b1, file$5, 34, 0, 1277);
     			attr_dev(b2, "class", "scr-b");
-    			add_location(b2, file$4, 37, 8, 1366);
+    			add_location(b2, file$5, 37, 8, 1366);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$4, 41, 0, 1426);
+    			add_location(b3, file$5, 41, 0, 1426);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$4, 27, 2, 1067);
+    			add_location(pre0, file$5, 27, 2, 1067);
     			attr_dev(p2, "class", "scr-text-justify");
-    			add_location(p2, file$4, 47, 2, 1573);
+    			add_location(p2, file$5, 47, 2, 1573);
     			attr_dev(b4, "class", "scr-b");
-    			add_location(b4, file$4, 50, 0, 1677);
+    			add_location(b4, file$5, 50, 0, 1677);
     			attr_dev(b5, "class", "scr-b");
-    			add_location(b5, file$4, 55, 2, 1848);
+    			add_location(b5, file$5, 55, 2, 1848);
     			attr_dev(b6, "class", "scr-b");
-    			add_location(b6, file$4, 59, 2, 2000);
+    			add_location(b6, file$5, 59, 2, 2000);
     			attr_dev(b7, "class", "scr-b");
-    			add_location(b7, file$4, 73, 4, 2399);
+    			add_location(b7, file$5, 73, 4, 2399);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$4, 48, 2, 1651);
+    			add_location(pre1, file$5, 48, 2, 1651);
     			attr_dev(hr1, "class", "scr-hr");
-    			add_location(hr1, file$4, 84, 2, 2701);
+    			add_location(hr1, file$5, 84, 2, 2701);
     			attr_dev(h42, "class", "scr-h4");
-    			add_location(h42, file$4, 85, 2, 2725);
-    			add_location(br4, file$4, 89, 4, 2912);
-    			add_location(b8, file$4, 90, 20, 2939);
-    			add_location(b9, file$4, 91, 4, 2996);
+    			add_location(h42, file$5, 85, 2, 2725);
+    			add_location(br4, file$5, 89, 4, 2912);
+    			add_location(b8, file$5, 90, 20, 2939);
+    			add_location(b9, file$5, 91, 4, 2996);
     			attr_dev(p3, "class", "scr-text-justify");
-    			add_location(p3, file$4, 86, 2, 2769);
+    			add_location(p3, file$5, 86, 2, 2769);
     			attr_dev(b10, "class", "scr-b");
-    			add_location(b10, file$4, 96, 0, 3061);
+    			add_location(b10, file$5, 96, 0, 3061);
     			attr_dev(b11, "class", "scr-b");
-    			add_location(b11, file$4, 100, 0, 3246);
+    			add_location(b11, file$5, 100, 0, 3246);
     			attr_dev(b12, "class", "scr-b");
-    			add_location(b12, file$4, 103, 8, 3335);
+    			add_location(b12, file$5, 103, 8, 3335);
     			attr_dev(b13, "class", "scr-b");
-    			add_location(b13, file$4, 107, 0, 3395);
+    			add_location(b13, file$5, 107, 0, 3395);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$4, 93, 2, 3034);
+    			add_location(pre2, file$5, 93, 2, 3034);
     			attr_dev(p4, "class", "scr-text-justify");
-    			add_location(p4, file$4, 113, 2, 3537);
+    			add_location(p4, file$5, 113, 2, 3537);
     			attr_dev(b14, "class", "scr-b");
-    			add_location(b14, file$4, 116, 0, 3642);
+    			add_location(b14, file$5, 116, 0, 3642);
     			attr_dev(b15, "class", "scr-b");
-    			add_location(b15, file$4, 119, 2, 3722);
+    			add_location(b15, file$5, 119, 2, 3722);
     			attr_dev(pre3, "class", "scr-pre");
-    			add_location(pre3, file$4, 114, 2, 3616);
+    			add_location(pre3, file$5, 114, 2, 3616);
     			attr_dev(hr2, "class", "scr-hr");
-    			add_location(hr2, file$4, 141, 2, 4262);
+    			add_location(hr2, file$5, 141, 2, 4262);
     			attr_dev(h43, "class", "scr-h4");
-    			add_location(h43, file$4, 142, 2, 4286);
-    			add_location(br5, file$4, 146, 4, 4484);
+    			add_location(h43, file$5, 142, 2, 4286);
+    			add_location(br5, file$5, 146, 4, 4484);
     			attr_dev(p5, "class", "scr-text-justify");
-    			add_location(p5, file$4, 143, 2, 4332);
+    			add_location(p5, file$5, 143, 2, 4332);
     			attr_dev(b16, "class", "scr-b");
-    			add_location(b16, file$4, 152, 0, 4577);
+    			add_location(b16, file$5, 152, 0, 4577);
     			attr_dev(b17, "class", "scr-b");
-    			add_location(b17, file$4, 156, 0, 4764);
+    			add_location(b17, file$5, 156, 0, 4764);
     			attr_dev(b18, "class", "scr-b");
-    			add_location(b18, file$4, 159, 8, 4853);
+    			add_location(b18, file$5, 159, 8, 4853);
     			attr_dev(b19, "class", "scr-b");
-    			add_location(b19, file$4, 163, 0, 4913);
+    			add_location(b19, file$5, 163, 0, 4913);
     			attr_dev(pre4, "class", "scr-pre");
-    			add_location(pre4, file$4, 149, 2, 4550);
+    			add_location(pre4, file$5, 149, 2, 4550);
     			attr_dev(p6, "class", "scr-text-justify");
-    			add_location(p6, file$4, 169, 2, 5057);
+    			add_location(p6, file$5, 169, 2, 5057);
     			attr_dev(b20, "class", "scr-b");
-    			add_location(b20, file$4, 172, 0, 5164);
+    			add_location(b20, file$5, 172, 0, 5164);
     			attr_dev(b21, "class", "scr-b");
-    			add_location(b21, file$4, 175, 2, 5246);
+    			add_location(b21, file$5, 175, 2, 5246);
     			attr_dev(pre5, "class", "scr-pre");
-    			add_location(pre5, file$4, 170, 2, 5138);
+    			add_location(pre5, file$5, 170, 2, 5138);
     			attr_dev(hr3, "class", "scr-hr");
-    			add_location(hr3, file$4, 184, 2, 5563);
+    			add_location(hr3, file$5, 184, 2, 5563);
     			attr_dev(h44, "class", "scr-h4");
-    			add_location(h44, file$4, 185, 2, 5587);
-    			add_location(br6, file$4, 189, 4, 5765);
+    			add_location(h44, file$5, 185, 2, 5587);
+    			add_location(br6, file$5, 189, 4, 5765);
     			attr_dev(p7, "class", "scr-text-justify");
-    			add_location(p7, file$4, 186, 2, 5629);
+    			add_location(p7, file$5, 186, 2, 5629);
     			attr_dev(b22, "class", "scr-b");
-    			add_location(b22, file$4, 195, 0, 5858);
+    			add_location(b22, file$5, 195, 0, 5858);
     			attr_dev(b23, "class", "scr-b");
-    			add_location(b23, file$4, 199, 0, 6039);
+    			add_location(b23, file$5, 199, 0, 6039);
     			attr_dev(b24, "class", "scr-b");
-    			add_location(b24, file$4, 202, 8, 6128);
+    			add_location(b24, file$5, 202, 8, 6128);
     			attr_dev(b25, "class", "scr-b");
-    			add_location(b25, file$4, 206, 0, 6188);
+    			add_location(b25, file$5, 206, 0, 6188);
     			attr_dev(pre6, "class", "scr-pre");
-    			add_location(pre6, file$4, 192, 2, 5831);
+    			add_location(pre6, file$5, 192, 2, 5831);
     			attr_dev(p8, "class", "scr-text-justify");
-    			add_location(p8, file$4, 212, 2, 6326);
+    			add_location(p8, file$5, 212, 2, 6326);
     			attr_dev(b26, "class", "scr-b");
-    			add_location(b26, file$4, 215, 0, 6429);
+    			add_location(b26, file$5, 215, 0, 6429);
     			attr_dev(b27, "class", "scr-b");
-    			add_location(b27, file$4, 218, 2, 6507);
+    			add_location(b27, file$5, 218, 2, 6507);
     			attr_dev(pre7, "class", "scr-pre");
-    			add_location(pre7, file$4, 213, 2, 6403);
+    			add_location(pre7, file$5, 213, 2, 6403);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$4, 231, 4, 6848);
+    			add_location(small, file$5, 231, 4, 6848);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$4, 230, 2, 6816);
+    			add_location(center, file$5, 230, 2, 6816);
     			attr_dev(pre8, "class", "scr-pre");
-    			add_location(pre8, file$4, 233, 2, 6929);
+    			add_location(pre8, file$5, 233, 2, 6929);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$4, 5, 0, 155);
+    			add_location(div, file$5, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -19544,7 +19891,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$4.name,
+    		id: create_fragment$5.name,
     		type: "component",
     		source: "",
     		ctx
@@ -19553,7 +19900,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$4($$self, $$props, $$invalidate) {
+    function instance$5($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouteComponentComponents", slots, []);
     	const writable_props = [];
@@ -19569,13 +19916,13 @@ var app = (function () {
     class SCR_RouteComponentComponents extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$4, create_fragment$4, safe_not_equal, {});
+    		init(this, options, instance$5, create_fragment$5, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_RouteComponentComponents",
     			options,
-    			id: create_fragment$4.name
+    			id: create_fragment$5.name
     		});
     	}
     }
@@ -19586,10 +19933,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_NavigationRouting.svelte generated by Svelte v3.37.0 */
-    const file$3 = "src/docs/pages/SCR_NavigationRouting.svelte";
+    const file$4 = "src/docs/pages/SCR_NavigationRouting.svelte";
 
     // (96:2) <SCR_PageFooter>
-    function create_default_slot$3(ctx) {
+    function create_default_slot$4(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -19623,9 +19970,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$3, 97, 6, 2756);
+    			add_location(div0, file$4, 97, 6, 2756);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$3, 96, 4, 2732);
+    			add_location(div1, file$4, 96, 4, 2732);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -19656,7 +20003,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$3.name,
+    		id: create_default_slot$4.name,
     		type: "slot",
     		source: "(96:2) <SCR_PageFooter>",
     		ctx
@@ -19665,7 +20012,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$3(ctx) {
+    function create_fragment$4(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -19752,7 +20099,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$3] },
+    				$$slots: { default: [create_default_slot$4] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -19865,69 +20212,69 @@ var app = (function () {
     			t59 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h40, "class", "scr-h4");
-    			add_location(h40, file$3, 6, 2, 180);
+    			add_location(h40, file$4, 6, 2, 180);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$3, 7, 2, 227);
-    			add_location(b0, file$3, 9, 8, 319);
-    			add_location(li0, file$3, 9, 4, 315);
-    			add_location(b1, file$3, 11, 6, 381);
-    			add_location(li1, file$3, 10, 4, 370);
-    			add_location(ul0, file$3, 8, 2, 306);
-    			add_location(b2, file$3, 16, 43, 560);
+    			add_location(p0, file$4, 7, 2, 227);
+    			add_location(b0, file$4, 9, 8, 319);
+    			add_location(li0, file$4, 9, 4, 315);
+    			add_location(b1, file$4, 11, 6, 381);
+    			add_location(li1, file$4, 10, 4, 370);
+    			add_location(ul0, file$4, 8, 2, 306);
+    			add_location(b2, file$4, 16, 43, 560);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$3, 15, 2, 488);
+    			add_location(p1, file$4, 15, 2, 488);
     			attr_dev(hr0, "class", "scr-hr");
-    			add_location(hr0, file$3, 19, 2, 631);
+    			add_location(hr0, file$4, 19, 2, 631);
     			attr_dev(h41, "class", "scr-h4");
-    			add_location(h41, file$3, 20, 2, 655);
+    			add_location(h41, file$4, 20, 2, 655);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$3, 23, 4, 722);
+    			add_location(b3, file$4, 23, 4, 722);
     			attr_dev(b4, "class", "scr-b");
-    			add_location(b4, file$3, 28, 0, 847);
+    			add_location(b4, file$4, 28, 0, 847);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$3, 21, 2, 692);
+    			add_location(pre0, file$4, 21, 2, 692);
     			attr_dev(hr1, "class", "scr-hr");
-    			add_location(hr1, file$3, 35, 2, 961);
+    			add_location(hr1, file$4, 35, 2, 961);
     			attr_dev(h42, "class", "scr-h4");
-    			add_location(h42, file$3, 36, 2, 985);
+    			add_location(h42, file$4, 36, 2, 985);
     			attr_dev(p2, "class", "scr-text-justify");
-    			add_location(p2, file$3, 37, 2, 1039);
-    			add_location(b5, file$3, 42, 6, 1160);
-    			add_location(b6, file$3, 45, 12, 1272);
-    			add_location(li2, file$3, 45, 8, 1268);
-    			add_location(b7, file$3, 46, 12, 1343);
-    			add_location(li3, file$3, 46, 8, 1339);
-    			add_location(b8, file$3, 47, 12, 1419);
-    			add_location(li4, file$3, 47, 8, 1415);
-    			add_location(ul1, file$3, 44, 6, 1255);
-    			add_location(li5, file$3, 41, 4, 1149);
-    			add_location(br0, file$3, 50, 4, 1511);
-    			add_location(b9, file$3, 52, 6, 1533);
-    			add_location(li6, file$3, 51, 4, 1522);
-    			add_location(br1, file$3, 55, 4, 1673);
-    			add_location(b10, file$3, 57, 6, 1695);
-    			add_location(li7, file$3, 56, 4, 1684);
-    			add_location(ul2, file$3, 40, 2, 1140);
+    			add_location(p2, file$4, 37, 2, 1039);
+    			add_location(b5, file$4, 42, 6, 1160);
+    			add_location(b6, file$4, 45, 12, 1272);
+    			add_location(li2, file$4, 45, 8, 1268);
+    			add_location(b7, file$4, 46, 12, 1343);
+    			add_location(li3, file$4, 46, 8, 1339);
+    			add_location(b8, file$4, 47, 12, 1419);
+    			add_location(li4, file$4, 47, 8, 1415);
+    			add_location(ul1, file$4, 44, 6, 1255);
+    			add_location(li5, file$4, 41, 4, 1149);
+    			add_location(br0, file$4, 50, 4, 1511);
+    			add_location(b9, file$4, 52, 6, 1533);
+    			add_location(li6, file$4, 51, 4, 1522);
+    			add_location(br1, file$4, 55, 4, 1673);
+    			add_location(b10, file$4, 57, 6, 1695);
+    			add_location(li7, file$4, 56, 4, 1684);
+    			add_location(ul2, file$4, 40, 2, 1140);
     			attr_dev(hr2, "class", "scr-hr");
-    			add_location(hr2, file$3, 62, 2, 1921);
+    			add_location(hr2, file$4, 62, 2, 1921);
     			attr_dev(h43, "class", "scr-h4");
-    			add_location(h43, file$3, 63, 2, 1945);
+    			add_location(h43, file$4, 63, 2, 1945);
     			attr_dev(b11, "class", "scr-b");
-    			add_location(b11, file$3, 66, 4, 2012);
+    			add_location(b11, file$4, 66, 4, 2012);
     			attr_dev(b12, "class", "scr-b");
-    			add_location(b12, file$3, 71, 0, 2137);
+    			add_location(b12, file$4, 71, 0, 2137);
     			attr_dev(b13, "class", "scr-b");
-    			add_location(b13, file$3, 75, 2, 2199);
+    			add_location(b13, file$4, 75, 2, 2199);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$3, 64, 2, 1982);
+    			add_location(pre1, file$4, 64, 2, 1982);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$3, 83, 4, 2370);
+    			add_location(small, file$4, 83, 4, 2370);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$3, 82, 2, 2338);
+    			add_location(center, file$4, 82, 2, 2338);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$3, 85, 2, 2451);
+    			add_location(pre2, file$4, 85, 2, 2451);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$3, 5, 0, 155);
+    			add_location(div, file$4, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -20043,7 +20390,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$3.name,
+    		id: create_fragment$4.name,
     		type: "component",
     		source: "",
     		ctx
@@ -20052,7 +20399,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$3($$self, $$props, $$invalidate) {
+    function instance$4($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_NavigationRouting", slots, []);
     	const writable_props = [];
@@ -20068,13 +20415,13 @@ var app = (function () {
     class SCR_NavigationRouting extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$3, create_fragment$3, safe_not_equal, {});
+    		init(this, options, instance$4, create_fragment$4, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_NavigationRouting",
     			options,
-    			id: create_fragment$3.name
+    			id: create_fragment$4.name
     		});
     	}
     }
@@ -20085,10 +20432,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_NavigationStore.svelte generated by Svelte v3.37.0 */
-    const file$2 = "src/docs/pages/SCR_NavigationStore.svelte";
+    const file$3 = "src/docs/pages/SCR_NavigationStore.svelte";
 
     // (60:2) <SCR_PageFooter>
-    function create_default_slot$2(ctx) {
+    function create_default_slot$3(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -20122,9 +20469,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$2, 61, 6, 1620);
+    			add_location(div0, file$3, 61, 6, 1620);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$2, 60, 4, 1596);
+    			add_location(div1, file$3, 60, 4, 1596);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -20155,7 +20502,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$2.name,
+    		id: create_default_slot$3.name,
     		type: "slot",
     		source: "(60:2) <SCR_PageFooter>",
     		ctx
@@ -20164,7 +20511,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$2(ctx) {
+    function create_fragment$3(ctx) {
     	let div;
     	let h4;
     	let t1;
@@ -20195,7 +20542,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$2] },
+    				$$slots: { default: [create_default_slot$3] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -20237,29 +20584,29 @@ var app = (function () {
     			t18 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h4, "class", "scr-h4");
-    			add_location(h4, file$2, 6, 2, 180);
-    			add_location(br0, file$2, 13, 4, 592);
-    			add_location(br1, file$2, 14, 4, 603);
+    			add_location(h4, file$3, 6, 2, 180);
+    			add_location(br0, file$3, 13, 4, 592);
+    			add_location(br1, file$3, 14, 4, 603);
     			attr_dev(p, "class", "scr-text-justify");
-    			add_location(p, file$2, 7, 2, 225);
+    			add_location(p, file$3, 7, 2, 225);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$2, 20, 4, 748);
+    			add_location(b0, file$3, 20, 4, 748);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$2, 27, 0, 885);
+    			add_location(b1, file$3, 27, 0, 885);
     			attr_dev(b2, "class", "scr-b");
-    			add_location(b2, file$2, 32, 2, 948);
+    			add_location(b2, file$3, 32, 2, 948);
     			attr_dev(b3, "class", "scr-b");
-    			add_location(b3, file$2, 37, 2, 1050);
+    			add_location(b3, file$3, 37, 2, 1050);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$2, 18, 2, 718);
+    			add_location(pre0, file$3, 18, 2, 718);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$2, 46, 4, 1241);
+    			add_location(small, file$3, 46, 4, 1241);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$2, 45, 2, 1209);
+    			add_location(center, file$3, 45, 2, 1209);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$2, 48, 2, 1322);
+    			add_location(pre1, file$3, 48, 2, 1322);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$2, 5, 0, 155);
+    			add_location(div, file$3, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -20319,7 +20666,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$2.name,
+    		id: create_fragment$3.name,
     		type: "component",
     		source: "",
     		ctx
@@ -20328,7 +20675,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$2($$self, $$props, $$invalidate) {
+    function instance$3($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_NavigationStore", slots, []);
     	const writable_props = [];
@@ -20344,13 +20691,13 @@ var app = (function () {
     class SCR_NavigationStore extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {});
+    		init(this, options, instance$3, create_fragment$3, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_NavigationStore",
     			options,
-    			id: create_fragment$2.name
+    			id: create_fragment$3.name
     		});
     	}
     }
@@ -20361,10 +20708,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_RouterLinkProperties.svelte generated by Svelte v3.37.0 */
-    const file$1 = "src/docs/pages/SCR_RouterLinkProperties.svelte";
+    const file$2 = "src/docs/pages/SCR_RouterLinkProperties.svelte";
 
     // (104:2) <SCR_PageFooter>
-    function create_default_slot$1(ctx) {
+    function create_default_slot$2(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -20398,9 +20745,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file$1, 105, 6, 3421);
+    			add_location(div0, file$2, 105, 6, 3421);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file$1, 104, 4, 3397);
+    			add_location(div1, file$2, 104, 4, 3397);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -20431,7 +20778,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot$1.name,
+    		id: create_default_slot$2.name,
     		type: "slot",
     		source: "(104:2) <SCR_PageFooter>",
     		ctx
@@ -20440,7 +20787,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$1(ctx) {
+    function create_fragment$2(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -20514,7 +20861,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot$1] },
+    				$$slots: { default: [create_default_slot$2] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -20609,57 +20956,57 @@ var app = (function () {
     			t48 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h40, "class", "scr-h4");
-    			add_location(h40, file$1, 6, 2, 180);
-    			add_location(br0, file$1, 10, 4, 380);
+    			add_location(h40, file$2, 6, 2, 180);
+    			add_location(br0, file$2, 10, 4, 380);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file$1, 7, 2, 217);
+    			add_location(p0, file$2, 7, 2, 217);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file$1, 15, 4, 465);
+    			add_location(b0, file$2, 15, 4, 465);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file$1, 22, 0, 626);
+    			add_location(b1, file$2, 22, 0, 626);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file$1, 13, 2, 435);
+    			add_location(pre0, file$2, 13, 2, 435);
     			attr_dev(hr, "class", "scr-hr");
-    			add_location(hr, file$1, 35, 2, 1056);
+    			add_location(hr, file$2, 35, 2, 1056);
     			attr_dev(h41, "class", "scr-h4");
-    			add_location(h41, file$1, 36, 2, 1080);
+    			add_location(h41, file$2, 36, 2, 1080);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file$1, 37, 2, 1117);
-    			add_location(b2, file$1, 43, 6, 1270);
-    			add_location(b3, file$1, 46, 12, 1382);
-    			add_location(li0, file$1, 46, 8, 1378);
-    			add_location(b4, file$1, 47, 12, 1453);
-    			add_location(li1, file$1, 47, 8, 1449);
-    			add_location(b5, file$1, 48, 12, 1529);
-    			add_location(li2, file$1, 48, 8, 1525);
-    			add_location(ul0, file$1, 45, 6, 1365);
-    			add_location(li3, file$1, 42, 4, 1259);
-    			add_location(br1, file$1, 51, 4, 1621);
-    			add_location(b6, file$1, 53, 6, 1643);
-    			add_location(li4, file$1, 52, 4, 1632);
-    			add_location(br2, file$1, 56, 4, 1776);
-    			add_location(b7, file$1, 58, 6, 1798);
-    			add_location(li5, file$1, 57, 4, 1787);
-    			add_location(br3, file$1, 62, 4, 2018);
-    			add_location(b8, file$1, 64, 6, 2040);
-    			add_location(li6, file$1, 63, 4, 2029);
-    			add_location(ul1, file$1, 41, 2, 1250);
+    			add_location(p1, file$2, 37, 2, 1117);
+    			add_location(b2, file$2, 43, 6, 1270);
+    			add_location(b3, file$2, 46, 12, 1382);
+    			add_location(li0, file$2, 46, 8, 1378);
+    			add_location(b4, file$2, 47, 12, 1453);
+    			add_location(li1, file$2, 47, 8, 1449);
+    			add_location(b5, file$2, 48, 12, 1529);
+    			add_location(li2, file$2, 48, 8, 1525);
+    			add_location(ul0, file$2, 45, 6, 1365);
+    			add_location(li3, file$2, 42, 4, 1259);
+    			add_location(br1, file$2, 51, 4, 1621);
+    			add_location(b6, file$2, 53, 6, 1643);
+    			add_location(li4, file$2, 52, 4, 1632);
+    			add_location(br2, file$2, 56, 4, 1776);
+    			add_location(b7, file$2, 58, 6, 1798);
+    			add_location(li5, file$2, 57, 4, 1787);
+    			add_location(br3, file$2, 62, 4, 2018);
+    			add_location(b8, file$2, 64, 6, 2040);
+    			add_location(li6, file$2, 63, 4, 2029);
+    			add_location(ul1, file$2, 41, 2, 1250);
     			attr_dev(p2, "class", "scr-text-justify");
-    			add_location(p2, file$1, 68, 2, 2183);
+    			add_location(p2, file$2, 68, 2, 2183);
     			attr_dev(b9, "class", "scr-b");
-    			add_location(b9, file$1, 71, 4, 2273);
+    			add_location(b9, file$2, 71, 4, 2273);
     			attr_dev(b10, "class", "scr-b");
-    			add_location(b10, file$1, 78, 0, 2434);
+    			add_location(b10, file$2, 78, 0, 2434);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file$1, 69, 2, 2243);
+    			add_location(pre1, file$2, 69, 2, 2243);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file$1, 91, 4, 3023);
+    			add_location(small, file$2, 91, 4, 3023);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file$1, 90, 2, 2991);
+    			add_location(center, file$2, 90, 2, 2991);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file$1, 93, 2, 3104);
+    			add_location(pre2, file$2, 93, 2, 3104);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file$1, 5, 0, 155);
+    			add_location(div, file$2, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -20762,7 +21109,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$1.name,
+    		id: create_fragment$2.name,
     		type: "component",
     		source: "",
     		ctx
@@ -20771,7 +21118,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$1($$self, $$props, $$invalidate) {
+    function instance$2($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouterLinkProperties", slots, []);
     	const writable_props = [];
@@ -20787,13 +21134,13 @@ var app = (function () {
     class SCR_RouterLinkProperties extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {});
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_RouterLinkProperties",
     			options,
-    			id: create_fragment$1.name
+    			id: create_fragment$2.name
     		});
     	}
     }
@@ -20804,10 +21151,10 @@ var app = (function () {
     });
 
     /* src/docs/pages/SCR_RouterStoreProperties.svelte generated by Svelte v3.37.0 */
-    const file = "src/docs/pages/SCR_RouterStoreProperties.svelte";
+    const file$1 = "src/docs/pages/SCR_RouterStoreProperties.svelte";
 
     // (108:2) <SCR_PageFooter>
-    function create_default_slot(ctx) {
+    function create_default_slot$1(ctx) {
     	let div1;
     	let div0;
     	let scr_pushroutebutton0;
@@ -20826,10 +21173,9 @@ var app = (function () {
 
     	scr_pushroutebutton1 = new SCR_PushRouteButton({
     			props: {
-    				style: "float:right; opacity: 0.5",
+    				style: "float:right;",
     				text: "Next",
-    				routeName: "routerStorePropertiesRoute",
-    				title: "More content to be added"
+    				routeName: "test1Route"
     			},
     			$$inline: true
     		});
@@ -20842,9 +21188,9 @@ var app = (function () {
     			t = space();
     			create_component(scr_pushroutebutton1.$$.fragment);
     			attr_dev(div0, "class", "col");
-    			add_location(div0, file, 109, 6, 3071);
+    			add_location(div0, file$1, 109, 6, 3071);
     			attr_dev(div1, "class", "row");
-    			add_location(div1, file, 108, 4, 3047);
+    			add_location(div1, file$1, 108, 4, 3047);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -20875,7 +21221,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_default_slot.name,
+    		id: create_default_slot$1.name,
     		type: "slot",
     		source: "(108:2) <SCR_PageFooter>",
     		ctx
@@ -20884,7 +21230,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment(ctx) {
+    function create_fragment$1(ctx) {
     	let div;
     	let h40;
     	let t1;
@@ -20917,7 +21263,7 @@ var app = (function () {
 
     	scr_pagefooter = new SCR_PageFooter({
     			props: {
-    				$$slots: { default: [create_default_slot] },
+    				$$slots: { default: [create_default_slot$1] },
     				$$scope: { ctx }
     			},
     			$$inline: true
@@ -20962,32 +21308,32 @@ var app = (function () {
     			t20 = space();
     			create_component(scr_pagefooter.$$.fragment);
     			attr_dev(h40, "class", "scr-h4");
-    			add_location(h40, file, 6, 2, 180);
-    			add_location(br, file, 10, 4, 388);
+    			add_location(h40, file$1, 6, 2, 180);
+    			add_location(br, file$1, 10, 4, 388);
     			attr_dev(p0, "class", "scr-text-justify");
-    			add_location(p0, file, 7, 2, 218);
+    			add_location(p0, file$1, 7, 2, 218);
     			attr_dev(b0, "class", "scr-b");
-    			add_location(b0, file, 15, 4, 473);
+    			add_location(b0, file$1, 15, 4, 473);
     			attr_dev(b1, "class", "scr-b");
-    			add_location(b1, file, 21, 2, 619);
+    			add_location(b1, file$1, 21, 2, 619);
     			attr_dev(pre0, "class", "scr-pre");
-    			add_location(pre0, file, 13, 2, 443);
+    			add_location(pre0, file$1, 13, 2, 443);
     			attr_dev(hr, "class", "scr-hr");
-    			add_location(hr, file, 39, 2, 1200);
+    			add_location(hr, file$1, 39, 2, 1200);
     			attr_dev(h41, "class", "scr-h4");
-    			add_location(h41, file, 40, 2, 1224);
+    			add_location(h41, file$1, 40, 2, 1224);
     			attr_dev(p1, "class", "scr-text-justify");
-    			add_location(p1, file, 41, 2, 1261);
+    			add_location(p1, file$1, 41, 2, 1261);
     			attr_dev(pre1, "class", "scr-pre");
-    			add_location(pre1, file, 42, 2, 1328);
+    			add_location(pre1, file$1, 42, 2, 1328);
     			attr_dev(small, "class", "scr-small");
-    			add_location(small, file, 95, 4, 2669);
+    			add_location(small, file$1, 95, 4, 2669);
     			attr_dev(center, "class", "scr-center");
-    			add_location(center, file, 94, 2, 2637);
+    			add_location(center, file$1, 94, 2, 2637);
     			attr_dev(pre2, "class", "scr-pre");
-    			add_location(pre2, file, 97, 2, 2750);
+    			add_location(pre2, file$1, 97, 2, 2750);
     			attr_dev(div, "class", "scr-page");
-    			add_location(div, file, 5, 0, 155);
+    			add_location(div, file$1, 5, 0, 155);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -21049,7 +21395,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment.name,
+    		id: create_fragment$1.name,
     		type: "component",
     		source: "",
     		ctx
@@ -21058,7 +21404,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance($$self, $$props, $$invalidate) {
+    function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("SCR_RouterStoreProperties", slots, []);
     	const writable_props = [];
@@ -21074,13 +21420,13 @@ var app = (function () {
     class SCR_RouterStoreProperties extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, {});
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "SCR_RouterStoreProperties",
     			options,
-    			id: create_fragment.name
+    			id: create_fragment$1.name
     		});
     	}
     }
@@ -21088,6 +21434,430 @@ var app = (function () {
     var SCR_RouterStoreProperties$1 = /*#__PURE__*/Object.freeze({
         __proto__: null,
         'default': SCR_RouterStoreProperties
+    });
+
+    /* src/docs/pages/SCR_Test1.svelte generated by Svelte v3.37.0 */
+    const file = "src/docs/pages/SCR_Test1.svelte";
+
+    // (37:2) <SCR_ROUTER_LINK to={{ path: `/svelte-client-router/${nextParam}/test1` }}>
+    function create_default_slot_1(ctx) {
+    	let div;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			div.textContent = "Test Route With Param";
+    			attr_dev(div, "class", "scr-btn");
+    			add_location(div, file, 37, 4, 1041);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot_1.name,
+    		type: "slot",
+    		source: "(37:2) <SCR_ROUTER_LINK to={{ path: `/svelte-client-router/${nextParam}/test1` }}>",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (55:2) <SCR_PageFooter>
+    function create_default_slot(ctx) {
+    	let div1;
+    	let div0;
+    	let scr_pushroutebutton0;
+    	let t;
+    	let scr_pushroutebutton1;
+    	let current;
+
+    	scr_pushroutebutton0 = new SCR_PushRouteButton({
+    			props: {
+    				style: "float:left",
+    				text: "Previous",
+    				routeName: "routerStorePropertiesRoute"
+    			},
+    			$$inline: true
+    		});
+
+    	scr_pushroutebutton1 = new SCR_PushRouteButton({
+    			props: {
+    				style: "float:right; opacity: 0.5",
+    				text: "Next",
+    				routeName: "test1Route",
+    				title: "More content to be added"
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			div1 = element("div");
+    			div0 = element("div");
+    			create_component(scr_pushroutebutton0.$$.fragment);
+    			t = space();
+    			create_component(scr_pushroutebutton1.$$.fragment);
+    			attr_dev(div0, "class", "col");
+    			add_location(div0, file, 56, 6, 1531);
+    			attr_dev(div1, "class", "row");
+    			add_location(div1, file, 55, 4, 1507);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, div0);
+    			mount_component(scr_pushroutebutton0, div0, null);
+    			append_dev(div0, t);
+    			mount_component(scr_pushroutebutton1, div0, null);
+    			current = true;
+    		},
+    		p: noop,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(scr_pushroutebutton0.$$.fragment, local);
+    			transition_in(scr_pushroutebutton1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(scr_pushroutebutton0.$$.fragment, local);
+    			transition_out(scr_pushroutebutton1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div1);
+    			destroy_component(scr_pushroutebutton0);
+    			destroy_component(scr_pushroutebutton1);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot.name,
+    		type: "slot",
+    		source: "(55:2) <SCR_PageFooter>",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment(ctx) {
+    	let div1;
+    	let h4;
+    	let t1;
+    	let p;
+    	let t2;
+    	let br0;
+    	let t3;
+    	let br1;
+    	let t4;
+    	let b;
+    	let t5_value = /*pathParams*/ ctx[0].teste + "";
+    	let t5;
+    	let t6;
+    	let br2;
+    	let t7;
+    	let br3;
+    	let t8;
+    	let t9;
+    	let div0;
+    	let label;
+    	let t11;
+    	let input;
+    	let t12;
+    	let scr_router_link;
+    	let t13;
+    	let hr;
+    	let t14;
+    	let center;
+    	let small;
+    	let t16;
+    	let pre;
+    	let t18;
+    	let scr_pagefooter;
+    	let current;
+    	let mounted;
+    	let dispose;
+
+    	scr_router_link = new SCR_ROUTER_LINK({
+    			props: {
+    				to: {
+    					path: `/svelte-client-router/${/*nextParam*/ ctx[1]}/test1`
+    				},
+    				$$slots: { default: [create_default_slot_1] },
+    				$$scope: { ctx }
+    			},
+    			$$inline: true
+    		});
+
+    	scr_pagefooter = new SCR_PageFooter({
+    			props: {
+    				$$slots: { default: [create_default_slot] },
+    				$$scope: { ctx }
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			div1 = element("div");
+    			h4 = element("h4");
+    			h4.textContent = "Test 1";
+    			t1 = space();
+    			p = element("p");
+    			t2 = text("This route tests regex param path.\n    ");
+    			br0 = element("br");
+    			t3 = space();
+    			br1 = element("br");
+    			t4 = text("\n    The route param path passed is: ");
+    			b = element("b");
+    			t5 = text(t5_value);
+    			t6 = space();
+    			br2 = element("br");
+    			t7 = space();
+    			br3 = element("br");
+    			t8 = text("\n    Try it!");
+    			t9 = space();
+    			div0 = element("div");
+    			label = element("label");
+    			label.textContent = "Route Param";
+    			t11 = space();
+    			input = element("input");
+    			t12 = space();
+    			create_component(scr_router_link.$$.fragment);
+    			t13 = space();
+    			hr = element("hr");
+    			t14 = space();
+    			center = element("center");
+    			small = element("small");
+    			small.textContent = "The configuration for this route.";
+    			t16 = space();
+    			pre = element("pre");
+    			pre.textContent = "{\n  name: \"test1Route\",\n  path: \"/svelte-client-router/:teste/test1\",\n  lazyLoadComponent: () =>\n    import(\"./docs/pages/SCR_Test1.svelte\"),\n  title: \"SCR - Test 1\",\n  forceReload: true\n}";
+    			t18 = space();
+    			create_component(scr_pagefooter.$$.fragment);
+    			attr_dev(h4, "class", "scr-h4");
+    			add_location(h4, file, 16, 2, 471);
+    			add_location(br0, file, 19, 4, 576);
+    			add_location(br1, file, 20, 4, 587);
+    			add_location(b, file, 21, 36, 630);
+    			add_location(br2, file, 22, 4, 660);
+    			add_location(br3, file, 23, 4, 671);
+    			attr_dev(p, "class", "scr-text-justify");
+    			add_location(p, file, 17, 2, 504);
+    			attr_dev(label, "for", "scr-next-param");
+    			attr_dev(label, "class", "form-label");
+    			add_location(label, file, 27, 4, 722);
+    			attr_dev(input, "type", "text");
+    			attr_dev(input, "class", "form-control form-control-sm");
+    			attr_dev(input, "id", "scr-next-param");
+    			attr_dev(input, "placeholder", ":teste");
+    			add_location(input, file, 28, 4, 793);
+    			attr_dev(div0, "class", "mb-3");
+    			add_location(div0, file, 26, 2, 699);
+    			attr_dev(hr, "class", "scr-hr");
+    			add_location(hr, file, 39, 2, 1113);
+    			attr_dev(small, "class", "scr-small");
+    			add_location(small, file, 41, 4, 1169);
+    			attr_dev(center, "class", "scr-center");
+    			add_location(center, file, 40, 2, 1137);
+    			attr_dev(pre, "class", "scr-pre");
+    			add_location(pre, file, 43, 2, 1250);
+    			attr_dev(div1, "class", "scr-page");
+    			add_location(div1, file, 15, 0, 446);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, h4);
+    			append_dev(div1, t1);
+    			append_dev(div1, p);
+    			append_dev(p, t2);
+    			append_dev(p, br0);
+    			append_dev(p, t3);
+    			append_dev(p, br1);
+    			append_dev(p, t4);
+    			append_dev(p, b);
+    			append_dev(b, t5);
+    			append_dev(p, t6);
+    			append_dev(p, br2);
+    			append_dev(p, t7);
+    			append_dev(p, br3);
+    			append_dev(p, t8);
+    			append_dev(div1, t9);
+    			append_dev(div1, div0);
+    			append_dev(div0, label);
+    			append_dev(div0, t11);
+    			append_dev(div0, input);
+    			set_input_value(input, /*nextParam*/ ctx[1]);
+    			append_dev(div1, t12);
+    			mount_component(scr_router_link, div1, null);
+    			append_dev(div1, t13);
+    			append_dev(div1, hr);
+    			append_dev(div1, t14);
+    			append_dev(div1, center);
+    			append_dev(center, small);
+    			append_dev(div1, t16);
+    			append_dev(div1, pre);
+    			append_dev(div1, t18);
+    			mount_component(scr_pagefooter, div1, null);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = listen_dev(input, "input", /*input_input_handler*/ ctx[2]);
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if ((!current || dirty & /*pathParams*/ 1) && t5_value !== (t5_value = /*pathParams*/ ctx[0].teste + "")) set_data_dev(t5, t5_value);
+
+    			if (dirty & /*nextParam*/ 2 && input.value !== /*nextParam*/ ctx[1]) {
+    				set_input_value(input, /*nextParam*/ ctx[1]);
+    			}
+
+    			const scr_router_link_changes = {};
+
+    			if (dirty & /*nextParam*/ 2) scr_router_link_changes.to = {
+    				path: `/svelte-client-router/${/*nextParam*/ ctx[1]}/test1`
+    			};
+
+    			if (dirty & /*$$scope*/ 16) {
+    				scr_router_link_changes.$$scope = { dirty, ctx };
+    			}
+
+    			scr_router_link.$set(scr_router_link_changes);
+    			const scr_pagefooter_changes = {};
+
+    			if (dirty & /*$$scope*/ 16) {
+    				scr_pagefooter_changes.$$scope = { dirty, ctx };
+    			}
+
+    			scr_pagefooter.$set(scr_pagefooter_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(scr_router_link.$$.fragment, local);
+    			transition_in(scr_pagefooter.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(scr_router_link.$$.fragment, local);
+    			transition_out(scr_pagefooter.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div1);
+    			destroy_component(scr_router_link);
+    			destroy_component(scr_pagefooter);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("SCR_Test1", slots, []);
+    	let { pathParams } = $$props;
+    	let nextParam = "";
+    	let regex = /[A-Za-zÀ-ú0-9]/g;
+    	const writable_props = ["pathParams"];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<SCR_Test1> was created with unknown prop '${key}'`);
+    	});
+
+    	function input_input_handler() {
+    		nextParam = this.value;
+    		($$invalidate(1, nextParam), $$invalidate(3, regex));
+    	}
+
+    	$$self.$$set = $$props => {
+    		if ("pathParams" in $$props) $$invalidate(0, pathParams = $$props.pathParams);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		SCR_ROUTER_LINK,
+    		SCR_PageFooter,
+    		SCR_PushRouteButton,
+    		pathParams,
+    		nextParam,
+    		regex
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("pathParams" in $$props) $$invalidate(0, pathParams = $$props.pathParams);
+    		if ("nextParam" in $$props) $$invalidate(1, nextParam = $$props.nextParam);
+    		if ("regex" in $$props) $$invalidate(3, regex = $$props.regex);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*nextParam*/ 2) {
+    			if (nextParam) {
+    				const match = nextParam.match(regex);
+    				const value = match ? match.join("").substr(0, 100) + "" : "";
+    				$$invalidate(1, nextParam = value);
+    			}
+    		}
+    	};
+
+    	return [pathParams, nextParam, input_input_handler];
+    }
+
+    class SCR_Test1 extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance, create_fragment, safe_not_equal, { pathParams: 0 });
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "SCR_Test1",
+    			options,
+    			id: create_fragment.name
+    		});
+
+    		const { ctx } = this.$$;
+    		const props = options.props || {};
+
+    		if (/*pathParams*/ ctx[0] === undefined && !("pathParams" in props)) {
+    			console.warn("<SCR_Test1> was created without expected prop 'pathParams'");
+    		}
+    	}
+
+    	get pathParams() {
+    		throw new Error("<SCR_Test1>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set pathParams(value) {
+    		throw new Error("<SCR_Test1>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
+
+    var SCR_Test1$1 = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        'default': SCR_Test1
     });
 
     return app;

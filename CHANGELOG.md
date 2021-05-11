@@ -1,5 +1,14 @@
 # Svelte Router changelog
 
+## 1.1.0
+
+- RegexPath - now you can declare an route with params /my/route/:with/params
+- Divided code into another file - improving readability
+- Fixed name of considerTrailingSlashOnMachingRoute to considerTrailingSlashOnMatchingRoute
+- Fixed issue on hash routing with query params - keeping hashing on route
+- Fixed issue on updating variables passed to beforeEnters functions
+- Several improvements regarding finding a route match
+
 ## 1.0.14
 
 - Fixed issue with query params on routing

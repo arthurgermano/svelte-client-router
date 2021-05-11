@@ -46,6 +46,14 @@
     As it is an identification property must be unique. If some route is declared
     with the same path, it will always find the first route with that path and route
     to it.
+    <br />
+    <br />
+    You can use regex in your route like ":myVar". For example:
+    <br />
+    <b>path: "/path/:someVar/my/route/:someOtherVar",</b>
+    <br />
+    <br />
+    It will be made available on all beforeEnter Functions, After Enter Function and Components;
   </p>
   <pre
     class="scr-pre">
@@ -53,10 +61,25 @@
 // ## Route Path
 // ## The path identifying this route
 // ## String - Obrigatory
+// ## Can declare regex like /test1/:paramA/test2/:paramB
+// ## The regex must have the format ":string"
 // ## Default value: none
 </b>
 &#123;
   path: "/path/to/my/route",
+
+  <b class="scr-b">
+// OR Can declare regex path
+  // it will be made available on all beforeEnter Functions, After Enter Function and Component
+  </b>
+  path: "/path/:to/:my/route",
+
+  <b class="scr-b">
+// pathParams: &#123;
+  //  to: "myroutedefinedvalue"
+  //  my: "myroutedefinedvalue"
+  // &#125;
+  </b>
 &#125;
 </pre>
   <!-- ------------------------------------------------------------------------------ -->

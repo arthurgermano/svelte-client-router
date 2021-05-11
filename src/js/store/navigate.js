@@ -4,12 +4,14 @@ import {
   getStoreState,
   updateStoreKey,
   getStoreKey,
-} from "../functions";
+} from "../helpers/functions";
 import * as lsPlugin from "../../plugins/lsplugin.js";
 import * as lfPlugin from "../../plugins/lfplugin.js";
 
 import configStore from "./config.js";
 import routeStore from "./router.js";
+
+import { getFindRouteFunc } from "../routerFunctions.js"
 
 const storeTemplate = {
   pushRoute: false,
@@ -22,7 +24,7 @@ let backRouteNavigation;
 
 // --------------  pushRoute Property  --------------------------------------------------
 
-function pushRoute(route, params, onError) {
+function pushRoute(route, params = {}, onError) {
   if (!route) {
     const error = new Error(`SCR_ROUTER - Route not defined - ${route}`);
     if (typeof onError === "function") {
@@ -32,12 +34,13 @@ function pushRoute(route, params, onError) {
     }
   }
   const routes = routeStore.getRoutes();
+  
+  let realParamPath = { path: false };
   routeNavigation = undefined;
-
   if (typeof route === "string") {
-    routeNavigation = routes.find((rItem) => rItem.path === route);
+    routeNavigation = routes.find(getFindRouteFunc(route, realParamPath));
   } else if (route.path) {
-    routeNavigation = routes.find((rItem) => rItem.path === route.path);
+    routeNavigation = routes.find(getFindRouteFunc(route.path, realParamPath));
   } else if (route.name) {
     routeNavigation = routes.find((rItem) => rItem.name === route.name);
   }
@@ -47,7 +50,10 @@ function pushRoute(route, params, onError) {
       notFound: true,
       path: typeof route === "string" ? route : route.path || "",
     };
-  }
+  } 
+  if (realParamPath.path) {
+    routeNavigation.realParamPath = realParamPath.path;
+  } 
 
   if (onError && typeof onError === "function") {
     routeNavigation.onError = onError;

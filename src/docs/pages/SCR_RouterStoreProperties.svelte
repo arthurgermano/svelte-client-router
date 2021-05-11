@@ -114,10 +114,9 @@
           routeName="routerLinkPropertiesRoute"
         />
         <SCR_PushRouteButton
-          style="float:right; opacity: 0.5"
+          style="float:right;"
           text="Next"
-          routeName="routerStorePropertiesRoute"
-          title="More content to be added"
+          routeName="test1Route"
         />
       </div>
     </div>

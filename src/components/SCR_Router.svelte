@@ -2,9 +2,17 @@
   // -----------------  Import Variables  ----------------------------------------------
 
   import { onMount } from "svelte";
-  import { assign } from "../js/functions.js";
-  import * as LS from "../plugins/lsplugin.js";
-  import * as LF from "../plugins/lfplugin.js";
+  import { assign } from "../js/helpers/functions.js";
+  import {
+    loadFromStorage,
+    getBeforeEnterAsArray,
+    getFindRouteFunc,
+    getLocation,
+    getPathParams,
+    getQueryParams,
+    getQueryParamsToPath,
+    replacePathParamWithParams,
+  } from "../js/routerFunctions.js";
   import configStore from "../js/store/config.js";
   import routerStore from "../js/store/router.js";
   import navigateStore from "../js/store/navigate.js";
@@ -38,56 +46,15 @@
   let isBacking = false;
 
   // -----------------------------------------------------------------------------------
-  // -----------------  function setErrorComponent  ------------------------------------
-
-  function getQueryParamsToPath() {
-    if (
-      !currentLocation ||
-      typeof currentLocation != "object" ||
-      !currentLocation.params
-    ) {
-      return "";
-    }
-    let queryToPath = "?";
-    if ($configStore.hashMode) {
-      let queryArr = currentLocation.pathname.split("?");
-      if (queryArr && queryArr[1]) {
-
-        return "?"+queryArr[1];
-      }
-      return "";
-    }
-    for (let key in currentLocation.params) {
-      queryToPath += `${key}=${currentLocation.params[key]}&`;
-    }
-    return queryToPath.slice(0, -1);
-  }
-
-  // -----------------------------------------------------------------------------------
-  // -----------------  function getBeforeEnterAsArray  --------------------------------
-
-  function getBeforeEnterAsArray(beforeEnterFuncOrArr) {
-    if (!beforeEnterFuncOrArr) {
-      return [];
-    }
-    if (Array.isArray(beforeEnterFuncOrArr)) {
-      return beforeEnterFuncOrArr;
-    }
-    if (typeof beforeEnterFuncOrArr === "function") {
-      return [beforeEnterFuncOrArr];
-    }
-    return [];
-  }
-
-  // -----------------------------------------------------------------------------------
   // -----------------  function pushRoute  --------------------------------------------
 
-  function pushRoute(route, popEvent = true) {
-    const routePath = ($configStore.hashMode ? "#" : "") + route;
+  function pushRoute(routePath, popEvent = true) {
+    routePath = ($configStore.hashMode ? "#" : "") + routePath;
+
     if (history.pushState && !isBacking) {
-      history.pushState(null, null, routePath + getQueryParamsToPath());
+      history.pushState(null, null, routePath);
     } else {
-      location.hash = routePath + getQueryParamsToPath();
+      location.hash = routePath + getQueryParamsToPath(currentLocation);
     }
     isBacking = false;
     if (popEvent) {
@@ -96,47 +63,24 @@
   }
 
   // -----------------------------------------------------------------------------------
-  // -----------------  function getUrlParameter  --------------------------------------
-
-  function getUrlParameter(url) {
-    let getParams = {};
-    url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-      getParams[key] = value;
-    });
-    return getParams;
-  }
-
-  // -----------------------------------------------------------------------------------
-  // -----------------  function getLocation  ------------------------------------------
-
-  function getLocation() {
-    let pathname = location.pathname;
-    if ($configStore.hashMode && location.hash) {
-      pathname = location.hash.slice(1);
-    }
-    currentLocation = {
-      pathname,
-      params: getUrlParameter(location.href),
-      hostname: location.hostname,
-      protocol: location.protocol,
-      port: location.port,
-      origin: location.origin,
-      hash: location.hash,
-    };
-  }
-
-  // -----------------------------------------------------------------------------------
   // -----------------  function getRouteParams  ---------------------------------------
 
   function getRouteParams(routeObj, customParams) {
     props = {};
-    if (routeObj && routeObj.params) {
+    if (routeObj) {
       props = {
         payload: routeObj.payload,
-        ...routeObj.params,
+        ...(routeObj.params || {}),
         ...assign({}, allProps),
+        pathParams: {
+          ...getPathParams(currentLocation.pathname, routeObj.path),
+        },
+        queryParams: {
+          ...getQueryParams(currentLocation),
+        },
       };
     }
+
     props = {
       ...props,
       ...customParams,
@@ -178,66 +122,10 @@
   }
 
   // -----------------------------------------------------------------------------------
-  // -----------------  function findRoute  --------------------------------------------
-
-  function findRoute(path) {
-    let realPath = path.toString();
-    if ($configStore.hashMode) {
-      realPath = realPath.split("?");
-      realPath = realPath[0];
-    }
-
-    return (routeItem) => {
-
-      // adding trailing slash to route
-      const hasTrailingSlash = $configStore.considerTrailingSlashOnMatchingRoute
-        ? "/"
-        : "";
-
-      // get route path to search with trailing slash if included  
-      const routePath = routeItem.path + hasTrailingSlash;
-
-      // if route has regex declared - TODO
-      if (routeItem.path.includes("/:")) {
-
-        // 
-        const routeDefArr = routePath.split("/");
-        const pathDefArr = realPath.split("/");
-        if (
-          routeDefArr.length == 0 ||
-          pathDefArr.length ||
-          routeDefArr.length != pathDefArr.length
-        ) {
-          return false;
-        }
-        for (let key of routeDefArr) {
-          if (
-            routeDefArr[key] != pathDefArr[key] &&
-            !routeDefArr[key].includes("/:")
-          ) {
-            return false;
-          }
-        }
-        return routeItem;
-      } else if (
-        routeItem.path == realPath ||
-        ($configStore.considerTrailingSlashOnMatchingRoute &&
-          routePath == realPath)
-      ) {
-        return routeItem;
-      }
-      return false;
-    };
-  }
-
-  // -----------------------------------------------------------------------------------
   // -----------------  function loadRoute  --------------------------------------------
 
   async function loadRoute(routeObj, isLoading = true) {
     try {
-      // updating location
-      getLocation();
-
       // if it is to reload current route if is redirected to the same route
       if (
         routeObj &&
@@ -246,6 +134,9 @@
       ) {
         return;
       }
+
+      // updating location
+      currentLocation = getLocation(routeObj);
 
       // cleaning component for later check if the route has a custom one
       layoutComponent = false;
@@ -257,7 +148,9 @@
 
       // searching route from routes definition if not defined
       if (!routeObj) {
-        routeObj = $routerStore.routes.find(findRoute(currentLocation.pathname));
+        routeObj = $routerStore.routes.find(
+          getFindRouteFunc(currentLocation.pathname)
+        );
       }
 
       // route not found - must redirect to NOT FOUND
@@ -272,6 +165,8 @@
         return false;
       }
 
+      getRouteParams(routeObj);
+
       // setting loading property and start loading screen
       loadingPromise = loadingController.startLoading();
       loadingProps = {
@@ -283,7 +178,7 @@
         loadingProps = {
           ...loadingProps,
           ...routeObj.loadingProps,
-          ...getRouteParams(routeObj),
+          ...props,
         };
       }
 
@@ -322,6 +217,7 @@
         await executeBeforeEnterFunctions(routeObj, beforeEnterArr, isLoading);
       }
     } catch (error) {
+      console.log(error);
       loadingController.resolveLoading();
       if (configStore.getOnError()) {
         configStore.getOnError()(error, getRouteParams(routeObj));
@@ -352,9 +248,8 @@
     // { name: "" } - redirect to somewhere else -- local - base on name
     let resFunc;
 
-    // object merge params with custom route params defined
-    let routeObjParams;
     routeObj.payload = {};
+    getRouteParams(routeObj);
     for (let bFunc of beforeEnterArr) {
       // beforeEnter Function is not a function throw an error
       if (!bFunc || typeof bFunc !== "function") {
@@ -366,22 +261,8 @@
       // promisify each beforeEnter
       resFunc = await new Promise(async (resolve, reject) => {
         try {
-          // passing down the router params defined in the router object
-          routeObjParams = undefined;
-          if (routeObj.params) {
-            routeObjParams = {
-              ...routeObj.params,
-            };
-          }
-
           // executing beforeEnter Functions GLOBAL And Route Specific
-          await bFunc(
-            resolve,
-            routeFrom,
-            routeTo,
-            routeObjParams,
-            routeObj.payload
-          );
+          await bFunc(resolve, routeFrom, routeTo, props, routeObj.payload);
 
           // reseting payload if destroyed
           if (!routeObj.payload) {
@@ -391,7 +272,6 @@
             }
           }
 
-          // updating props and passing to all components!
           getRouteParams(routeObj);
         } catch (error) {
           resolve({ SCR_ROUTE_ERROR: true, error });
@@ -459,14 +339,18 @@
     await routerStore.setFromRoute($routerStore.currentRoute);
     await routerStore.pushNavigationHistory($routerStore.currentRoute);
 
+    const routePathWithParams = replacePathParamWithParams(
+      currentLocation.pathname,
+      routeObj.path
+    );
+
     // is loading means that we don't know yet the route name and we should add it
     // to the object - when we are pushing routes for example we know which route we
     // are pushing, but when the user enters via URL then we should figure it out.
-    console.log(currentLocation);
     if (!isLoading) {
       // we have to add the route name
       await routerStore.setCurrentRoute({
-        pathname: routeObj.path + getQueryParamsToPath(),
+        pathname: routePathWithParams + getQueryParamsToPath(currentLocation),
         params: {
           ...routeObj.params,
         },
@@ -481,19 +365,17 @@
       await routerStore.setCurrentRoute({
         ...currentLocation,
         name: routeObj.name,
-        pathname: currentLocation.pathname + getQueryParamsToPath(),
+        pathname:
+          currentLocation.pathname + getQueryParamsToPath(currentLocation),
       });
     }
-
-    // setting component params
-    const routeParams = getRouteParams(routeObj);
 
     // if user defined some action before finalizeRoute
     if (
       routeObj.afterBeforeEnter &&
       typeof routeObj.afterBeforeEnter === "function"
     ) {
-      routeObj.afterBeforeEnter(routeParams);
+      routeObj.afterBeforeEnter(props);
     }
 
     if ($configStore.usesRouteLayout && !routeObj.ignoreLayout) {
@@ -519,7 +401,9 @@
     // no component were defined by the user
     if (!routeObj.component && !routeObj.lazyLoadComponent) {
       throw new Error(
-        `No component defined for (${routeObj.name} - ${routeObj.path})!`
+        `No component defined for ${routeObj.name || "Route"} - ${
+          routeObj.path || "Path"
+        }!`
       );
     }
 
@@ -555,7 +439,7 @@
       setTimeout(() => window.scrollTo(scrollProps), scrollProps.timeout);
     }
 
-    return pushRoute(routeObj.path, false);
+    return pushRoute($routerStore.currentRoute.pathname, false);
   }
 
   // -----------------------------------------------------------------------------------
@@ -563,17 +447,7 @@
 
   onMount(async () => {
     // is to load from storages?
-    if ($configStore.saveMode === "localstorage") {
-      await LS.getSvelteStoreInStorage(
-        routerStore.update,
-        routerStore.STORAGE_KEY
-      );
-    } else if ($configStore.saveMode === "indexeddb") {
-      await LF.getSvelteStoreInStorage(
-        routerStore.update,
-        routerStore.STORAGE_KEY
-      );
-    }
+    await loadFromStorage();
 
     // routes were set?
     if (routes) {

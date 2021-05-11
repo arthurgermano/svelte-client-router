@@ -78,6 +78,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 
   import SCR_Layout from "./docs/SCR_Layout.svelte";
   import SCR_NotFound from "./docs/SCR_NotFound.svelte";
+  import SCR_Error from "./docs/SCR_Error.svelte";
 
   // Setting configurations of the SCR Router
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions
@@ -226,6 +227,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
   bind:routes
   defaultLayoutComponent={SCR_Layout}
   notFoundComponent={SCR_NotFound}
+  errorComponent={SCR_Error}
 />
 
 ```
@@ -495,6 +497,8 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   // ## Route Path
   // ## The path identifying this route
   // ## String - Obrigatory
+  // ## Can declare regex like /test1/:paramA/test2/:paramB
+  // ## The regex must have the format ":string"
   path: "/test1",
 
   // ## Component - the component that is going to be used 

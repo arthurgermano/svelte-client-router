@@ -2,6 +2,7 @@
   import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "./index.js";
   import SCR_Layout from "./docs/SCR_Layout.svelte";
   import SCR_NotFound from "./docs/SCR_NotFound.svelte";
+  import SCR_Error from "./docs/SCR_Error.svelte";
 
   // Setting configurations of the SCR Router
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions
@@ -13,7 +14,7 @@
   SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
   SCR_CONFIG_STORE.setHashMode(true);
   SCR_CONFIG_STORE.setUseScroll(true);
-  SCR_CONFIG_STORE.setConsiderTrailingSlashOnMachingRoute(false);
+  SCR_CONFIG_STORE.setConsiderTrailingSlashOnMatchingRoute(true);
   SCR_CONFIG_STORE.setScrollProps({
     top: 0,
     left: 0,
@@ -148,6 +149,14 @@
         import("./docs/pages/SCR_RouterStoreProperties.svelte"),
       title: "SCR - Route Store - Properties",
     },
+    {
+      name: "test1Route",
+      path: "/svelte-client-router/:teste/test1",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_Test1.svelte"),
+      title: "SCR - Test 1",
+      forceReload: true
+    },
   ];
 </script>
 
@@ -158,4 +167,5 @@
   bind:routes
   defaultLayoutComponent={SCR_Layout}
   notFoundComponent={SCR_NotFound}
+  errorComponent={SCR_Error}
 />
