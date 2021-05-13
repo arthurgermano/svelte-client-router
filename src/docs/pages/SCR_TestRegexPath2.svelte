@@ -36,7 +36,7 @@
 <b class="scr-b">&lt;!-- Look how the bellow button was declared --&gt;</b>
 &lt;SCR_ROUTER_LINK
   to=&#123;&#123;
-    path: `/svelte-client-router/$&#123;nextFirstParam&#125;/test2/$&#123;nextSecondParam&#125;/`,
+    path: `/svelte-client-router/$&#123;nextFirstParam&#125;/testRegexPathParam2/$&#123;nextSecondParam&#125;/`,
   &#125;&#125;
 &gt;
 
@@ -80,7 +80,7 @@
   </div>
   <SCR_ROUTER_LINK
     to={{
-      path: `/svelte-client-router/${nextFirstParam}/test2/${nextSecondParam}/`,
+      path: `/svelte-client-router/${nextFirstParam}/testRegexPathParam2/${nextSecondParam}/`,
     }}
   >
     <div class="scr-btn">Test Route With Param</div>
@@ -93,7 +93,7 @@
     class="scr-pre">
 &#123;
   name: "testRegexPath2Route",
-  path: "/svelte-client-router/:firstParam/test2/:secondParam",
+  path: "/svelte-client-router/:firstParam/testRegexPathParam2/:secondParam",
   lazyLoadComponent: () =&gt;
     import("./docs/pages/SCR_TestRegexPath2.svelte"),
   title: "SCR - Test 2",
@@ -109,10 +109,9 @@
           routeName="testRegexPathRoute"
         />
         <SCR_PushRouteButton
-          style="float:right; opacity: 0.5"
+          style="float:right;"
           text="Next"
-          routeName="testRegexPath2Route"
-          title="More content to be added"
+          routeName="testLoadingComponentWithBeforeEnterRoute"
         />
       </div>
     </div>

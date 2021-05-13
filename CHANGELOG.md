@@ -1,5 +1,13 @@
 # Svelte Router changelog
 
+## 1.2.0
+
+- Added option loadingComponent on Route Object Definition
+- Added option lazyLoadingComponent on Route Object Definition
+- Fixed bug problem on loading component
+- Fixed bug not passing all variables to loading components
+- Fixed bug on using Router Link with query params
+
 ## 1.1.1
 
 - Fixed bug when navigate tries to find a route passed wrongly or not existent!

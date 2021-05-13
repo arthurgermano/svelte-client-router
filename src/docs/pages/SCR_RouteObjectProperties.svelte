@@ -53,7 +53,8 @@
     <b>path: "/path/:someVar/my/route/:someOtherVar",</b>
     <br />
     <br />
-    It will be made available on all beforeEnter Functions, After Enter Function and Components;
+    It will be made available on all beforeEnter Functions, After Enter Function
+    and Components;
   </p>
   <pre
     class="scr-pre">
@@ -61,7 +62,7 @@
 // ## Route Path
 // ## The path identifying this route
 // ## String - Obrigatory
-// ## Can declare regex like /test1/:paramA/test2/:paramB
+// ## Can declare regex like /test1/:paramA/testRegexPathParam2/:paramB
 // ## The regex must have the format ":string"
 // ## Default value: none
 </b>
@@ -195,6 +196,54 @@ import SRC_Layout from "./testComponents/SRC_Layout.svelte";
 &#125;
 </pre>
   <!-- ------------------------------------------------------------------------------ -->
+  <!-- ----------------  LOADING COMPONENT OPTION  ---------------------------------- -->
+  <hr class="scr-hr" />
+  <h4 class="scr-h4">Loading Component</h4>
+  <p class="scr-text-justify">
+    The <b>loadingComponent</b> is a custom loaded loading component to use with
+    this specific route. When set it will override any global loading component set
+    for this route only.
+  </p>
+  <pre
+    class="scr-pre">
+<b class="scr-b">
+// ## Loading Component - the loading component that is going to be used 
+// ## for this route
+// ## Function - Imported loading component for this route
+// ## Default value: none
+</b>
+
+<b class="scr-b">// Import your component</b>
+import SRC_Loading from "./testComponents/SRC_Loading.svelte";
+
+&#123;
+  <b class="scr-b">// Setting your route loading component</b>
+  loadingComponent: SRC_Loading,
+&#125;
+</pre>
+  <!-- ------------------------------------------------------------------------------ -->
+  <!-- ----------------  LAZY LOAD LOADING COMPONENT OPTION  ------------------------- -->
+  <hr class="scr-hr" />
+  <h4 class="scr-h4">Lazy Load Loading Component</h4>
+  <p class="scr-text-justify">
+    The <b>lazyLoadLoadingComponent</b> is a custom loading component to be loaded
+    to use with this specific route. When set it will override any global loading
+    component set for this route only.
+  </p>
+  <pre
+    class="scr-pre">
+<b class="scr-b">
+// ## Lazy Load Loading Component - the loading component that must be loaded to be used 
+// ## for this route
+// ## Function - Function to load the loading component for this route
+// ## Default value: none
+</b>
+
+&#123;
+  <b class="scr-b">// Lazy loading your route loading component</b>
+  lazyLoadLoadingComponent: () => import("./testComponents/SRC_Loading.svelte"),
+&#125;
+</pre>
   <!-- ----------------  PARAMS OPTION  --------------------------------------------- -->
   <hr class="scr-hr" />
   <h4 class="scr-h4">Params</h4>

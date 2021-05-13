@@ -12,7 +12,7 @@ import * as lfPlugin from "../../plugins/lfplugin.js";
 import configStore from "./config.js";
 import routeStore from "./router.js";
 
-import { getFindRouteFunc } from "../routerFunctions.js"
+import { getFindRouteFunc, getQueryParamsFromPath } from "../routerFunctions.js"
 
 const storeTemplate = {
   pushRoute: false,
@@ -35,13 +35,26 @@ function pushRoute(route, params = {}, onError) {
     }
   }
   const routes = routeStore.getRoutes();
+
   
   let realParamPath = { path: false };
   routeNavigation = undefined;
   if (typeof route === "string") {
     routeNavigation = routes.find(getFindRouteFunc(route, realParamPath));
+    params = {
+      ...params,
+      queryParams: {
+        ...getQueryParamsFromPath(route)
+      }
+    }
   } else if (route.path) {
     routeNavigation = routes.find(getFindRouteFunc(route.path, realParamPath));
+    params = {
+      ...params,
+      queryParams: {
+        ...getQueryParamsFromPath(route.path)
+      }
+    }
   } else if (route.name) {
     routeNavigation = routes.find((rItem) => rItem.name === route.name);
   }
@@ -72,6 +85,7 @@ function consumeRoutePushed() {
     ...copyRouteNavigation.params,
     ...consumeParams(),
   };
+
   return copyRouteNavigation;
 }
 

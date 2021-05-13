@@ -44,6 +44,7 @@
   let layoutComponent = defaultLayoutComponent;
   let loadingController = new LoadingController();
   let isBacking = false;
+  let SCR_LoadingComponent = loadingComponent;
 
   // -----------------------------------------------------------------------------------
   // -----------------  function pushRoute  --------------------------------------------
@@ -76,6 +77,7 @@
           ...getPathParams(currentLocation.pathname, routeObj.path),
         },
         queryParams: {
+          ...(routeObj?.params?.queryParams || {}),
           ...getQueryParams(currentLocation),
         },
       };
@@ -122,6 +124,74 @@
   }
 
   // -----------------------------------------------------------------------------------
+  // -----------------  function setLayoutComponent  -----------------------------------
+
+  async function setLayoutComponent(routeObj) {
+    if ($configStore.usesRouteLayout && !routeObj.ignoreLayout) {
+      // if is lazy loading component layout component
+      if (typeof routeObj.lazyLoadLayoutComponent === "function") {
+        const loadedLayoutComponent = await routeObj.lazyLoadLayoutComponent();
+        if (loadedLayoutComponent && loadedLayoutComponent.default) {
+          layoutComponent = loadedLayoutComponent.default;
+          return;
+        }
+      }
+
+      if (routeObj.layoutComponent) {
+        layoutComponent = routeObj.layoutComponent;
+      } else {
+        layoutComponent = defaultLayoutComponent;
+      }
+    } else {
+      layoutComponent = false;
+    }
+  }
+
+  // -----------------------------------------------------------------------------------
+  // -----------------  function setComponent  -----------------------------------------
+
+  async function setComponent(routeObj) {
+    // if is lazy loading component now is the time to load
+    if (typeof routeObj.lazyLoadComponent === "function") {
+      const loadedComponent = await routeObj.lazyLoadComponent();
+      if (loadedComponent && loadedComponent.default) {
+        currentComponent = loadedComponent.default;
+        return;
+      }
+    }
+    if (typeof routeObj.component === "function") {
+      currentComponent = routeObj.component;
+      return;
+    }
+
+    throw new Error(
+      `No valid component defined for ${routeObj.name || "Route"} - ${
+        routeObj.path || "Path"
+      }!`
+    );
+  }
+
+  // -----------------------------------------------------------------------------------
+  // -----------------  function setLoadingComponent  ----------------------------------
+
+  async function setLoadingComponent(routeObj) {
+    // if is lazy loading component now is the time to load
+    if (typeof routeObj.lazyLoadLoadingComponent === "function") {
+      const loadedComponent = await routeObj.lazyLoadLoadingComponent();
+      if (loadedComponent && loadedComponent.default) {
+        SCR_LoadingComponent = loadedComponent.default;
+        return;
+      }
+    }
+    if (typeof routeObj.loadingComponent === "function") {
+      SCR_LoadingComponent = routeObj.loadingComponent;
+      return;
+    } else {
+      SCR_LoadingComponent = loadingComponent;
+    }
+  }
+
+  // -----------------------------------------------------------------------------------
   // -----------------  function loadRoute  --------------------------------------------
 
   async function loadRoute(routeObj, isLoading = true) {
@@ -164,7 +234,7 @@
         }
         return false;
 
-      // when navigate tries to find a route passed wrongly or not existent! 
+        // when navigate tries to find a route passed wrongly or not existent!
       } else if (routeObj.notFound) {
         await routerStore.setCurrentLocation(routeObj.path);
         return pushRoute($configStore.notFoundRoute);
@@ -172,10 +242,13 @@
 
       getRouteParams(routeObj);
 
+      await setLoadingComponent(routeObj);
+
       // setting loading property and start loading screen
       loadingPromise = loadingController.startLoading();
       loadingProps = {
         ...assign({}, allLoadingProps),
+        ...props,
       };
 
       // adding route params to loading props
@@ -383,46 +456,12 @@
       routeObj.afterBeforeEnter(props);
     }
 
-    if ($configStore.usesRouteLayout && !routeObj.ignoreLayout) {
-      // if is lazy loading component layout component
-      if (typeof routeObj.lazyLoadLayoutComponent === "function") {
-        const loadedLayoutComponent = await routeObj.lazyLoadLayoutComponent();
-        if (loadedLayoutComponent && loadedLayoutComponent.default) {
-          layoutComponent = loadedLayoutComponent.default;
-        } else {
-          throw new Error(
-            `Lazy Load Layout Component defined for (${routeObj.name} - ${routeObj.path}) could not be loaded`
-          );
-        }
-      } else if (routeObj.layoutComponent) {
-        layoutComponent = routeObj.layoutComponent;
-      } else {
-        layoutComponent = defaultLayoutComponent;
-      }
-    } else {
-      layoutComponent = false;
-    }
+    // setting Layout
+    await setLayoutComponent(routeObj);
 
-    // no component were defined by the user
-    if (!routeObj.component && !routeObj.lazyLoadComponent) {
-      throw new Error(
-        `No component defined for ${routeObj.name || "Route"} - ${
-          routeObj.path || "Path"
-        }!`
-      );
-    }
+    // setting Component
+    await setComponent(routeObj);
 
-    // if is lazy loading component now is the time to load
-    if (typeof routeObj.lazyLoadComponent === "function") {
-      const loadedComponent = await routeObj.lazyLoadComponent();
-      if (loadedComponent && loadedComponent.default) {
-        currentComponent = loadedComponent.default;
-      } else {
-        throw new Error(
-          `Lazy Load Component defined for (${routeObj.name} - ${routeObj.path}) could not be loaded`
-        );
-      }
-    }
     loadingController.resolveLoading();
 
     // scroll to position if enabled
@@ -518,7 +557,7 @@
 </script>
 
 {#await loadingPromise}
-  <svelte:component this={loadingComponent} {...loadingProps} {...props} />
+  <svelte:component this={SCR_LoadingComponent} {...loadingProps} {...props} />
 {:then value}
   {#if $configStore.usesRouteLayout && typeof layoutComponent === "function"}
     <svelte:component this={layoutComponent} {...props}>

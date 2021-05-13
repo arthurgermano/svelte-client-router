@@ -3,6 +3,7 @@
   import SCR_Layout from "./docs/SCR_Layout.svelte";
   import SCR_NotFound from "./docs/SCR_NotFound.svelte";
   import SCR_Error from "./docs/SCR_Error.svelte";
+  import SCR_TestLoadingComponentWithBeforeEnter from "./docs/pages/SCR_TestLoadingComponentWithBeforeEnter.svelte";
 
   // Setting configurations of the SCR Router
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/configurationOptions
@@ -151,18 +152,31 @@
     },
     {
       name: "testRegexPathRoute",
-      path: "/svelte-client-router/:teste/test1",
+      path: "/svelte-client-router/:teste/testRegexPathParam",
       lazyLoadComponent: () =>
         import("./docs/pages/SCR_TestRegexPath.svelte"),
-      title: "SCR - Test 1",
+      title: "SCR - Test - Regex Path Route",
       forceReload: true
     },
     {
       name: "testRegexPath2Route",
-      path: "/svelte-client-router/:firstParam/test2/:secondParam",
+      path: "/svelte-client-router/:firstParam/testRegexPathParam2/:secondParam",
       lazyLoadComponent: () =>
         import("./docs/pages/SCR_TestRegexPath2.svelte"),
-      title: "SCR - Test 2",
+      title: "SCR - Test - - Regex Path Route 2",
+      forceReload: true
+    },
+    {
+      name: "testLoadingComponentWithBeforeEnterRoute",
+      path: "/svelte-client-router/testLoadingComponentWithBeforeEnter/:timeout",
+      lazyLoadLoadingComponent: () =>
+         import("./docs/SCR_Loading.svelte"),
+      component: SCR_TestLoadingComponentWithBeforeEnter,
+
+      beforeEnter: (resolve, routeFrom, routeTo, routeObjParams, payload) => {
+        setTimeout(() => resolve(true), routeObjParams?.pathParams?.timeout || 10)
+      },
+      title: "SCR - Test - Loading Component with Before Enter",
       forceReload: true
     },
   ];

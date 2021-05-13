@@ -34,7 +34,7 @@
       bind:value={nextParam}
     />
   </div>
-  <SCR_ROUTER_LINK to={{ path: `/svelte-client-router/${nextParam}/test1` }}>
+  <SCR_ROUTER_LINK to={{ path: `/svelte-client-router/${nextParam}/testRegexPathParam` }}>
     <div class="scr-btn">Test Route With Param</div>
   </SCR_ROUTER_LINK>
   <hr class="scr-hr" />
@@ -45,7 +45,7 @@
     class="scr-pre">
 &#123;
   name: "testRegexPathRoute",
-  path: "/svelte-client-router/:teste/test1",
+  path: "/svelte-client-router/:teste/testRegexPathParam",
   lazyLoadComponent: () =&gt
     import("./docs/pages/SCR_TestRegexPath.svelte"),
   title: "SCR - Test 1",

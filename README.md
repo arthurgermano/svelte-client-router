@@ -27,6 +27,7 @@ Designed to help make you in control of the routing of your Single Page Applicat
 
 - Lazy Load Components
 - Lazy Load Layouts
+- Lazy Load Loading Components
 - Routes Based in Svelte Stores
 - Define Global Layout
 - Ignore Global Layout or define it by Route
@@ -486,7 +487,8 @@ Let's see the object format:
 import { SCR_ROUTER_COMPONENT } from "svelte-client-router";
 
 import SCR_C1 from "./testComponents/SCR_C1.svelte";
-import SCR_Layout from "./testComponents/SCR_C1.svelte";
+import SCR_Layout from "./testComponents/SCR_Layout.svelte";
+import SCR_Loading from "./testComponents/SCR_Loading.svelte";
 
 {
   // ## Route Name
@@ -516,10 +518,20 @@ import SCR_Layout from "./testComponents/SCR_C1.svelte";
   // ## Function - Function to load the layout component for this route
   lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
 
+  // ## Lazy Load Loading Component - the loading component that must be loaded to be used 
+  // ## for this route
+  // ## Function - Function to load the loading component for this route
+  lazyLoadLoadingComponent: () => import("./testComponents/SCR_Loading.svelte"),
+
   // ## Layout Component - the layout component that is going to be used 
   // ## for this route
   // ## Function - Imported layout component for this route
   layoutComponent: SRC_Layout,
+
+  // ## Loading Component - the loading component that is going to be used 
+  // ## for this route
+  // ## Function - Imported loading component for this route
+  loadingComponent: SRC_Loading,
 
   // ## Ignore Layout - if should ignore layout component
   // ## when you do not want to use global or local layout component

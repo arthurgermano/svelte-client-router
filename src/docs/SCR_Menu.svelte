@@ -65,6 +65,9 @@
   <SCR_ROUTER_LINK to={{ name: "testRegexPath2Route" }}>
     <div class="scr-btn">Test - Regex Path 2</div>
   </SCR_ROUTER_LINK>
+  <SCR_ROUTER_LINK to={{ name: "testLoadingComponentWithBeforeEnterRoute" }}>
+    <div class="scr-btn">Test - Loading Component with Before Enter</div>
+  </SCR_ROUTER_LINK>
 </div>
 
 <style>

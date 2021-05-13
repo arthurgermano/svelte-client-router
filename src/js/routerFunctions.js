@@ -69,7 +69,6 @@ export function getFindRouteFunc(path, realParamPath = { path: false }) {
 
     // if route has regex declared
     if (hasPathParam(routeItem.path)) {
-
       // splitting to compare path sections
       const routeDefArr = routePath.split("/");
       const pathDefArr = realPath.split("/");
@@ -86,7 +85,7 @@ export function getFindRouteFunc(path, realParamPath = { path: false }) {
           return false;
         }
       }
-      
+
       // realParamPath when using navigation if not using path
       realParamPath.path = realPath;
 
@@ -171,24 +170,35 @@ export function getQueryParams(currentLocation) {
   }
   let queryParams = currentLocation.params;
   if (configStore.getHashMode()) {
-    let queryArr = currentLocation.pathname.split("?");
-    if (!queryArr || !queryArr[1]) {
-      return {};
-    }
-    queryArr = queryArr[1].split("&");
-    queryParams = {};
-    let splitItem;
-    for(let item of queryArr) {
-      splitItem = item.split("=");
-      if (splitItem && splitItem[0] && splitItem[1]) {
-        queryParams = {
-          ...queryParams,
-          [splitItem[0]]: splitItem[1]
-        }
-      }
-    }
+    queryParams = getQueryParamsFromPath(currentLocation.pathname);
   }
 
+  return queryParams;
+}
+
+// -----------------------------------------------------------------------------------
+// -----------------  function getQueryParamsFromPath  -------------------------------
+
+export function getQueryParamsFromPath(path = "") {
+  if (!path) {
+    return {};
+  }
+  let queryArr = path.toString().split("?");
+  if (!queryArr || !queryArr[1]) {
+    return {};
+  }
+  queryArr = queryArr[1].split("&");
+  let queryParams = {};
+  let splitItem;
+  for (let item of queryArr) {
+    splitItem = item.split("=");
+    if (splitItem && splitItem[0] && splitItem[1]) {
+      queryParams = {
+        ...queryParams,
+        [splitItem[0]]: splitItem[1],
+      };
+    }
+  }
   return queryParams;
 }
 
@@ -196,7 +206,11 @@ export function getQueryParams(currentLocation) {
 // -----------------  function getQueryParamsToPath  ---------------------------------
 
 export function getQueryParamsToPath(currentLocation) {
-  if (!currentLocation || typeof currentLocation != "object" || currentLocation.pathname.includes("?")) {
+  if (
+    !currentLocation ||
+    typeof currentLocation != "object" ||
+    currentLocation.pathname.includes("?")
+  ) {
     return "";
   }
   let queryToPath = "?";
