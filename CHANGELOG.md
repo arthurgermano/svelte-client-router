@@ -1,4 +1,4 @@
-# Svelte Router changelog
+# Svelte Client Router Changelog
 
 ## 1.2.0
 
