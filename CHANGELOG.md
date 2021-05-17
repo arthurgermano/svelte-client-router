@@ -1,5 +1,11 @@
 # Svelte Client Router Changelog
 
+## 1.2.1
+
+- Fixed issue when backing or forwarding routes via browser buttons
+- Fixed bug backRoute Function
+- Fixed bug in router navigation history
+
 ## 1.2.0
 
 - Added option loadingComponent on Route Object Definition

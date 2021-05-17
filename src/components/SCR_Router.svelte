@@ -36,6 +36,8 @@
   // ------------------------------------------------------------------------------------
   // -----------------  Local Variables  ------------------------------------------------
 
+  const BACKING_MODE = 1;
+  const FORWARDING_MODE = 2;
   let props = {};
   let loadingProps = {};
   let currentComponent;
@@ -43,8 +45,11 @@
   let loadingPromise;
   let layoutComponent = defaultLayoutComponent;
   let loadingController = new LoadingController();
-  let isBacking = false;
+  let isPushed = false;
   let SCR_LoadingComponent = loadingComponent;
+  let SCR_State = {
+    sequence: { prev: 0, curr: 0 },
+  };
 
   // -----------------------------------------------------------------------------------
   // -----------------  function pushRoute  --------------------------------------------
@@ -52,12 +57,19 @@
   function pushRoute(routePath, popEvent = true) {
     routePath = ($configStore.hashMode ? "#" : "") + routePath;
 
-    if (history.pushState && !isBacking) {
-      history.pushState(null, null, routePath);
+    if (history.pushState && !isPushed) {
+      SCR_State.sequence = {
+        prev: SCR_State.sequence.curr,
+        curr: SCR_State.sequence.curr + 1,
+      };
+      history.pushState({ sequence: SCR_State.sequence }, null, routePath);
     } else {
-      location.hash = routePath + getQueryParamsToPath(currentLocation);
+      if ($configStore.hashMode) {
+        location.hash = routePath + getQueryParamsToPath(currentLocation);
+      }
     }
-    isBacking = false;
+
+    isPushed = false;
     if (popEvent) {
       window.dispatchEvent(new Event("popstate"));
     }
@@ -192,6 +204,44 @@
   }
 
   // -----------------------------------------------------------------------------------
+  // -----------------  function hasRoute  ---------------------------------------------
+
+  async function hasRoute(routeObj) {
+    if (routeObj && !routeObj.notFound) {
+      return true;
+    }
+
+    currentComponent = notFoundComponent;
+    if (routeObj && routeObj.notFound) {
+      // when navigate tries to find a route passed wrongly or not existent!
+      await routerStore.setCurrentLocation(routeObj.path);
+      pushRoute($configStore.notFoundRoute, false);
+      return false;
+    }
+
+    // if current pathname is different not found route definition
+    if (currentLocation.pathname != $configStore.notFoundRoute) {
+      // user entered URL - and does not exist - so we should replace that with
+      // the last entered url - to prevent back to the not found URL and keep in loop
+      const urlPath = $configStore.hashMode
+        ? "/" + SCR_State.last.hash
+        : SCR_State.last.pathname;
+      window.history.replaceState(null, "", $configStore.notFoundRoute);
+      await routerStore.setCurrentLocation(currentLocation.pathname);
+      //pushRoute($configStore.notFoundRoute, false);
+    }
+    return false;
+  }
+
+  // -----------------------------------------------------------------------------------
+  // -----------------  function setSCRState  ------------------------------------------
+
+  function setSCRState() {
+    SCR_State.last = SCR_State.current;
+    SCR_State.current = currentLocation;
+  }
+
+  // -----------------------------------------------------------------------------------
   // -----------------  function loadRoute  --------------------------------------------
 
   async function loadRoute(routeObj, isLoading = true) {
@@ -200,6 +250,7 @@
       if (
         routeObj &&
         !routeObj.forceReload &&
+        currentLocation &&
         currentLocation.pathname === routeObj.path
       ) {
         return;
@@ -208,9 +259,12 @@
       // updating location
       currentLocation = getLocation(routeObj);
 
+      setSCRState();
+
       // cleaning component for later check if the route has a custom one
       layoutComponent = false;
 
+      // on error redirects to error and then enters here
       if (currentLocation.pathname === $configStore.errorRoute) {
         currentComponent = errorComponent;
         return;
@@ -224,25 +278,16 @@
       }
 
       // route not found - must redirect to NOT FOUND
-      if (!routeObj) {
-        currentComponent = notFoundComponent;
-
-        // if current pathname is different not found route definition
-        if (currentLocation.pathname != $configStore.notFoundRoute) {
-          await routerStore.setCurrentLocation(currentLocation.pathname);
-          return pushRoute($configStore.notFoundRoute);
-        }
-        return false;
-
-        // when navigate tries to find a route passed wrongly or not existent!
-      } else if (routeObj.notFound) {
-        await routerStore.setCurrentLocation(routeObj.path);
-        return pushRoute($configStore.notFoundRoute);
+      if (!(await hasRoute(routeObj))) {
+        return;
       }
 
       getRouteParams(routeObj);
 
       await setLoadingComponent(routeObj);
+
+      // updating current location on the router
+      await routerStore.setCurrentLocation(currentLocation.pathname);
 
       // setting loading property and start loading screen
       loadingPromise = loadingController.startLoading();
@@ -259,9 +304,6 @@
           ...props,
         };
       }
-
-      //
-      await routerStore.setCurrentLocation(currentLocation.pathname);
 
       const configBERs = configStore.getBeforeEnter();
 
@@ -414,8 +456,12 @@
     }
 
     // updating route store info
+    if (isPushed == BACKING_MODE) {
+      await routerStore.popNavigationHistory();
+    } else {
+      await routerStore.pushNavigationHistory($routerStore.currentRoute);
+    }
     await routerStore.setFromRoute($routerStore.currentRoute);
-    await routerStore.pushNavigationHistory($routerStore.currentRoute);
 
     const routePathWithParams = replacePathParamWithParams(
       currentLocation.pathname,
@@ -446,7 +492,7 @@
         pathname:
           currentLocation.pathname + getQueryParamsToPath(currentLocation),
       });
-    }
+    }    
 
     // if user defined some action before finalizeRoute
     if (
@@ -512,7 +558,7 @@
     }
 
     // loading route
-    isBacking = false;
+    isPushed = false;
     await loadRoute();
   });
 
@@ -520,7 +566,28 @@
   // -----------------  Window - eventListener popstate  -------------------------------
 
   window.addEventListener("popstate", async (event) => {
-    isBacking = true;
+    const hasStateSequence = event.state && event.state.sequence;
+    isPushed = BACKING_MODE;
+
+    // checking if is a known route - if it has the state object
+    // then the route was accessed in some time and should not push
+    // a new route into history
+    // if it is null then is an user entered route via url!
+    if (hasStateSequence) {
+      if (event.state.sequence.curr != SCR_State.sequence.prev) {
+        // going forward button
+        isPushed = FORWARDING_MODE;
+      } else if (event.state.sequence.prev != SCR_State.sequence.curr) {
+        // going back button
+        isPushed = BACKING_MODE;
+      }
+    } else if (event.state && event.state.SCR_Replace) {
+      isPushed = BACKING_MODE;
+    }
+
+    if (isPushed && hasStateSequence) {
+      SCR_State.sequence = event.state.sequence;
+    }
     await loadRoute();
   });
 
@@ -549,7 +616,7 @@
   // -----------------  svelte_reactive - $navigateStore.pushRoute  --------------------
 
   $: if ($navigateStore.pushRoute) {
-    isBacking = false;
+    isPushed = false;
     loadRoute(navigateStore.consumeRoutePushed(), false);
   }
 

@@ -68,6 +68,9 @@
   <SCR_ROUTER_LINK to={{ name: "testLoadingComponentWithBeforeEnterRoute" }}>
     <div class="scr-btn">Test - Loading Component with Before Enter</div>
   </SCR_ROUTER_LINK>
+  <SCR_ROUTER_LINK to={{ path: "/svelte-client-router/some_route_not_declared" }}>
+    <div class="scr-btn">Test - Not Found</div>
+  </SCR_ROUTER_LINK>
 </div>
 
 <style>
