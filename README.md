@@ -500,6 +500,8 @@ import SCR_Loading from "./testComponents/SCR_Loading.svelte";
   // ## The path identifying this route
   // ## String - Obrigatory
   // ## Can declare regex like /test1/:paramA/test2/:paramB
+  // ## Can declare any route wildcard like /test1/:paramA/*/:paramB
+  // ## This property value is Case Sensitive.
   // ## The regex must have the format ":string"
   path: "/test1",
 

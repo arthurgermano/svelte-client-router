@@ -40,17 +40,38 @@
   <hr class="scr-hr" />
   <h4 class="scr-h4">Path</h4>
   <p class="scr-text-justify">
-    The <b>path</b> is mandatory and it is the path to route to.
+    The <b>path</b> is mandatory and it is the path to route to. This property is Case Sensitive.
     <br />
     <br />
     As it is an identification property must be unique. If some route is declared
     with the same path, it will always find the first route with that path and route
     to it.
     <br />
+    Simple declaration:
+    <br />
+    <b>path: "/path/to/my/route",</b>
+    <br />
     <br />
     You can use regex in your route like ":myVar". For example:
     <br />
     <b>path: "/path/:someVar/my/route/:someOtherVar",</b>
+    <br />
+    <br />
+    You can use any route wildcard "*" in your route. For example:
+    <br />
+    To match any route:
+    <br />
+    <b>path: "*",</b>
+    <br />
+    <br />
+    To match a section of route:
+    <br />
+    <b>path: "/path/*",</b> or <b>path: "/path/prefixValu*",</b>
+    <br />
+    <br />
+    To match section route with param paths:
+    <br />
+    <b>path: "/path/prefixValu*/:somePathParamValue",</b>
     <br />
     <br />
     It will be made available on all beforeEnter Functions, After Enter Function
@@ -64,6 +85,8 @@
 // ## String - Obrigatory
 // ## Can declare regex like /test1/:paramA/testRegexPathParam2/:paramB
 // ## The regex must have the format ":string"
+// ## Can declare any route wildcard like /test1/:paramA/*/:paramB
+// ## This property value is Case Sensitive.
 // ## Default value: none
 </b>
 &#123;
@@ -71,16 +94,34 @@
 
   <b class="scr-b">
 // OR Can declare regex path
-  // it will be made available on all beforeEnter Functions, After Enter Function and Component
-  </b>
+</b>
   path: "/path/:to/:my/route",
 
   <b class="scr-b">
-// pathParams: &#123;
+// it will be made available on all beforeEnter Functions, After Enter Function and Component
+  // pathParams: &#123;
   //  to: "myroutedefinedvalue"
   //  my: "myroutedefinedvalue"
   // &#125;
   </b>
+
+  <b class="scr-b">
+// OR Can declare regex path and any route wildcard
+</b>
+  path: "/path/:to/*/route",
+
+  <b class="scr-b">
+  // it will be made available on all beforeEnter Functions, After Enter Function and Component
+  // pathParams: &#123;
+  //  to: "myroutedefinedvalue"
+  // &#125;
+  </b>
+
+  <b class="scr-b">
+// OR Can declare to Any Route to be matched with wildcard
+  </b>
+  path: "*",
+ 
 &#125;
 </pre>
   <!-- ------------------------------------------------------------------------------ -->

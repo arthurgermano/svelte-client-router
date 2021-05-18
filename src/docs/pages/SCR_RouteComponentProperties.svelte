@@ -80,16 +80,25 @@ const routes = [
   &#123;
     name: "routeName1",
     path: "/test1",
-    component: SCR_C1,
 
+    component: SCR_C1,
+    
     <b class="scr-b">// This property has preference over component property</b>
     lazyLoadComponent: () =&gt;
       import("./docs/pages/SCR_RouteComponentProperties.svelte"),
+    
     layout: SCR_Layout,
 
     <b class="scr-b">// This property has preference over layout property</b>
     lazyLoadLayoutComponent: () =&gt;
       import("./docs/SCR_Layout.svelte"),
+
+    loadingComponent: SCR_Loading,
+
+    <b class="scr-b">// This property has preference over loadingComponent property</b>
+    lazyLoadLoadingComponent: () =&gt;
+      import("./docs/SCR_Layout.svelte"),
+
     ignoreLayout: false,
     ignoreScroll: false,
     scrollProps: &#123;

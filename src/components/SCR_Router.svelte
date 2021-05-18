@@ -6,6 +6,7 @@
   import {
     loadFromStorage,
     getBeforeEnterAsArray,
+    getFindAnyRouteFunc,
     getFindRouteFunc,
     getLocation,
     getPathParams,
@@ -86,6 +87,7 @@
         ...(routeObj.params || {}),
         ...assign({}, allProps),
         pathParams: {
+          ...(routeObj?.params?.pathParams || {}),
           ...getPathParams(currentLocation.pathname, routeObj.path),
         },
         queryParams: {
@@ -211,6 +213,11 @@
       return true;
     }
 
+    routeObj = getFindAnyRouteFunc(currentLocation.pathname);
+    if (routeObj) {
+      return routeObj;
+    }
+
     currentComponent = notFoundComponent;
     if (routeObj && routeObj.notFound) {
       // when navigate tries to find a route passed wrongly or not existent!
@@ -221,14 +228,14 @@
 
     // if current pathname is different not found route definition
     if (currentLocation.pathname != $configStore.notFoundRoute) {
-      // user entered URL - and does not exist - so we should replace that with
-      // the last entered url - to prevent back to the not found URL and keep in loop
-      const urlPath = $configStore.hashMode
-        ? "/" + SCR_State.last.hash
-        : SCR_State.last.pathname;
+
+      // we have to replace this route with not found
+      // to prevent problems with back button
       window.history.replaceState(null, "", $configStore.notFoundRoute);
       await routerStore.setCurrentLocation(currentLocation.pathname);
-      //pushRoute($configStore.notFoundRoute, false);
+      
+      // since we are replacing state - we replace the wrong not found route
+      // with not found route.
     }
     return false;
   }
@@ -277,8 +284,13 @@
         );
       }
 
-      // route not found - must redirect to NOT FOUND
-      if (!(await hasRoute(routeObj))) {
+      // checking if it has found a valid route.
+      // if not try to find any route declare with anyRouteChar
+      const hasFoundRoute = await hasRoute(routeObj);
+      if (typeof hasFoundRoute === "object") {
+        routeObj = hasFoundRoute;
+      } else if (!hasFoundRoute) {
+        // route not found - it was must redirect to NOT FOUND
         return;
       }
 

@@ -179,6 +179,14 @@
       title: "SCR - Test - Loading Component with Before Enter",
       forceReload: true
     },
+    {
+      name: "testAnyWildcardRoute",
+      path: "/svelte-client-router/anyRouteWildcard/*/:somePathParam",
+      lazyLoadComponent: () =>
+        import("./docs/pages/SCR_TestAnyRouteWildcard.svelte"),
+      title: "SCR - Test - Any Route Wildcard",
+      forceReload: true
+    },
   ];
 </script>
 

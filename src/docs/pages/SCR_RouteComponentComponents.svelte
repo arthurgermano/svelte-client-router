@@ -1,4 +1,5 @@
 <script>
+  import { SCR_ROUTER_LINK } from "../../index.js";
   import SCR_PageFooter from "../SCR_PageFooter.svelte";
   import SCR_PushRouteButton from "../components/SCR_PushRouteButton.svelte";
 </script>
@@ -142,8 +143,16 @@ const routes = [
   <hr class="scr-hr" />
   <h4 class="scr-h4">Not Found Component</h4>
   <p class="scr-text-justify">
-    The Not Found Component is the component that must be loaded when the user
-    try to access a not existent route.
+    The Not Found Component is the component that will be loaded when the user
+    try to access a not existent route - only if there isn't any route declared with an wildcard "*"
+    to match all routes.
+    <br />
+    See the <SCR_ROUTER_LINK
+      to={{ name: "routeObjectOptionsRoute" }}
+      elementProps={{ style: "display: inline; cursor: pointer;" }}
+    >
+      <a href="/" style="pointer-events: none;">Route Object Properties - <b>Path Property</b></a>
+    </SCR_ROUTER_LINK> for more info.
     <br />
     It will receive all the parameters available.
   </p>

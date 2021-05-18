@@ -1,6 +1,11 @@
 <script>
   import SCR_PageFooter from "../SCR_PageFooter.svelte";
   import SCR_PushRouteButton from "../components/SCR_PushRouteButton.svelte";
+
+  export let pathParams;
+  export let queryParams;
+  $: console.log("PATH",pathParams)
+  $: console.log("QUERY",queryParams)
 </script>
 
 <div class="scr-page">

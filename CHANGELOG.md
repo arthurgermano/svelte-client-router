@@ -1,5 +1,10 @@
 # Svelte Client Router Changelog
 
+## 1.3.0
+
+- Now can declare wildcards for Not Found Routes - working with path params and sections of the route
+- Fixed issue with path param in the end of the route with query params
+
 ## 1.2.1
 
 - Fixed issue when backing or forwarding routes via browser buttons

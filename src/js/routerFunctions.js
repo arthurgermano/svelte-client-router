@@ -5,6 +5,7 @@ import * as LF from "../plugins/lfplugin.js";
 import * as LS from "../plugins/lsplugin.js";
 
 const PATH_PARAM_CHAR = "/:";
+const ANY_ROUTE_PARAM_CHAR = "*";
 
 // -----------------  function hasPathParam  -----------------------------------------
 
@@ -48,6 +49,99 @@ export function getBeforeEnterAsArray(beforeEnterFuncOrArr) {
 }
 
 // -----------------------------------------------------------------------------------
+// -----------------  function getFindAnyRouteFunc  ----------------------------------
+
+export function getFindAnyRouteFunc(path) {
+  let anyRoute;
+  let foundRoute;
+
+  // adding trailing slash to route or not
+  const hasTrailingSlash = getTrailingSlash();
+
+  let realPath = path.toString();
+
+  if (configStore.getHashMode()) {
+    realPath = realPath.split("?");
+    realPath = realPath[0];
+  }
+  if (realPath.substring(realPath.length - 1) != "/") {
+    realPath += hasTrailingSlash;
+  }
+
+  const pathDefArr = realPath.split("/");
+  for (let routeItem of routerStore.getRoutes()) {
+
+    // if the route does not include the CHAR then it should not
+    // considerate and just go forwarding searching in other routes
+    if (!routeItem.path.includes(ANY_ROUTE_PARAM_CHAR)) {
+      continue;
+    }
+
+    // if it is equal - the programmer defined a any route wildcard for all routes
+    // but we must continue searching for any other more suitable routes
+    if (routeItem.path === ANY_ROUTE_PARAM_CHAR) {
+      anyRoute = routeItem;
+      continue;
+    }
+
+    // searching by route section
+    const routeDefArr = (routeItem.path + hasTrailingSlash).split("/");
+    if (routeDefArr.length != pathDefArr.length) {
+      continue;
+    }
+
+    let hasMatched = true;
+    for (let key in routeDefArr) {
+
+      // if the section contains the ANY CHAR it should considerate as prefix
+      if (routeDefArr[key].includes(ANY_ROUTE_PARAM_CHAR)) {
+        const routePartLength = routeDefArr[key].length - 1;
+        if (
+          routeDefArr[key].substring(0, routePartLength) !=
+          pathDefArr[key].substring(0, routePartLength)
+        ) {
+          hasMatched = false;
+          break;
+        }
+      // if the section does not contain PATH param and it is differente
+      // this route is not a match stop searching this route and go to the next
+      } else if (
+        routeDefArr[key] != pathDefArr[key] &&
+        !routeDefArr[key].includes(":")
+      ) {
+        hasMatched = false;
+        break;
+      } 
+    }
+
+    // if a route was found then it should stop searching
+    if (hasMatched) {
+      foundRoute = routeItem;
+      break;
+    }
+  }
+
+  // anyRoute will contain the result of the most suitable route found
+  if (foundRoute) {
+    anyRoute = foundRoute;
+  }
+
+  // if we found a route then we have to tweak a little be to adapt to the part of the code
+  if (anyRoute) {
+    anyRoute = assign({}, anyRoute);
+    anyRoute.params = {
+      ...anyRoute.params,
+      pathParams : getPathParams(path, anyRoute.path),
+    };
+    anyRoute.path = path;
+
+    return anyRoute;
+  }
+
+  return false;
+}
+
+// -----------------------------------------------------------------------------------
 // -----------------  function getFindRouteFunc  -------------------------------------
 
 export function getFindRouteFunc(path, realParamPath = { path: false }) {
@@ -60,7 +154,7 @@ export function getFindRouteFunc(path, realParamPath = { path: false }) {
     realPath = realPath[0];
   }
   if (realPath.substring(realPath.length - 1) != "/") {
-    realPath += "/";
+    realPath += hasTrailingSlash;
   }
 
   return (routeItem) => {
@@ -141,13 +235,16 @@ export function getPathParams(path, routePath) {
   if (!hasPathParam(routePath)) {
     return {};
   }
+  
+  let realPath = path.toString().split("?");
+  realPath = realPath[0];
 
   let pathParams = {};
   const hasTrailingSlash = getTrailingSlash();
 
   routePath += hasTrailingSlash;
   const routeDefArr = routePath.split("/");
-  const pathDefArr = path.split("/");
+  const pathDefArr = realPath.split("/");
 
   for (let key in routeDefArr) {
     if (routeDefArr[key].includes(":")) {

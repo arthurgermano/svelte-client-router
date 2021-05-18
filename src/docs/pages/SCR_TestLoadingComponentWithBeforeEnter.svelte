@@ -38,7 +38,6 @@
   $: if (queryParam) {
     queryParam = applyQueryRegex(queryParam);
   }
-
 </script>
 
 <div class="scr-page">
@@ -55,17 +54,24 @@
       <li>Query Params</li>
     </ul>
     <li>Passing query params</li>
-      <ul>
-        <li>Try it via browser URL - passing at end of this route ?subLoadingText=MyCustomText!</li>
-      </ul>
+    <ul>
+      <li>
+        Try it via browser URL - passing at end of this route
+        ?subLoadingText=MyCustomText!
+      </li>
+    </ul>
     <li>Before Enter Route</li>
   </ul>
   <p class="scr-text-justify">
-    The default value is 2000 milliseconds. If nothing is declared it is assumed 2000.
-    Or if it is passed a valid number greater than 10 milliseconds it will wait the milliseconds specified.
+    The default value is 2000 milliseconds. If nothing is declared it is assumed
+    2000. Or if it is passed a valid number greater than 10 milliseconds it will
+    wait the milliseconds specified.
     <br />
     <br />
-    <b>Important: All the variables captured by this component are passed to all components!</b>
+    <b
+      >Important: All the variables captured by this component are passed to all
+      components!</b
+    >
   </p>
   <p class="scr-text-justify">
     The route timeout param path passed is: <b>{pathParams.timeout || ""}</b>
@@ -88,9 +94,7 @@
     />
   </div>
   <div class="mb-3">
-    <label for="scr-query-param" class="form-label"
-      >Route Query Param</label
-    >
+    <label for="scr-query-param" class="form-label">Route Query Param</label>
     <input
       type="text"
       class="form-control form-control-sm"
@@ -101,10 +105,14 @@
   </div>
   <SCR_ROUTER_LINK
     to={{
-      path: `/svelte-client-router/testLoadingComponentWithBeforeEnter/${timeoutParam || 10}?subLoadingText=${queryParam}`,
+      path: `/svelte-client-router/testLoadingComponentWithBeforeEnter/${
+        timeoutParam || 10
+      }?subLoadingText=${queryParam}`,
     }}
   >
-    <div class="scr-btn">Test Route With Param</div>
+    <div class="scr-btn">
+      Test Route With Two Params and Route Custom Loading Component
+    </div>
   </SCR_ROUTER_LINK>
   <hr class="scr-hr" />
   <center class="scr-center">
@@ -140,10 +148,9 @@
           routeName="testRegexPath2Route"
         />
         <SCR_PushRouteButton
-          style="float:right; opacity: 0.5"
+          style="float:right"
           text="Next"
-          routeName="testLoadingComponentWithBeforeEnterRoute"
-          title="More content to be added"
+          routeName="testAnyWildcardRoute"
         />
       </div>
     </div>

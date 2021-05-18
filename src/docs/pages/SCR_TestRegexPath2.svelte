@@ -83,7 +83,7 @@
       path: `/svelte-client-router/${nextFirstParam}/testRegexPathParam2/${nextSecondParam}/`,
     }}
   >
-    <div class="scr-btn">Test Route With Param</div>
+    <div class="scr-btn">Test Route With Two Params</div>
   </SCR_ROUTER_LINK>
   <hr class="scr-hr" />
   <center class="scr-center">

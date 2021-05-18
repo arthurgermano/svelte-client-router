@@ -2,11 +2,16 @@
   import { pushRoute } from "../../index.js";
 
   export let routeName = "rootRoute";
+  export let routePath;
   export let text = "Button";
   export let style = "";
   export let title;
   function go() {
-    pushRoute({ name: routeName });
+    if (!routePath) {
+      pushRoute({ name: routeName });
+      return;
+    }
+    pushRoute({ path: routePath });
   }
 </script>
 
