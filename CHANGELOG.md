@@ -1,5 +1,9 @@
 # Svelte Client Router Changelog
 
+## 1.3.1
+
+- Removed not required files and examples.
+
 ## 1.3.0
 
 - Now can declare wildcards for Not Found Routes - working with path params and sections of the route
