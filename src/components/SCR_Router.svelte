@@ -218,6 +218,13 @@
       return routeObj;
     }
 
+    if (currentLocation.pathname.includes($configStore.errorRoute)) {
+      // when trying to navigate to error route
+      await routerStore.setCurrentLocation(currentLocation.pathname);
+      pushRoute(currentLocation.pathname, false);
+      return false;
+    }
+
     currentComponent = notFoundComponent;
     if (routeObj && routeObj.notFound) {
       // when navigate tries to find a route passed wrongly or not existent!
@@ -228,12 +235,11 @@
 
     // if current pathname is different not found route definition
     if (currentLocation.pathname != $configStore.notFoundRoute) {
-
       // we have to replace this route with not found
       // to prevent problems with back button
       window.history.replaceState(null, "", $configStore.notFoundRoute);
       await routerStore.setCurrentLocation(currentLocation.pathname);
-      
+
       // since we are replacing state - we replace the wrong not found route
       // with not found route.
     }
@@ -504,7 +510,7 @@
         pathname:
           currentLocation.pathname + getQueryParamsToPath(currentLocation),
       });
-    }    
+    }
 
     // if user defined some action before finalizeRoute
     if (
