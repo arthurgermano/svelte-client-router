@@ -161,7 +161,7 @@ SCR_CONFIG_STORE.setNotFoundRoute("/notFound");
 // ## Default value: /error
 </b>
 &#123;
-  notFound: "/error", 
+  error: "/error", 
 &#125;
 
 <b class="scr-b">// How to set in the store</b>
