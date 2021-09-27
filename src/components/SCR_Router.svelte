@@ -220,6 +220,7 @@
 
     if (currentLocation.pathname.includes($configStore.errorRoute)) {
       // when trying to navigate to error route
+      currentComponent = errorComponent;
       await routerStore.setCurrentLocation(currentLocation.pathname);
       pushRoute(currentLocation.pathname, false);
       return false;
