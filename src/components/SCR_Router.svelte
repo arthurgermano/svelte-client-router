@@ -518,7 +518,7 @@
       routeObj.afterBeforeEnter &&
       typeof routeObj.afterBeforeEnter === "function"
     ) {
-      routeObj.afterBeforeEnter(props);
+      routeObj.afterBeforeEnter(props, routeObj);
     }
 
     // setting Layout

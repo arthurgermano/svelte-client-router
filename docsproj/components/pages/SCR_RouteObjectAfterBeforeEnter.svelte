@@ -6,10 +6,10 @@
 <div class="scr-page">
   <h4 class="scr-h4">Route Object - After Before Enter Function</h4>
   <p class="scr-text-justify">
-    The <b>afterEnter</b> option sets a function that must be executed for this
-    specific route when finishing routing. This function will not redirect or
-    avoid entering the route. The permission to enter has been granted already
-    by passing all the before enter functions.
+    The <b>afterBeforeEnter</b> option sets a function that must be executed for
+    this specific route when finishing routing. This function will not redirect
+    or avoid entering the route. The permission to enter has been granted
+    already by passing all the before enter functions.
     <br />
     <br />
     So this function is more like a customization before enter. Here you can override
@@ -24,7 +24,7 @@
 <b class="scr-b">// ------ SETTING A FUNCTION ------ </b>
 <b class="scr-b">// Setting Route After Enter Function</b>
 &#123;
-  afterEnter((routeObjParams) =&gt; &#123; console.log(routeObjParams); &#125;);
+  afterBeforeEnter((routeObjParams) =&gt; &#123; console.log(routeObjParams); &#125;);
 &#125;
   </pre>
   <hr class="scr-hr" />
@@ -38,7 +38,8 @@
   <pre
     class="scr-pre">
 <b class="scr-b">// Example of After Before Enter Function declaration</b>
-(routeObjParams) =&gt; &#123; 
+(props, routeObjParams) =&gt; &#123; 
+  console.log(props);
   console.log(routeObjParams);
 &#125;
   </pre>
@@ -106,8 +107,22 @@
         </li>
         <br />
         <li>
-          <b>routeObjParams: </b> all the parameters passed down the before enter
-          chain and route parameters, that includes payload as well.
+          <b>pathParams: </b> Path params informed
+        </li>
+        <br />
+        <li>
+          <b>payload: </b> Payload params informed
+        </li>
+        <br />
+        <li>
+          <b>queryParams: </b> Query params informed
+        </li>
+      </ul>
+      <br />
+      <ul>
+        <li>
+          <b>routeObjectParam: </b>All the parameters passed to this route set
+          in the route object definition.
         </li>
       </ul>
     </li>
