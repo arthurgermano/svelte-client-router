@@ -227,6 +227,7 @@
     }
 
     currentComponent = notFoundComponent;
+    layoutComponent = defaultLayoutComponent;
     if (routeObj && routeObj.notFound) {
       // when navigate tries to find a route passed wrongly or not existent!
       await routerStore.setCurrentLocation(routeObj.path);
