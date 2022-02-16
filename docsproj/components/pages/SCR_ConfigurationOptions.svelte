@@ -267,7 +267,7 @@ SCR_CONFIG_STORE.setUsesRouteLayout(true);
 // ## Default value: true
 </b>
 &#123;
-considerTrailingSlashOnMatchingRoute: true, 
+  considerTrailingSlashOnMatchingRoute: true, 
 &#125;
 
 <b class="scr-b">// How to set in the store</b>
@@ -292,7 +292,7 @@ SCR_CONFIG_STORE.setConsiderTrailingSlashOnMatchingRoute(true);
 // ## Default value: true
 </b>
 &#123;
-useScroll: true, 
+  useScroll: true, 
 &#125;
 
 <b class="scr-b">// How to set in the store</b>
@@ -339,11 +339,12 @@ SCR_CONFIG_STORE.setUseScroll(true);
 &#125;
 </b>
 &#123;
-scrollProps: &#123;
-  top: 0,
-  left: 0,
-  behaviour: "smooth",
-  timeout: 10, // timeout must be greater than 10 milliseconds
+  scrollProps: &#123;
+    top: 0,
+    left: 0,
+    behaviour: "smooth",
+    timeout: 10, // timeout must be greater than 10 milliseconds
+  &#125;
 &#125;, 
 
 <b class="scr-b">// How to set in the store</b>
