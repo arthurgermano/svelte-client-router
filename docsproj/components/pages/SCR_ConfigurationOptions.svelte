@@ -344,8 +344,8 @@ SCR_CONFIG_STORE.setUseScroll(true);
     left: 0,
     behaviour: "smooth",
     timeout: 10, // timeout must be greater than 10 milliseconds
-  &#125;
-&#125;, 
+  &#125;,
+&#125;
 
 <b class="scr-b">// How to set in the store</b>
 SCR_CONFIG_STORE.setScrollProps(&#123;
