@@ -1,0 +1,140 @@
+:root {
+	--scr-bg-color: #ffffff;
+	--scr-text-color: #000000;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html, body {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	background-color: var(--scr-bg-color);
+	color: var(--scr-text-color);
+	margin: 0;
+	box-sizing: border-box;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.scr-page {
+	display: grid;
+	grid-template-columns: 1fr;
+	padding: 0.5rem;
+	margin: 1rem auto;
+	justify-content: center;
+	align-content: start;
+	width: 100%;
+	min-height: 85vh;
+}
+
+.scr-h4 {
+	color: #d43900;
+	margin-bottom: 1rem;
+}
+
+.scr-pre {
+	font: 0.875rem / 1.5 Consolas, monaco, monospace;
+	color: #414141;
+	-moz-tab-size: 4;
+	tab-size: 4;
+	overflow: auto;
+	padding: 0.625rem;
+	border: 1px solid orangered;
+	border-radius: 0.5rem;
+	background: #fff;
+	background-color: #d4390005;
+}
+
+.scr-small {
+	color: #00000070;
+	font-weight: bolder;
+}
+
+.scr-center {
+	margin-top: -0.5rem;
+}
+
+.scr-hr {
+	color: orangered;
+}
+
+.scr-button {
+	color: #a82d00 !important;
+	background-color: #ff440018!important;
+	border-color: #a82d00 !important;
+	min-width: 10rem;
+}
+
+.scr-button:hover {
+	background-color: #ff44003d !important;
+	cursor: pointer !important;
+	color: #611a00 !important;
+}
+
+.scr-b {
+	color: #005c00;
+}
+
+.scr-text-justify {
+	text-align: justify;
+}
+
+.scr-btn {
+	display: grid;
+	grid-template-columns: 1fr;
+	justify-content: left;
+	align-content: center;
+	width: 100%;
+	padding: 0.5rem;
+	background-color: #ff440009;
+	border-radius: 0.5rem;
+	transition: all linear 0.2s;
+	text-align: center;
+	color: #a82d00;
+	margin-bottom: 0.5rem;
+}
+
+.scr-btn:hover {
+	background-color: #ff440018;
+	cursor: pointer;
+	font-weight: bolder;
+	color: #d43900;
+}
+
+@media only screen and (max-width: 600px) {
+	.scr-button {
+		min-width: 5rem;
+	}
+}
+
+@-webkit-keyframes pulseAnimation {
+	0% {
+		-webkit-box-shadow: 0 0 0 0 rgba(240, 128, 128, 0.87);
+	}
+	70% {
+		-webkit-box-shadow: 0 0 0 1rem rgba(240, 128, 128, 0);
+	}
+	100% {
+		-webkit-box-shadow: 0 0 0 0 rgba(240, 128, 128, 0);
+	}
+}
+
+@keyframes pulseAnimation {
+	0% {
+		-moz-box-shadow: 0 0 0 0 rgba(240, 128, 128, 0.87);
+		box-shadow: 0 0 0 0 rgba(240, 128, 128, 0.87);
+	}
+	70% {
+		-moz-box-shadow: 0 0 0 1rem rgba(240, 128, 128, 0);
+		box-shadow: 0 0 0 1rem rgba(240, 128, 128, 0);
+	}
+	100% {
+		-moz-box-shadow: 0 0 0 0 rgba(240, 128, 128, 0);
+		box-shadow: 0 0 0 0 rgba(240, 128, 128, 0);
+	}
+}
