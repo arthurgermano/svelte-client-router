@@ -1,13 +1,21 @@
-import SCR_ROUTER_COMPONENT_IMPORT from "./components/SCR_Router.svelte";
-import SCR_ROUTER_LINK_COMPONENT_IMPORT from "./components/SCR_RouterLink.svelte";
-import routerStore from "./js/store/router.js";
-import configStore from "./js/store/config.js";
-import navigateStore from "./js/store/navigate.js";
+import SCR_Router from "./components/SCR_Router.svelte";
+import SCR_RouterLink from "./components/SCR_RouterLink.svelte";
+import * as SCR_Stores_Module from "./stores/index.js";
 
-export const SCR_ROUTER_COMPONENT = SCR_ROUTER_COMPONENT_IMPORT;
-export const SCR_ROUTER_LINK = SCR_ROUTER_LINK_COMPONENT_IMPORT;
-export const SCR_ROUTER_STORE = routerStore;
-export const SCR_CONFIG_STORE = configStore;
-export const SCR_NAVIGATE_STORE = navigateStore;
-export const pushRoute = navigateStore.pushRoute;
-export const backRoute = navigateStore.backRoute;
+const pushRoute = SCR_Stores_Module.navigateStore.pushRoute;
+const backRoute = SCR_Stores_Module.navigateStore.backRoute;
+const configStore = SCR_Stores_Module.configStore;
+const routesStore = SCR_Stores_Module.routesStore;
+const scr_router = SCR_Router;
+const scr_router_link = SCR_RouterLink;
+
+export {
+  scr_router,
+  SCR_Router,
+  SCR_RouterLink,
+  scr_router_link,
+  configStore,
+  routesStore,
+  pushRoute,
+  backRoute,
+};

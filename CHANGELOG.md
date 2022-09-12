@@ -1,5 +1,12 @@
 # Svelte Client Router Changelog
 
+## 2.0.0
+- New version design from the ground
+- 100% unit tested
+
+## 1.3.10
+- Several bug fixing
+
 ## 1.3.1
 
 - Removed not required files and examples.
