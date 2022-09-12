@@ -183,6 +183,10 @@
       <SCR_RouterLink params={{ name: "v2_Route_Component_Components" }}>
         <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Route_Component_Components"}>Components</div>
       </SCR_RouterLink>
+      <h4 class="scr-menu-h4">Navigation</h4>
+      <SCR_RouterLink params={{ name: "v2_Navigation_Routing" }}>
+        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Navigation_Routing"}>Routing</div>
+      </SCR_RouterLink>
       <h4 class="scr-menu-h4">Version</h4>
       <SCR_RouterLink params={{ name: "v1_Presentation" }}>
         <div class="scr-menu-btn">See Version 1</div>

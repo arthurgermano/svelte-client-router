@@ -4,10 +4,10 @@
 
 <SCR_Page
   back={{
-    name: "v1_Route_Component_Components",
+    name: "v2_Route_Component_Components",
     text: "Route Component Components",
   }}
-  forward={{ name: "v1_Navigation_Store", text: "Navigation Store" }}
+  forward={{ name: "v2_Navigation_Store", text: "Navigation Store" }}
 >
 <div class="scr-page">
   <h4 class="scr-h4">Navigation - Routing</h4>
@@ -39,7 +39,7 @@ import &#123; pushRoute &#125; from "svelte-client-router"
   <hr class="scr-hr" />
   <h4 class="scr-h4">Push Route Function Anatomy</h4>
   <p class="scr-text-justify">
-    This function can receive three parameters as it follows:
+    This function can receive three parameters to specify a route to go to - as it follows:
   </p>
   <ul>
     <li>
@@ -53,7 +53,7 @@ import &#123; pushRoute &#125; from "svelte-client-router"
     </li>
     <br />
     <li>
-      <b>customParams: </b>Some custom params to send to Before Enter and After
+      <b>params: </b>Some custom params to send to Before Enter and After
       Before Enter Functions as well the components
     </li>
     <br />
@@ -85,11 +85,11 @@ import &#123; backRoute &#125; from "svelte-client-router"
   <pre
     class="scr-pre">
 &#123;
-  name: "routeNavigationRouting",
-  path: "/svelte-client-router/navigationRouting",
-  lazyLoadComponent: () =&gt;
-    import("./docs/pages/SCR_NavigationRouting.svelte"),
-  title: "SCR - Navigation - Routing",
+  name: "v2_Navigation_Routing",
+  path: "/svelte-client-router/v2/navigationRouting",
+  lazyLoadComponent: () =&gt; import("../../pages/v2/SCR_NavigationRouting.svelte"),
+  title: "SCR - Navigation Routing - Version 2",
+  beforeEnter: [setVersion2],
 &#125;
 </pre>
 </SCR_Page>

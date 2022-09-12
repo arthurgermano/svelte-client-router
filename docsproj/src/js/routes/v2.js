@@ -126,6 +126,13 @@ const routes = [
     title: "SCR - Route Component Components - Version 2",
     beforeEnter: [setVersion2],
   },
+  {
+    name: "v2_Navigation_Routing",
+    path: "/svelte-client-router/v2/navigationRouting",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_NavigationRouting.svelte"),
+    title: "SCR - Navigation Routing - Version 2",
+    beforeEnter: [setVersion2],
+  },
 ];
 
 export default routes;
