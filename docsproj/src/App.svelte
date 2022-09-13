@@ -5,6 +5,11 @@
   import SCR_DefaultLayout from "./layout/SCR_DefaultLayout.svelte";
   import routes from "./js/routes/index.js";
 
+  configStore.setBeforeEnter(({ resolve }) => {
+    appStore.setVersion(0);
+    resolve(true);
+  });
+
   configStore.setConsoleLogStores(false);
   configStore.setHashMode(true);
   configStore.setMaxRedirectBeforeEnter(5);

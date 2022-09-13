@@ -68,8 +68,8 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 ### SCR - Example
  
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationOptions" target="_blank">Configuration Options</a><br />
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationOnError" target="_blank">Global On Error</a><br />
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectOptions" target="_blank">Route Object Options</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationGlobalOnError" target="_blank">Global On Error</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectProperties" target="_blank">Route Object Options</a><br />
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeComponentProperties" target="_blank">SCR Component Properties</a><br />
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeComponentComponents" target="_blank">SCR Component Components</a><br />
 
@@ -99,13 +99,13 @@ In a default Svelte installation you need to edit your package.json and add _-s_
   });
 
   // Setting global error function 
-  // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationOnError
+  // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationGlobalOnError
   SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
     console.log("GLOBAL ERROR CONFIG", routeObjParams);
   });
 
   // Setting the route object definition
-  // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectOptions
+  // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectProperties
   let routes = [
     {
       name: "root",
@@ -149,15 +149,15 @@ In a default Svelte installation you need to edit your package.json and add _-s_
       title: "SCR - Configuration - Before Enter",
     },
     {
-      name: "configurationOnErrorOptionRoute",
-      path: "/svelte-client-router/configurationOnError",
+      name: "configurationGlobalOnErrorOptionRoute",
+      path: "/svelte-client-router/configurationGlobalOnError",
       lazyLoadComponent: () =>
         import("./docs/pages/SCR_ConfigurationOnError.svelte"),
       title: "SCR - Configuration - On Error",
     },
     {
-      name: "routeObjectOptionsRoute",
-      path: "/svelte-client-router/routeObjectOptions",
+      name: "routeObjectPropertiesRoute",
+      path: "/svelte-client-router/routeObjectProperties",
       lazyLoadComponent: () =>
         import("./docs/pages/SCR_RouteObjectProperties.svelte"),
       title: "SCR - Route Object - Options",
@@ -170,8 +170,8 @@ In a default Svelte installation you need to edit your package.json and add _-s_
       title: "SCR - Route Object - Before Enter Functions",
     },
     {
-      name: "routeObjectAfterBeforeEnterRoute",
-      path: "/svelte-client-router/routeObjectAfterBeforeEnter",
+      name: "routeObjectAfterEnterRoute",
+      path: "/svelte-client-router/routeObjectAfterEnter",
       lazyLoadComponent: () =>
         import("./docs/pages/SCR_RouteObjectAfterBeforeEnter.svelte"),
       title: "SCR - Route Object - After Before Function",
@@ -212,8 +212,8 @@ In a default Svelte installation you need to edit your package.json and add _-s_
       title: "SCR - Navigation - Store",
     },
     {
-      name: "routerLinkPropertiesRoute",
-      path: "/svelte-client-router/routerLinkProperties",
+      name: "routerLinkRoute",
+      path: "/svelte-client-router/routerLink",
       lazyLoadComponent: () =>
         import("./docs/pages/SCR_RouterLinkProperties.svelte"),
       title: "SCR - Route Link - Properties",
@@ -238,8 +238,8 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 Configuration Store manages the behavior of the <abbr title="Svelte Client Router">SCR</abbr>.
 Let's see the options we have here:
 <br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationOptions" target="_blank">Configuration Options</a><br />
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationBeforeEnter" target="_blank">Global Before Enter Functions</a><br />
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationOnError" target="_blank">Global On Error</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationGlobalBeforeEnterOption" target="_blank">Global Before Enter Functions</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/configurationGlobalOnError" target="_blank">Global On Error</a><br />
 
 ```javascript
 {
@@ -477,9 +477,9 @@ SCR_CONFIG_STORE.setConfig({
 Route Object is the definition of every route we have in the SPA application and is below our <abbr title="Svelte Client Router">SCR</abbr> Route Component.
 
 Let's see the object format:
-<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectOptions" target="_blank">Route Object Options</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectProperties" target="_blank">Route Object Options</a><br />
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectBeforeEnter" target="_blank">Route Object Before Enter Functions</a><br />
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectAfterBeforeEnter" target="_blank">Route Object After Before Enter Function</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectAfterEnter" target="_blank">Route Object After Before Enter Function</a><br />
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routeObjectOnError" target="_blank">Route Object  On Error</a><br />
 
 
@@ -876,7 +876,7 @@ backRoute()
 <abbr title="Svelte Client Router">SCR</abbr> RouterLink Component is a component to make easy clickable go to route.
 
 Let's see it:
-<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routerLinkProperties" target="_blank">Router Link Properties</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routerLink" target="_blank">Router Link Properties</a><br />
 
 ```javascript
 // < -- You Svelte Component Definition-- >
