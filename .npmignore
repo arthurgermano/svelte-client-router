@@ -3,6 +3,7 @@
 /docsproj/
 /public/
 /coverage/
+/tests/
 eng.traineddata
 .DS_Store
 .idea
