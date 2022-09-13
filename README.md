@@ -166,8 +166,8 @@ In a default Svelte installation you need to edit your package.json and add _-s_
       title: "SCR - Route Object - Before Enter Functions",
     },
     {
-      name: "routeObjectAfterBeforeEnterRoute",
-      path: "/svelte-client-router/routeObjectAfterBeforeEnter",
+      name: "routeObjectAfterEnterRoute",
+      path: "/svelte-client-router/routeObjectAfterEnter",
       lazyLoadComponent: () =>
         import("./docs/pages/SCR_RouteObjectAfterBeforeEnter.svelte"),
       title: "SCR - Route Object - After Before Function",
@@ -475,7 +475,7 @@ Route Object is the definition of every route we have in the SPA application and
 Let's see the object format:
 <br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeObjectProperties" target="_blank">Route Object Options</a><br />
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeObjectBeforeEnter" target="_blank">Route Object Before Enter Functions</a><br />
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeObjectAfterBeforeEnter" target="_blank">Route Object After Before Enter Function</a><br />
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeObjectAfterEnter" target="_blank">Route Object After Before Enter Function</a><br />
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeObjectOnError" target="_blank">Route Object  On Error</a><br />
 
 
