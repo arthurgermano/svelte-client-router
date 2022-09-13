@@ -529,8 +529,8 @@ export function getRouteObjectFromPath(path) {
     }
     const hash = getHashFromPath(path);
     if (configStore.getHashMode()) {
-      path = path.replace("#/", "");
-      path = path.replace("/#", "");
+      path = hash.replace("/#", "");
+      path = path.replace("#", "");
     }
 
     let queryParams = {};
