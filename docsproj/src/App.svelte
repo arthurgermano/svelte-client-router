@@ -6,7 +6,7 @@
   import routes from "./js/routes/index.js";
 
   configStore.setConsoleLogStores(false);
-  configStore.setHashMode(true);
+  configStore.setHashMode(false);
   configStore.setMaxRedirectBeforeEnter(5);
   configStore.setNotFoundRoute("/svelte-client-router/notFound");
   configStore.setUseScroll(true);
