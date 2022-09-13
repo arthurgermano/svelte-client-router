@@ -71,23 +71,21 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 
 ```javascript
 <script>
-  import { SCR_ROUTER_COMPONENT, SCR_CONFIG_STORE } from "./index.js";
-
-  import SCR_Layout from "./docs/SCR_Layout.svelte";
-  import SCR_NotFound from "./docs/SCR_NotFound.svelte";
-  import SCR_Error from "./docs/SCR_Error.svelte";
+  import SCR_Loading from "./components/SCR_Loading.svelte";
+  import { SCR_Router, configStore } from "./index.js";
 
   // Setting configurations of the SCR Router
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/configurationOptions
-  SCR_CONFIG_STORE.setNotFoundRoute(
+  configStore.setNotFoundRoute(
     "/svelte-client-router/myCustomNotFoundRoute"
   );
-  SCR_CONFIG_STORE.setErrorRoute("/svelte-client-router/myCustomErrorRoute");
-  SCR_CONFIG_STORE.setConsoleLogStores(false);
-  SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
-  SCR_CONFIG_STORE.setHashMode(true);
-  SCR_CONFIG_STORE.setUseScroll(true);
-  SCR_CONFIG_STORE.setScrollProps({
+
+  configStore.setConsoleLogStores(false);
+  configStore.setNavigationHistoryLimit(100);
+  configStore.setHashMode(true);
+  configStore.setUseScroll(true);
+  configStore.setScrollProps({
+    target: "scr-container",
     top: 0,
     left: 0,
     behavior: "smooth",
@@ -95,136 +93,207 @@ In a default Svelte installation you need to edit your package.json and add _-s_
   });
 
   // Setting global error function 
+  // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/configurationGlobalBeforeEnterOption
+  configStore.setOnError((error) => {
+    console.log("GLOBAL ERROR CONFIG", error);
+  });
+
+  // Setting a single global error function - you can set an array as well.
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/configurationGlobalOnError
-  SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
-    console.log("GLOBAL ERROR CONFIG", routeObjParams);
+  configStore.setBeforeEnter(({ resolve }) => {
+    console.log("GLOBAL Before Enter", error);
+    resolve(true);
   });
 
   // Setting the route object definition
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeObjectProperties
-  let routes = [
-    {
-      name: "root",
-      path: "/",
-      beforeEnter: [
-        (resolve, rFrom, rTo, params, payload) => {
-          resolve({ redirect: "/svelte-client-router" });
-        },
-      ],
+  const routes = [
+  {
+    name: "root",
+    path: "",
+    beforeEnter: ({ resolve }) => {
+      resolve({ path: "/svelte-client-router/" });
     },
-    {
-      name: "rootRoute",
-      path: "/svelte-client-router",
-      lazyLoadComponent: () => import("./docs/pages/SCR_Presentation.svelte"),
-      title: "SCR - Presentation",
+  },
+  {
+    name: "root2",
+    path: "/",
+    beforeEnter: ({ resolve }) => {
+      resolve({ path: "/svelte-client-router/" });
     },
-    {
-      name: "installationRoute",
-      path: "/svelte-client-router/installation",
-      lazyLoadComponent: () => import("./docs/pages/SCR_Installation.svelte"),
-      title: "SCR - Installation",
-    },
-    {
-      name: "gettingStartedRoute",
-      path: "/svelte-client-router/gettingStarted",
-      lazyLoadComponent: () => import("./docs/pages/SCR_GettingStarted.svelte"),
-      title: "SCR - Getting Started",
-    },
-    {
-      name: "configurationOptionsRoute",
-      path: "/svelte-client-router/configurationOptions",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_ConfigurationOptions.svelte"),
-      title: "SCR - Configuration Options",
-    },
-    {
-      name: "configurationGlobalBeforeEnterOptionRoute",
-      path: "/svelte-client-router/configurationGlobalBeforeEnterOption",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_ConfigurationBeforeEnter.svelte"),
-      title: "SCR - Configuration - Before Enter",
-    },
-    {
-      name: "configurationGlobalOnErrorOptionRoute",
-      path: "/svelte-client-router/configurationGlobalOnError",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_ConfigurationOnError.svelte"),
-      title: "SCR - Configuration - On Error",
-    },
-    {
-      name: "routeObjectPropertiesRoute",
-      path: "/svelte-client-router/routeObjectProperties",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_RouteObjectProperties.svelte"),
-      title: "SCR - Route Object - Options",
-    },
-    {
-      name: "routeObjectBeforeEnterRoute",
-      path: "/svelte-client-router/routeObjectBeforeEnter",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_RouteObjectBeforeEnter.svelte"),
-      title: "SCR - Route Object - Before Enter Functions",
-    },
-    {
-      name: "routeObjectAfterEnterRoute",
-      path: "/svelte-client-router/routeObjectAfterEnter",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_RouteObjectAfterBeforeEnter.svelte"),
-      title: "SCR - Route Object - After Before Function",
-    },
-    {
-      name: "routeObjectOnErrorRoute",
-      path: "/svelte-client-router/routeObjectOnError",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_RouteObjectOnError.svelte"),
-      title: "SCR - Route Object - On Error Function",
-    },
-    {
-      name: "routeComponentPropertiesRoute",
-      path: "/svelte-client-router/routeComponentProperties",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_RouteComponentProperties.svelte"),
-      title: "SCR - Route Component - Properties",
-    },
-    {
-      name: "routeComponentComponentsRoute",
-      path: "/svelte-client-router/routeComponentComponents",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_RouteComponentComponents.svelte"),
-      title: "SCR - Route Component - Components",
-    },
-    {
-      name: "navigationRoutingRoute",
-      path: "/svelte-client-router/navigationRouting",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_NavigationRouting.svelte"),
-      title: "SCR - Navigation - Routing",
-    },
-    {
-      name: "navigationStoreRoute",
-      path: "/svelte-client-router/navigationStore",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_NavigationStore.svelte"),
-      title: "SCR - Navigation - Store",
-    },
-    {
-      name: "routerLinkRoute",
-      path: "/svelte-client-router/routerLink",
-      lazyLoadComponent: () =>
-        import("./docs/pages/SCR_RouterLinkProperties.svelte"),
-      title: "SCR - Route Link - Properties",
-    },
-  ];
+  },
+  {
+    name: "rootRoute",
+    path: "/svelte-client-router/",
+    lazyLoadComponent: () => import("../../pages/SCR_Home.svelte"),
+    title: "SCR - Home",
+    beforeEnter: [setVersion0],
+  },
+  {
+    name: "v2_Presentation",
+    path: "/svelte-client-router/v2/presentation",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_Presentation.svelte"),
+    title: "SCR - Presentation - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Installation",
+    path: "/svelte-client-router/v2/installation",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_Installation.svelte"),
+    title: "SCR - Installation - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Getting_Started",
+    path: "/svelte-client-router/v2/gettingStarted",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_GettingStarted.svelte"),
+    title: "SCR - Getting Started - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Configuration_Options",
+    path: "/svelte-client-router/v2/configurationOptions",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_ConfigurationOptions.svelte"),
+    title: "SCR - Configuration Options - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Configuration_Global_Before_Enter_Option",
+    path: "/svelte-client-router/v2/configurationGlobalBeforeEnterOption",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_ConfigurationBeforeEnter.svelte"),
+    title: "SCR - Configuration Global Before Enter Option - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Configuration_Global_On_Error",
+    path: "/svelte-client-router/v2/configurationGlobalOnError",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_ConfigurationOnError.svelte"),
+    title: "SCR - Configuration Global On Error - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Route_Object_Properties",
+    path: "/svelte-client-router/v2/routeObjectProperties",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_RouteObjectProperties.svelte"),
+    title: "SCR - Route Object Properties - Version 2",
+    beforeEnter: [setVersion2],
+    ignoreScroll: true,
+  },
+  {
+    name: "v2_Route_Object_Before_Enter",
+    path: "/svelte-client-router/v2/routeObjectBeforeEnter",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_RouteObjectBeforeEnter.svelte"),
+    title: "SCR - Route Object Before Enter - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Route_Object_After_Enter",
+    path: "/svelte-client-router/v2/routeObjectAfterEnter",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_RouteObjectAfterEnter.svelte"),
+    title: "SCR - Route Object After Enter - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Route_Object_On_Error",
+    path: "/svelte-client-router/v2/routeObjectOnError",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_RouteObjectOnError.svelte"),
+    title: "SCR - Route Object On Error - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Route_Component_Properties",
+    path: "/svelte-client-router/v2/routeComponentProperties",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_RouteComponentProperties.svelte"),
+    title: "SCR - Route Component Properties - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Route_Component_Components",
+    path: "/svelte-client-router/v2/routeComponentComponents",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_RouteComponentComponents.svelte"),
+    title: "SCR - Route Component Components - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Navigation_Routing",
+    path: "/svelte-client-router/v2/navigationRouting",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_NavigationRouting.svelte"),
+    title: "SCR - Navigation Routing - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Router_Link",
+    path: "/svelte-client-router/v2/routerLink",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_RouterLink.svelte"),
+    title: "SCR - Router Link - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Routes_Store",
+    path: "/svelte-client-router/v2/routesStore",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_RoutesStore.svelte"),
+    title: "SCR - Routes Store - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Test_Regex_Path",
+    path: "/svelte-client-router/v2/:testParam/testRegexPath",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_TestRegexPath.svelte"),
+    title: "SCR - Test Regex Path - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Test_Regex_Path_2",
+    path: "/svelte-client-router/v2/:firstParam/testRegexPath2/:secondParam",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_TestRegexPath2.svelte"),
+    title: "SCR - Test Regex Path 2 - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Test_Loading_Component_Before_Enter",
+    path: "/svelte-client-router/v2/testLoadingComponentWithBeforeEnter/:timeout",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_TestLoadingComponentWithBeforeEnter.svelte"),
+    title: "SCR - Test Regex Path 2 - Version 2",
+    beforeEnter: [setVersion2, ({resolve, routeTo}) => {
+      let timeout = 20;
+      if (routeTo && routeTo.pathParams && routeTo.pathParams.timeout) {
+        routeTo.pathParams.timeout = parseInt(routeTo.pathParams.timeout);
+        if (routeTo.pathParams.timeout > 0) {
+          timeout = routeTo.pathParams.timeout;
+        }
+      }
+
+      setTimeout(() => {
+        resolve(true);
+      }, timeout);
+    }],
+  },
+  {
+    name: "v2_Test_Any_Route_Wildcard",
+    path: "/svelte-client-router/v2/anyRouteWildcard/*/:somePathParam",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_TestAnyRouteWildcard.svelte"),
+    title: "SCR - Test - Any Route Wildcard - Version 2",
+  },
+];
 </script>
 
-<!-- Using SCR_ROUTER_COMPONENT -->
+<!-- Using SCR_Router -->
 <!-- https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeComponentProperties -->
 <!-- https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeComponentComponents -->
-<SCR_ROUTER_COMPONENT
-  bind:routes
-  defaultLayoutComponent={SCR_Layout}
-  notFoundComponent={SCR_NotFound}
-  errorComponent={SCR_Error}
+<SCR_Router
+  {routes}
+  defaultLoadingComponent={SCR_Loading}
+  defaultLoadingParams={{ subLoadingText: "SubLoading Text Via Param" }}
 />
 
 ```
@@ -249,25 +318,12 @@ Let's see the options we have here:
   // ## in the route navigation history list 
   // ## 0 or -1 equals to "no limit"
   // ## Integer
-  navigationHistoryLimit: 10, // ## Default is 10
-
-  // ## Save mode sets the type of saving history route and store
-  // ## It can be set to one of this following values:
-  // ## - localstorage: it saves route in the localstorage
-  // ## - indexeddb: it saves route in the IndexedDb 
-  // ## - none: Doesn't save anything - meaning when reload it starts fresh all values!
-  // ## String
-  saveMode: "localstorage", // ## Default is "localstorage"
+  navigationHistoryLimit: 200, // ## Default is 200
 
   // ## Not Found Route Path
   // ## is the path that should redirect when not found a path in the application
   // ## String - must include "/"
   notFoundRoute: "/notFound", // ## Default is "/notFound"
-
-  // ## Error Route Path
-  // ## is the path that should redirect when an error occurs in the application
-  // ## String - must include "/"
-  errorRoute: "/error", // ## Default is "/error"
 
   // ## Console Log Error Messages logs in the console 
   // ## any error messages of the SCR for debugging purposes
@@ -279,15 +335,15 @@ Let's see the options we have here:
   // ## Boolean
   consoleLogStores: true, // ## Default is true
 
-  // ## Uses Route Layout defines if you will be using layout 
-  // ## for each route or not - can be ignored in the route 
-  // ## Boolean
-  usesRouteLayout: true, // ## Default is true
-
   // ## Consider Trailing Slash On Matching Route
   // ## add an slash in the end of the route path to search in the route definitions
   // ## Boolean
   considerTrailingSlashOnMatchingRoute: true // ## Default is true
+
+  // ## Max Redirect Before Enter
+  // ## the maximum value to before enter execute when redirecting
+  // ## Integer
+  maxRedirectBeforeEnter: 30, // ## Default is 30
 
   // ## Use Scroll - enable or disables scrolling on entering the route
   // ## Boolean
@@ -297,6 +353,7 @@ Let's see the options we have here:
   // ## The scrolling props on entering the route if enabled
   // ## Default Values: 
   // ## scrollProps: {
+  // ##   target: false,  
   // ##   top: 0,
   // ##   left: 0,
   // ##   behavior: "smooth",
@@ -304,6 +361,7 @@ Let's see the options we have here:
   // ## },
   // ## Object
   scrollProps: {
+    target: false,
     top: 100,
     left: 100,
     behavior: "smooth",
@@ -313,143 +371,80 @@ Let's see the options we have here:
   // ## Before Enter defines a function or array of Functions
   // ## that must execute before each route
   // ## Function or Array - of Functions
-  beforeEnter: undefined, // ## undefined
+  beforeEnter: [],
 
   // ## On Error defines a function when an error occurs
   // ## when routing
   // ## Function
-  onError: undefined, // ## undefined
+  onError: (error) => console.log(error),
 }
 
 // ## EXAMPLE 
-import { SCR_CONFIG_STORE } from "svelte-client-router";
+import { configStore } from "svelte-client-router";
 
-SCR_CONFIG_STORE.setHashMode(false);
-SCR_CONFIG_STORE.setNavigationHistoryLimit(10);
-SCR_CONFIG_STORE.setSaveMode("localstorage");
-SCR_CONFIG_STORE.setNotFoundRoute("/myCustomNotFoundRoute");
-SCR_CONFIG_STORE.setErrorRoute("/myCustomErrorRoute");
-SCR_CONFIG_STORE.setConsoleLogErrorMessages(true);
-SCR_CONFIG_STORE.setConsoleLogStores(true);
-SCR_CONFIG_STORE.setUsesRouteLayout(true);
-SCR_CONFIG_STORE.setConsiderTrailingSlashOnMatchingRoute(true);
+configStore.setHashMode(false);
+configStore.setNavigationHistoryLimit(100);
+configStore.setNotFoundRoute("/myCustomNotFoundRoute");
+configStore.setConsoleLogErrorMessages(true);
+configStore.setConsoleLogStores(true);
+configStore.setMaxRedirectBeforeEnter(30);
+configStore.setUsesRouteLayout(true);
+configStore.setConsiderTrailingSlashOnMatchingRoute(true);
 
 // ## Callback receives 2 params 
 // ## 1) Error 
 // ## 2) Parameters defined for the route, current route, from route, etc..
-SCR_CONFIG_STORE.setOnError((err, routeObjParams) => {
+configStore.setOnError((error) => {
   // ## Error Object
-  // ## routeObjParams: 
-  // ## {
-  // ##   currentRoute:
-  // ##   {
-  // ##     hash: ""
-  // ##     hostname: "localhost"
-  // ##     name: "4"
-  // ##     origin: "http://localhost:5000"
-  // ##     params: {}
-  // ##     pathname: "/test4"
-  // ##     port: "5000"
-  // ##     protocol: "http:"
-  // ##   }
-  // ##   fromRoute:
-  // ##   {
-  // ##     hash: ""
-  // ##     hostname: "localhost"
-  // ##     name: "4"
-  // ##     origin: "http://localhost:5000"
-  // ##     params: { myQueryParam: "OK", otherParam: "123" }
-  // ##     pathname: "/test4"
-  // ##     port: "5000"
-  // ##     protocol: "http:"
-  // ##   }
-  // ##   routeObjParams: 
-  // ##   { 
-  // ##     myCustomParams: "Route Defined Param!"
-  // ##   }
-  console.log("GLOBAL ERROR CONFIG", err);
+  console.log("GLOBAL ERROR CONFIG", error);
 });
 
 // ## Receives a Function or an Array of Functions
-// ## Callback receives 4 params
+// ## Callback receives 2 params
 // ## 1) resolve function 
 // ## Should resolve with: 
 // ## - true - when everything went OK
-// ## - false - when anything goes wrong
+// ## - false - when just ignore routing and stop
 // ## - { redirect: "/some_route" }
 // ## - { path: "/some_route" }
 // ## - { name: "route_name" }
 // ##
-// ## 2) Route coming from
-// ## 3) Route going to
-// ## 4) Route defined params
-SCR_CONFIG_STORE.setBeforeEnter([
-  (resolve, routeFrom, routeTo, routeObjParams, payload) => {
-    // ## resolve - function
-    // ## routeFrom: 
-    // ## { 
-    // ##    name: "Route Name 1",
-    // ##    hash: "",
-    // ##    hostname: "localhost",
-    // ##    origin: "http://localhost:5000",
-    // ##    params: {},
-    // ##    pathname: "/test1",
-    // ##    port: "5000",
-    // ##    protocol: "http:",
-    // ## }
-    // ## routeTo: 
-    // ## { 
-    // ##    name: "Route Name 2",
-    // ##    hash: "",
-    // ##    hostname: "localhost",
-    // ##    origin: "http://localhost:5000",
-    // ##    params: { myQueryParam: "OK", otherParam: "123" },
-    // ##    pathname: "/test2",
-    // ##    port: "5000",
-    // ##    protocol: "http:",
-    // ## }
-    // ## routeObjParams: 
-    // ## { 
-    // ##   myCustomParams: "Route Defined Param!"
-    // ## }
-    // ## You can pass variables to components and between beforeEnters - acumulative
-    // ## Before Resolving this PAYLOAD will be made available to all components too
-    // ## This is great to update the loading component or you can send variables down the chain of 
-    // ## before Enter list
-    // ## DO NOT REDEFINE THIS - if you set this payload = ... it will lose its REFERENCE
-    // ## payload: 
-    // ## { 
-    // ##    ...
-    // ## }
+// ## Route coming from
+// ## Route going to
+// ## reject function - throws exception
+// ## 2) payload object - to pass info between before enter functions - do not override this variable!
+configStore.setBeforeEnter([
+  ({resolve, routeFrom, routeTo, reject}, payload) => {
+    payload.test = "have some variable passing";
     console.log("Global Before Enter Route - 1");
     resolve(true);
   },
-  (resolve, routeFrom, routeTo, routeObjParams, payload) => {
+  ({resolve, routeFrom, routeTo, reject}, payload) => {
     console.log("Global Before Enter Route - 2");
+    console.log(payload.test) // will print - have some variable passing
     resolve(true);
   },
 ]);
 
 // ## You can set the entire object with the following
-SCR_CONFIG_STORE.setConfig({
+configStore.setConfig({
   hashMode: false,
-  navigationHistoryLimit: 10,
-  saveMode: "localstorage",
+  navigationHistoryLimit: 200,
   notFoundRoute: "/notFound",
-  errorRoute: "/error",
   consoleLogErrorMessages: true,
-  consoleLogStores: true,
-  usesRouteLayout: true,
+  consoleLogStores: false,
   considerTrailingSlashOnMatchingRoute: true,
+  maxRedirectBeforeEnter: 30,
   useScroll: false,
   scrollProps: {
+    target: false,
     top: 0,
     left: 0,
     behavior: "smooth",
     timeout: 10,
   },
-  onError: (err, routeObjParams) => {
-    console.log("GLOBAL ERROR CONFIG", routeObjParams);
+  onError: (error) => {
+    console.log("GLOBAL ERROR CONFIG", error);
   },
   beforeEnter: [
     (resolve, routeFrom, routeTo, routeObjParams, payload) => {
@@ -480,10 +475,9 @@ Let's see the object format:
 
 
 ```javascript
-import { SCR_ROUTER_COMPONENT } from "svelte-client-router";
+import { SCR_Router } from "svelte-client-router";
 
 import SCR_C1 from "./testComponents/SCR_C1.svelte";
-import SCR_Layout from "./testComponents/SCR_Layout.svelte";
 import SCR_Loading from "./testComponents/SCR_Loading.svelte";
 
 {
@@ -511,20 +505,10 @@ import SCR_Loading from "./testComponents/SCR_Loading.svelte";
   // ## Function - Function to load the component for this route
   lazyLoadComponent: () => import("./testComponents/SCR_C1.svelte"),
 
-  // ## Lazy Load Layout Component - the layout component that must be loaded to be used 
-  // ## for this route
-  // ## Function - Function to load the layout component for this route
-  lazyLoadLayoutComponent: () => import("./testComponents/SCR_Layout.svelte"),
-
   // ## Lazy Load Loading Component - the loading component that must be loaded to be used 
   // ## for this route
   // ## Function - Function to load the loading component for this route
   lazyLoadLoadingComponent: () => import("./testComponents/SCR_Loading.svelte"),
-
-  // ## Layout Component - the layout component that is going to be used 
-  // ## for this route
-  // ## Function - Imported layout component for this route
-  layoutComponent: SRC_Layout,
 
   // ## Loading Component - the loading component that is going to be used 
   // ## for this route
@@ -545,6 +529,7 @@ import SCR_Loading from "./testComponents/SCR_Loading.svelte";
   // ## Default Values: configuration store
   // ## Object
   scrollProps: {
+    target: false,
     top: 0,
     left: 0,
     behavior: "smooth",
@@ -582,94 +567,31 @@ import SCR_Loading from "./testComponents/SCR_Loading.svelte";
 
   // ## Loading Props - all props that must be available to
   // loading component when it is triggered
-  loadingProps: { loadingText: "Carregando..." },
+  loadingParams: { loadingText: "Carregando..." },
 
-  // ## After Before Enter
-  // ## a function to execute after enter the route
-  // ## param:
-  // ## {
-  // ##   currentRoute: 
-  // ##   { 
-  // ##      name: "Route Name 1",
-  // ##      hash: "",
-  // ##      hostname: "localhost",
-  // ##      origin: "http://localhost:5000",
-  // ##      params: {},
-  // ##      pathname: "/test1",
-  // ##      port: "5000",
-  // ##      protocol: "http:",
-  // ##   }
-  // ##   routeTo: 
-  // ##   { 
-  // ##      name: "Route Name 2",
-  // ##      hash: "",
-  // ##      hostname: "localhost",
-  // ##      origin: "http://localhost:5000",
-  // ##      params: { myQueryParam: "OK", otherParam: "123" },
-  // ##      pathname: "/test2",
-  // ##      port: "5000",
-  // ##      protocol: "http:",
-  // ##   }
-  // ##   routeObjParams:
-  // ##   {
-  // ##     myCustomParams: "Route Defined Param!"
-  // ##   }
-  // ## } 
-  // ## Function 
-  afterBeforeEnter: (routeObjParams) => { console.log("AFTER ENTER", routeObjParams);  },
+  afterBeforeEnter: (
+    {
+      toRoute,
+      fromRoute,
+      payload
+    }
+  ) => { 
+    console.log("AFTER ENTER", toRoute, fromRoute, payload);  
+  },
 
   // ## Before Enter - a function or array of Functions
   // ## defining all functions that must be executed for this specific route
   // ## Function or Array (Functions)
   beforeEnter: [
-    (resolve, routeFrom, routeTo, routeObjParams, payload) => {
-      // ## resolve - function
-      // ## routeFrom: 
-      // ## { 
-      // ##    name: "Route Name 1",
-      // ##    hash: "",
-      // ##    hostname: "localhost",
-      // ##    origin: "http://localhost:5000",
-      // ##    params: {},
-      // ##    pathname: "/test1",
-      // ##    port: "5000",
-      // ##    protocol: "http:",
-      // ## }
-      // ## routeTo: 
-      // ## { 
-      // ##    name: "Route Name 2",
-      // ##    hash: "",
-      // ##    hostname: "localhost",
-      // ##    origin: "http://localhost:5000",
-      // ##    params: { myQueryParam: "OK", otherParam: "123" },
-      // ##    pathname: "/test2",
-      // ##    port: "5000",
-      // ##    protocol: "http:",
-      // ## }
-      // ## routeObjParams: 
-      // ## { 
-      // ##    myCustomParams: "Route Defined Param!"
-      // ##    ... PAYLOAD VARIABLES will be included HERE!  
-      // ## }
-      // ## You can pass variables to components and between beforeEnters - acumulative
-      // ## Before Resolving this PAYLOAD will be made available to all components too
-      // ## This is great to update the loading component or you can send variables down the chain of 
-      // ## before Enter list
-      // ## DO NOT REDEFINE THIS - if you set this payload = ... it will lose its REFERENCE
-      // ## payload: 
-      // ## { 
-      // ##    ...
-      // ## }
+    ({resolve, routeFrom, routeTo, reject}, payload) => {
       payload.passingToNextBeforeEnter: "yes, I will be there!",
       payload.passingToComponents: "yes, I will be there either!",
-      payload.passingToLoadingComponents: "yes, why not?",
-      payload.passingToLayoutComponents: "yes, everyone get this payload",
       
       setTimeout(() => resolve(true), 2000);
       console.log("beforeEnter Executed");
       resolve(true);
     },
-    (resolve, routeFrom, routeTo, routeObjParams, payload) => {
+    ({resolve, routeFrom, routeTo, reject}, payload) => {
       console.log(payload);
       setTimeout(() => resolve(true), 1000);
       console.log("beforeEnter Executed2");
@@ -680,42 +602,13 @@ import SCR_Loading from "./testComponents/SCR_Loading.svelte";
   // ## On Error - a function to execute when somenthing goes wrong on loading
   // ## this specific route
   // ## Error Object
-  // ## routeObjParams: 
-  // ## {
-  // ##   currentRoute:
-  // ##   {
-  // ##     hash: ""
-  // ##     hostname: "localhost"
-  // ##     name: "4"
-  // ##     origin: "http://localhost:5000"
-  // ##     params: {}
-  // ##     pathname: "/test4"
-  // ##     port: "5000"
-  // ##     protocol: "http:"
-  // ##   }
-  // ##   fromRoute:
-  // ##   {
-  // ##     hash: ""
-  // ##     hostname: "localhost"
-  // ##     name: "4"
-  // ##     origin: "http://localhost:5000"
-  // ##     params: { myQueryParam: "OK", otherParam: "123" }
-  // ##     pathname: "/test4"
-  // ##     port: "5000"
-  // ##     protocol: "http:"
-  // ##   }
-  // ##   routeObjParams:
-  // ##   {
-  // ##     myCustomParam: "OK THEN SHALL WE!"
-  // ##   }
   // ## Function
-  onError: (err, routeObjParams) => {
-    console.log("ERROR DEFINED ROUTER C1", err);
-    console.log(routeObjParams)
+  onError: (error) => {
+    console.log("ERROR DEFINED ROUTER C1", error);
   },
 },
 
-<SCR_ROUTER_COMPONENT bind:routes />
+<SCR_Router bind:routes />
 
 ```
 
@@ -729,7 +622,7 @@ Let's see this component properties and possibilities:
 <a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/routeComponentComponents" target="_blank">Route Component Components</a><br />
 
 ```javascript
-import { SCR_ROUTER_COMPONENT } from "svelte-client-router";
+import { SCR_Router } from "svelte-client-router";
 
 // ## Your route definitions as exampled above
 const routes = [
@@ -742,46 +635,20 @@ const routes = [
 // ## Array of routes
 export let routes;
 
-// ## The Not Found Component - SCR has a Not Found Component by Default - 
-// ## If you not specify it will use the default one
-// ## It is used when a not defined route is entered
-// ## Function
-export let notFoundComponent = SCR_NotFound;
-
-// ## The Error Component - SCR has a Error Component by Default - 
-// ## If you not specify it will use the default one
-// ## It is used when an error has occured
-// ## Function
-export let errorComponent = SCR_Error;
-
-// ## The Layout Component - SCR has a Layout Component by Default - 
-// ## If you not specify it will use the default one
-// ## It is used when layout is not ignoring Layout
-// ## Function
-export let defaultLayoutComponent = SCR_Layout;
-
-// ## The Loading Component - SCR has a Loading Component by Default - 
-// ## If you not specify it will use the default one
+// ## The Default Loading Component - SCR has a Loading Component by Default - 
+// ## If you not specify nothing will appear between routes - unless defined per route
 // ## It is used when it is executing Before Enter Route or Global Before Enter
 // ## Function
-export let loadingComponent = SCR_Loading;
+export let defaultLoadingComponent = SCR_Loading;
 
-// ## AllProps - all the properties that must be passed to all Routes and components
+// ## defaultLoadingParams - loading params to be available on loading component
 // ## Object - default is an empty object
-export let allProps = {};
+export let defaultLoadingParams = {};
 
-// ## All Loading Props - all the properties that must be passed to all Routes when loading
-// ## Object - default is an empty object
-export let allLoadingProps = {};
-
-<SCR_ROUTER_COMPONENT 
+<SCR_Router 
   bind:routes 
-  notFoundComponent 
-  errorComponent 
-  defaultLayoutComponent 
-  loadingComponent
-  allProps
-  allLoadingProps
+  defaultLoadingComponent 
+  defaultLoadingParams
 />
 
 ```
@@ -793,16 +660,18 @@ just the methods to navigate.
 
 Let's see them:
 <br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/navigationRouting" target="_blank">Navigate Routing</a><br />
-<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/navigationStore" target="_blank">Navigate Store</a><br />
 
 ```javascript
 // < -- You Svelte Component Definition-- >
 <script>
-    import { pushRoute, backRoute, SCR_NAVIGATE_STORE } from "svelte-client-router";
+    import { pushRoute, backRoute } from "svelte-client-router";
 </script>
 
 <main>
   My Svelte Component
+  <button on:click={() => { pushRoute("/routeNameOne"); }}>
+    Go To Route Path: /routeNameOne
+  </button>
   <br>
   <button on:click={() => { pushRoute({ name: 'routeNameOne'}); }}>
     Go To Route Named: routeNameOne
@@ -812,31 +681,10 @@ Let's see them:
     Go To Route Path: /routeNameOne
   </button>
   <br>
-  <button on:click={() => { SCR_NAVIGATE_STORE.pushRoute({ name: 'routeNameTwo'}); }}>
-    Go To Route Named: routeNameTwo
-  </button>
-  <br>
-  <button on:click={() => { SCR_NAVIGATE_STORE.pushRoute({ path: 'routeNameTwo'}); }}>
-    Go To Route Path: routeNameTwo
-  </button>
-  <br>
   <button on:click={() => { backRoute(); }}>
     Back to Previous Route
   </button>
-  <br>
-  <button on:click={() => { SCR_NAVIGATE_STORE.backRoute(); }}>
-    Back to Previous Route
-  </button>
 </main>
-
-<style>
-  main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
-  }
-</style>
 
 ```
 
@@ -846,20 +694,24 @@ The assinature of the methods
 
 // ## Push Route Function 
 // ## -----------------------------------------------------------------------------------
-// ## -- First Argument is where to send accepts the following:
+// ## -- First Property of Param is where to send accepts the following:
 // ## String /pathToRoute
 // ## Object { path: "/pathToRoute" }
 // ## Object { name: "myRouteName" }
 // ## -----------------------------------------------------------------------------------
-// ## -- Second Argument custom params to pass to route they will be considered
+// ## -- Second Property of Param custom params to pass to route they will be considered
 // ## and made available on before functions after enter route function and component
 // ## Object { someCustomParams: { isAvailable: "Hell ya" }}
 // ## -----------------------------------------------------------------------------------
-// ## -- Third Argument a custom onError to execute if something goes wrong.
+// ## -- Third Property of Param a custom onError to execute if something goes wrong.
 // ## it will override, ONLY WHEN SET, the route on error defined in the routes object
 // ## -----------------------------------------------------------------------------------
 // ## Function
-pushRoute(to, props, onError);
+pushRoute({ 
+  name: "someRouteName", 
+  params: { myParam: "OK" }, 
+  onError: (error) => console.log("Some customization of an error function")
+});
 
 // ## Back Route Function - returns last route definition
 // ## Function
@@ -877,28 +729,22 @@ Let's see it:
 ```javascript
 // < -- You Svelte Component Definition-- >
 <script>
-  import { SCR_ROUTER_LINK } from "svelte-client-router";
+  import { SCR_RouterLink } from "svelte-client-router";
 </script>
 
 <main>
-  <SCR_ROUTER_LINK 
-  to={{name: "myRouteNameThree" }}
-  props={{ pushCustomParam: "someCustomParams" }}
+  <SCR_RouterLink 
+    params={{
+      name: "myRouteNameThree", 
+      params: { pushCustomParam: "someCustomParams" }, 
+      onError: () => console.log("Execute this instead error defined on router object! - Only if something goes wrong") 
+    }}
   elementProps={{ style:"background-color: green" }}
-  onError={() => console.log("Execute this instead error defined on router object! - Only if something goes wrong")}
+  
   >
     <button>Click to Go to Defined Route Named: myRouteNameThree!</button>
-  </SCR_ROUTER_LINK>
+  </SCR_RouterLink>
 </main>
-
-<style>
-  main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
-  }
-</style>
 
 ```
 
@@ -913,7 +759,7 @@ Let's see it:
 ```javascript
 // < -- You Svelte Component Definition-- >
 <script>
-  import { SCR_ROUTER_STORE } from "svelte-client-router";
+  import { routesStore } from "svelte-client-router";
 </script>
 
 {
@@ -922,25 +768,26 @@ Let's see it:
   // ## Array
   routes: [],
 
-  // ## Current Location
-  // ## Used inside the component to identify where it is coming from
-  // ## updating based on the configuration store
-  // ## Object
-  currentLocation: undefined,
-
   // ## Current Route
   // ## The object with current route information
   // ## Updated before "after before enter function" execution
   // ## Object
   currentRoute: {
+    routeId: undefined,
     name: undefined,
+    path: undefined,
     pathname: undefined,
-    params: [],
-    hostname: undefined,
+    fullPath: undefined,
+    queryParams: {},
+    pathParams: {},
+    params: {},
+    host: undefined,
     protocol: undefined,
     port: undefined,
     origin: undefined,
     hash: undefined,
+    routeObj: {},
+    redirected: undefined,
   },
 
   // ## From Route
@@ -948,14 +795,21 @@ Let's see it:
   // ## Updated before "after before enter function" execution
   // ## Object
   fromRoute: {
+    routeId: undefined,
     name: undefined,
+    path: undefined,
     pathname: undefined,
-    params: [],
-    hostname: undefined,
+    fullPath: undefined,
+    queryParams: {},
+    pathParams: {},
+    params: {},
+    host: undefined,
     protocol: undefined,
     port: undefined,
     origin: undefined,
     hash: undefined,
+    routeObj: {},
+    redirected: undefined,
   },
 
   // ## Navigation History
@@ -968,9 +822,6 @@ Let's see it:
 
 // ## Methods available on the STORE OBJECTS
 // ## -----------------------------------------------------------------------------------
-// ## --- ATTENTION Only use methods to search and identify routes - DO NOT SET ANYTHING
-// ## --- This is because the component use this store as base to control things !!!!!!!
-// ## -----------------------------------------------------------------------------------
 // ## setRoutes,
 // ## getRoutes,
 // ## setCurrentRoute,
@@ -980,9 +831,6 @@ Let's see it:
 // ## setNavigationHistory,
 // ## getNavigationHistory,
 // ## pushNavigationHistory,
-// ## popNavigationHistory,
-// ## setCurrentLocation,
-// ## getCurrentLocation,
-// ## getConfig,
+// ## getNotFoundRoute,
 
 ```

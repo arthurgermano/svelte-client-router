@@ -1,12 +1,13 @@
 import { appStore } from "../stores/index.js";
 
-function setVersion2({ resolve }) {
-  appStore.setVersion(2);
-  resolve(true);
-}
 
 function setVersion0({ resolve }) {
   appStore.setVersion(0);
+  resolve(true);
+}
+
+function setVersion2({ resolve }) {
+  appStore.setVersion(2);
   resolve(true);
 }
 
