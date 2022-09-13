@@ -912,7 +912,7 @@ Let's see it:
 are updated and controlled. You can check real time what is happening.
 
 Let's see it:
-<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routesStore" target="_blank">Router Store Properties</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routerStore" target="_blank">Router Store Properties</a><br />
 
 ```javascript
 // < -- You Svelte Component Definition-- >
