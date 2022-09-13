@@ -652,7 +652,6 @@ export function setHistory(routeObj, fromRoute) {
   try {
     const isHashMode = configStore.getHashMode();
     const fullPath = (isHashMode ? "/#" : "") + routeObj.fullPath;
-    console.log(routeObj)
     if (MODE == "NEW") {
       history.pushState(
         {
