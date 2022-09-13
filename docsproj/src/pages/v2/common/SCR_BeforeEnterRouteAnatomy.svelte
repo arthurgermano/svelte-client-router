@@ -89,6 +89,9 @@
         <b>fullPath:</b> "/svelte-client-router/v2/configurationGlobalBeforeEnterOption?testParam="someParamValue"
       </li>
       <li>
+        <b>pathname:</b> "/svelte-client-router/"
+      </li>
+      <li>
         <b>params: </b>The params passed in the route definition. For example:
         &#123; testParam: "someParamValue" &#125
       </li>
@@ -144,6 +147,9 @@
       </li>
       <li>
         <b>fullPath:</b> "/svelte-client-router/v2/configurationGlobalBeforeEnterOption?testParam="someParamValue"
+      </li>
+      <li>
+        <b>pathname:</b> "/svelte-client-router/"
       </li>
       <li>
         <b>params: </b>The params passed in the route definition. For example:
