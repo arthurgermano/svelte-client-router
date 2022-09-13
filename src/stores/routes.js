@@ -121,41 +121,6 @@ function pushNavigationHistory(navObj) {
   SF.updateStoreKey(store, { navigationHistory });
 }
 
-// function hasNavigationHistoryRouteId(routeId) {
-//   if (!routeId || typeof routeId !== "string") {
-//     return false;
-//   }
-//   let navigationHistory = getNavigationHistory() || [];
-//   if (navigationHistory.length == 0) {
-//     return false;
-//   }
-
-//   const navObj = navigationHistory.find(nhItem => nhItem.routeId == routeId);
-//   if (navObj) {
-//     return navObj
-//   }
-//   return false;
-// }
-
-// function popRouteIdNavigationHistory(routeId) {
-//   let navigationHistory = getNavigationHistory() || [];
-//   if (navigationHistory.length == 0) {
-//     return false;
-//   }
-
-//   let navObj = false;
-//   navigationHistory = navigationHistory.filter(nh => {
-//     if (nh.routeId != routeId) {
-//       return true;
-//     }
-//     navObj = nh;
-//     return false;
-//   });
-
-//   SF.updateStoreKey(store, { navigationHistory });
-//   return navObj;
-// }
-
 function getNavigationHistory() {
   return SF.getStoreKey(store, "navigationHistory");
 }

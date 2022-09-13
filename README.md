@@ -26,11 +26,8 @@ Designed to help make you in control of the routing of your Single Page Applicat
 ## Features
 
 - Lazy Load Components
-- Lazy Load Layouts
 - Lazy Load Loading Components
 - Routes Based in Svelte Stores
-- Define Global Layout
-- Ignore Global Layout or define it by Route
 - Before Enter Global Functions
 - Ignore Global Before Enter Function Per Route
 - Before Enter Per Route Functions
@@ -40,7 +37,6 @@ Designed to help make you in control of the routing of your Single Page Applicat
 - Global Route Error Function
 - Route Error Functions
 - Loading Component on Route Changing
-- Loading Params for Loading Components per Route
 
 ## Install
 
