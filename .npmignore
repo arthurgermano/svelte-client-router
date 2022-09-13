@@ -2,9 +2,12 @@
 /docs/
 /docsproj/
 /public/
+/coverage/
+eng.traineddata
 .DS_Store
 .idea
 .vscode
 **/*.swp
 node_modules
 yarn.lock
+README_v1.md
