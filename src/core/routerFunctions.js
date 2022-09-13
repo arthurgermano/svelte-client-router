@@ -525,7 +525,7 @@ export function getOrderedBeforeEnterFunctionList(routeObj) {
 export function getRouteObjectFromPath(path) {
   try {
     if (!path || typeof path !== "string") {
-      path = "/";
+      path = '/'
     }
     const hash = getHashFromPath(path);
     if (configStore.getHashMode()) {
@@ -552,6 +552,7 @@ export function getRouteObjectFromPath(path) {
     return {
       fullPath: setPathQueryParameters(path, queryParams),
       path,
+      pathname: location.pathname,
       queryParams,
       host,
       protocol,
@@ -575,7 +576,6 @@ export function getRouteObjectFromName(obj) {
     let path = "/";
     if (!obj || typeof obj !== "object") {
       obj = {};
-      path = "/";
     }
     const { protocol, host, port, origin } = getLocationProperties(path);
     const routeObj = findRoutePerName(obj.name || "SCR_NOT_FOUND_ROUTE");
@@ -586,6 +586,7 @@ export function getRouteObjectFromName(obj) {
       return {
         fullPath: configStore.getNotFoundRoute(),
         path: configStore.getNotFoundRoute(),
+        pathname: location.pathname,
         queryParams: obj.queryParams || {},
         host,
         protocol,
@@ -609,6 +610,7 @@ export function getRouteObjectFromName(obj) {
     return {
       fullPath: setPathQueryParameters(path, obj.queryParams || {}),
       path,
+      pathname: location.pathname,
       queryParams: obj.queryParams || {},
       host,
       protocol,
@@ -651,7 +653,7 @@ export function generateRouteId(routeId = "scr") {
 export function setHistory(routeObj, fromRoute) {
   try {
     const isHashMode = configStore.getHashMode();
-    const fullPath = (isHashMode ? "/#" : "") + routeObj.fullPath;
+    const fullPath = (isHashMode ? `${location.pathname}#/` : "/") + routeObj.fullPath.slice(1);
     if (MODE == "NEW") {
       history.pushState(
         {

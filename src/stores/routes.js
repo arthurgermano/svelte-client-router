@@ -7,6 +7,7 @@ const routeSchema = {
   routeId: undefined,
   name: undefined,
   path: undefined,
+  pathname: undefined,
   fullPath: undefined,
   queryParams: {},
   pathParams: {},
