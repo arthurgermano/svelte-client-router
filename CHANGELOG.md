@@ -3,6 +3,7 @@
 ## 2.0.0
 - New version design from the ground
 - 100% unit tested
+- Several performance enhancements
 
 ## 1.3.10
 - Several bug fixing
