@@ -25,7 +25,11 @@
 <b class="scr-b">// Importing configuration store</b>
 import &#123; configStore &#125; from "svelte-client-router"
 </pre>
-    <p>Next.. lets check out all the available properties.</p>
+    <p>
+      It is a Svelte Store and can be use like $configStore inside Svelte Components.
+      <br />
+      Next.. lets check out all the available properties.
+    </p>
     <!-- ----------------  HASH MODE OPTION  ------------------------------------------ -->
     <hr class="scr-hr" />
     <h4 class="scr-h4">Hash Mode</h4>

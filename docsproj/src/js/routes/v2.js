@@ -133,6 +133,60 @@ const routes = [
     title: "SCR - Navigation Routing - Version 2",
     beforeEnter: [setVersion2],
   },
+  {
+    name: "v2_Router_Link",
+    path: "/svelte-client-router/v2/routerLink",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_RouterLink.svelte"),
+    title: "SCR - Router Link - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Routes_Store",
+    path: "/svelte-client-router/v2/routesStore",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_RoutesStore.svelte"),
+    title: "SCR - Routes Store - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Test_Regex_Path",
+    path: "/svelte-client-router/v2/:testParam/testRegexPath",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_TestRegexPath.svelte"),
+    title: "SCR - Test Regex Path - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Test_Regex_Path_2",
+    path: "/svelte-client-router/v2/:firstParam/testRegexPath2/:secondParam",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_TestRegexPath2.svelte"),
+    title: "SCR - Test Regex Path 2 - Version 2",
+    beforeEnter: [setVersion2],
+  },
+  {
+    name: "v2_Test_Loading_Component_Before_Enter",
+    path: "/svelte-client-router/v2/testLoadingComponentWithBeforeEnter/:timeout",
+    lazyLoadComponent: () => import("../../pages/v2/SCR_TestLoadingComponentWithBeforeEnter.svelte"),
+    title: "SCR - Test Regex Path 2 - Version 2",
+    beforeEnter: [setVersion2, ({resolve, routeTo}) => {
+      let timeout = 20;
+      if (routeTo && routeTo.pathParams && routeTo.pathParams.timeout) {
+        routeTo.pathParams.timeout = parseInt(routeTo.pathParams.timeout);
+        if (routeTo.pathParams.timeout > 0) {
+          timeout = routeTo.pathParams.timeout;
+        }
+      }
+      setTimeout(() => {
+
+        resolve(true);
+      }, timeout);
+    }],
+  },
+  {
+    name: "v2_Test_Any_Route_Wildcard",
+    path: "/svelte-client-router/v2/anyRouteWildcard/*/:somePathParam",
+    lazyLoadComponent: () =>
+      import("../../pages/v2/SCR_TestAnyRouteWildcard.svelte"),
+    title: "SCR - Test - Any Route Wildcard - Version 2",
+  },
 ];
 
 export default routes;

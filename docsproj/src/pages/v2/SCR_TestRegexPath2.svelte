@@ -23,9 +23,9 @@
 </script>
 
 <SCR_Page
-  back={{ name: "v1_Test_Regex_Path", text: "Test - Regex Path" }}
+  back={{ name: "v2_Test_Regex_Path", text: "Test - Regex Path" }}
   forward={{
-    name: "v1_Test_Loading_Component_Before_Enter",
+    name: "v2_Test_Loading_Component_Before_Enter",
     text: "Test - Loading Component Before Enter",
   }}
 >
@@ -86,7 +86,7 @@
       </div>
       <SCR_RouterLink
         params={{
-          path: `/svelte-client-router/v1/${nextFirstParam}/testRegexPath2/${nextSecondParam}/`,
+          path: `/svelte-client-router/v2/${nextFirstParam}/testRegexPath2/${nextSecondParam}/`,
         }}
       >
         <div class="scr-btn">Test Route With Two Params</div>
@@ -98,11 +98,11 @@
     </center>
     <pre class="scr-pre">
 &#123;
-  name: "v2_Test_Regex_Path_2",
+  name: "testRegexPath2Route",
   path: "/svelte-client-router/v2/:firstParam/testRegexPath2/:secondParam",
-  lazyLoadComponent: () =&gt; import("../../pages/v2/SCR_TestRegexPath2.svelte"),
-  title: "SCR - Test Regex Path 2 - Version 2",
-  beforeEnter: [setVersion2],
+  lazyLoadComponent: () =&gt; import("./docs/pages/SCR_TestRegexPath2.svelte"),
+  title: "SCR - Test 2",
+  forceReload: true
 &#125;
 </pre>
   </div></SCR_Page

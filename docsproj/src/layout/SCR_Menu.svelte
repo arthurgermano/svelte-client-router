@@ -38,10 +38,20 @@
     {#if $appStore.version == 0}
       <!-- VERSION 0 -->
       <SCR_RouterLink params={{ name: "v1_Presentation" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Getting_Started"}>VERSION 1</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Getting_Started"}
+        >
+          VERSION 1
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v2_Presentation" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Getting_Started"}>VERSION 2</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Getting_Started"}
+        >
+          VERSION 2
+        </div>
       </SCR_RouterLink>
       <!-- END VERSION 0 -->
     {:else if $appStore.version == 1}
@@ -56,69 +66,160 @@
         </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Installation" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Installation"}>Installation</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Installation"}
+        >
+          Installation
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Getting_Started" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Getting_Started"}>Getting Started</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Getting_Started"}
+        >
+          Getting Started
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Configuration</h4>
       <SCR_RouterLink params={{ name: "v1_Configuration_Options" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Configuration_Options"}>Configuration Options</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Configuration_Options"}
+        >
+          Configuration Options
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink
         params={{ name: "v1_Configuration_Global_Before_Enter_Option" }}
       >
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Configuration_Global_Before_Enter_Option"}>Global Before Enter</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName ==
+            "v1_Configuration_Global_Before_Enter_Option"}
+        >
+          Global Before Enter
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Configuration_Global_On_Error" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Configuration_Global_On_Error"}>Global On Error</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName ==
+            "v1_Configuration_Global_On_Error"}
+        >
+          Global On Error
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Route Object</h4>
       <SCR_RouterLink params={{ name: "v1_Route_Object_Properties" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Route_Object_Properties"}>Properties</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Route_Object_Properties"}
+        >
+          Properties
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Route_Object_Before_Enter" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Route_Object_Before_Enter"}>Before Enter</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Route_Object_Before_Enter"}
+        >
+          Before Enter
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Route_Object_After_Enter" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Route_Object_After_Enter"}>After Before Enter</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Route_Object_After_Enter"}
+        >
+          After Before Enter
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Route_Object_On_Error" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Route_Object_On_Error"}>On Error</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Route_Object_On_Error"}
+        >
+          On Error
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Route Component</h4>
       <SCR_RouterLink params={{ name: "v1_Route_Component_Properties" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Route_Component_Properties"}>Properties</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Route_Component_Properties"}
+        >
+          Properties
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Route_Component_Components" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Route_Component_Components"}>Components</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Route_Component_Components"}
+        >
+          Components
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Navigation</h4>
       <SCR_RouterLink params={{ name: "v1_Navigation_Routing" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Navigation_Routing"}>Routing</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Navigation_Routing"}
+        >
+          Routing
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Navigation_Store" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Navigation_Store"}>Store</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Navigation_Store"}
+        >
+          Store
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Route Link</h4>
       <SCR_RouterLink params={{ name: "v1_Router_Link" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Router_Link"}>Properties</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Router_Link"}
+        >
+          Properties
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Router Store</h4>
       <SCR_RouterLink params={{ name: "v1_Router_Store" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Router_Store"}>Properties</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Router_Store"}
+        >
+          Properties
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Testing</h4>
       <SCR_RouterLink params={{ name: "v1_Test_Regex_Path" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Test_Regex_Path"}>Test - Regex Path</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Test_Regex_Path"}
+        >
+          Test - Regex Path
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v1_Test_Regex_Path_2" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Test_Regex_Path_2"}>Test - Regex Path 2</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Test_Regex_Path_2"}
+        >
+          Test - Regex Path 2
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink
         params={{ name: "v1_Test_Loading_Component_Before_Enter" }}
       >
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Test_Loading_Component_Before_Enter"}>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName ==
+            "v1_Test_Loading_Component_Before_Enter"}
+        >
           Test - Loading Component with Before Enter
         </div>
       </SCR_RouterLink>
@@ -127,12 +228,22 @@
           name: "v1_Test_Any_Route_Wildcard",
         }}
       >
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "SCR_ROUTE_NOT_FOUND"}>Test - Any Route Wildcard</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "SCR_ROUTE_NOT_FOUND"}
+        >
+          Test - Any Route Wildcard
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink
         params={{ path: "/svelte-client-router/v1/some_route_not_declared" }}
       >
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "SCR_NOT_FOUND_ROUTE"}>Test - Not Found</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "SCR_NOT_FOUND_ROUTE"}
+        >
+          Test - Not Found
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Version</h4>
       <SCR_RouterLink params={{ name: "v2_Presentation" }}>
@@ -143,49 +254,184 @@
       <!-- VERSION 2 -->
       <h4 class="scr-menu-h4">Introduction</h4>
       <SCR_RouterLink params={{ name: "v2_Presentation" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Presentation"}>Presentation</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Presentation"}
+        >
+          Presentation
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v2_Installation" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Installation"}>Installation</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Installation"}
+        >
+          Installation
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v2_Getting_Started" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Getting_Started"}>Getting Started</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Getting_Started"}
+        >
+          Getting Started
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Configuration</h4>
       <SCR_RouterLink params={{ name: "v2_Configuration_Options" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Configuration_Options"}>Configuration Options</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Configuration_Options"}
+        >
+          Configuration Options
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink
         params={{ name: "v2_Configuration_Global_Before_Enter_Option" }}
       >
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Configuration_Global_Before_Enter_Option"}>Global Before Enter</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName ==
+            "v2_Configuration_Global_Before_Enter_Option"}
+        >
+          Global Before Enter
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v2_Configuration_Global_On_Error" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Configuration_Global_On_Error"}>Global On Error</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName ==
+            "v2_Configuration_Global_On_Error"}
+        >
+          Global On Error
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Route Object</h4>
       <SCR_RouterLink params={{ name: "v2_Route_Object_Properties" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Route_Object_Properties"}>Properties</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Route_Object_Properties"}
+        >
+          Properties
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v2_Route_Object_Before_Enter" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Route_Object_Before_Enter"}>Before Enter</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Route_Object_Before_Enter"}
+        >
+          Before Enter
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v2_Route_Object_After_Enter" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Route_Object_After_Enter"}>After Enter</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Route_Object_After_Enter"}
+        >
+          After Enter
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v2_Route_Object_On_Error" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Route_Object_On_Error"}>On Error</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Route_Object_On_Error"}
+        >
+          On Error
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Route Component</h4>
       <SCR_RouterLink params={{ name: "v2_Route_Component_Properties" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Route_Component_Properties"}>Properties</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Route_Component_Properties"}
+        >
+          Properties
+        </div>
       </SCR_RouterLink>
       <SCR_RouterLink params={{ name: "v2_Route_Component_Components" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v2_Route_Component_Components"}>Components</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Route_Component_Components"}
+        >
+          Components
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Navigation</h4>
       <SCR_RouterLink params={{ name: "v2_Navigation_Routing" }}>
-        <div class="scr-menu-btn" class:scr-menu-active={routeName == "v1_Navigation_Routing"}>Routing</div>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v1_Navigation_Routing"}
+        >
+          Routing
+        </div>
+      </SCR_RouterLink>
+      <h4 class="scr-menu-h4">Route Link</h4>
+      <SCR_RouterLink params={{ name: "v2_Router_Link" }}>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Router_Link"}
+        >
+          Properties
+        </div>
+      </SCR_RouterLink>
+      <h4 class="scr-menu-h4">Routes Store</h4>
+      <SCR_RouterLink params={{ name: "v2_Routes_Store" }}>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Routes_Store"}
+        >
+          Properties
+        </div>
+      </SCR_RouterLink>
+      <h4 class="scr-menu-h4">Testing</h4>
+      <SCR_RouterLink params={{ name: "v2_Test_Regex_Path" }}>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Test_Regex_Path"}
+        >
+          Test - Regex Path
+        </div>
+      </SCR_RouterLink>
+      <SCR_RouterLink params={{ name: "v2_Test_Regex_Path_2" }}>
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "v2_Test_Regex_Path_2"}
+        >
+          Test - Regex Path 2
+        </div>
+      </SCR_RouterLink>
+      <SCR_RouterLink
+        params={{ name: "v2_Test_Loading_Component_Before_Enter" }}
+      >
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName ==
+            "v2_Test_Loading_Component_Before_Enter"}
+        >
+          Test - Loading Component with Before Enter
+        </div>
+      </SCR_RouterLink>
+      <SCR_RouterLink
+        params={{
+          name: "v2_Test_Any_Route_Wildcard",
+        }}
+      >
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "SCR_ROUTE_NOT_FOUND"}
+        >
+          Test - Any Route Wildcard
+        </div>
+      </SCR_RouterLink>
+      <SCR_RouterLink
+        params={{ path: "/svelte-client-router/v2/some_route_not_declared" }}
+      >
+        <div
+          class="scr-menu-btn"
+          class:scr-menu-active={routeName == "SCR_NOT_FOUND_ROUTE"}
+        >
+          Test - Not Found
+        </div>
       </SCR_RouterLink>
       <h4 class="scr-menu-h4">Version</h4>
       <SCR_RouterLink params={{ name: "v1_Presentation" }}>
@@ -214,7 +460,6 @@
     width: 25vw;
     z-index: 101;
     padding: 0;
-    border-right: 1px solid var(--main-color);
     text-align: center;
     min-width: 100px;
   }

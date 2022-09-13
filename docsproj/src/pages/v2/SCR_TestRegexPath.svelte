@@ -14,8 +14,8 @@
 </script>
 
 <SCR_Page
-  back={{ name: "v1_Router_Store", text: "Router Store" }}
-  forward={{ name: "v1_Test_Regex_Path_2", text: "Test - Regex Path 2" }}
+  back={{ name: "v2_Router_Store", text: "Router Store" }}
+  forward={{ name: "v2_Test_Regex_Path_2", text: "Test - Regex Path 2" }}
 >
 <div class="scr-page">
   <h4 class="scr-h4">Test - Regex Path</h4>
@@ -36,7 +36,7 @@
       placeholder=":testParam"
       bind:value={nextParam}
     />
-    <SCR_RouterLink params={{ path: `/svelte-client-router/v1/${nextParam}/testRegexPath` }}>
+    <SCR_RouterLink params={{ path: `/svelte-client-router/v2/${nextParam}/testRegexPath` }}>
       <div class="scr-btn">Test Route With Param</div>
     </SCR_RouterLink>
   </div>
@@ -47,11 +47,11 @@
   <pre
     class="scr-pre">
 &#123;
-  name: "v2_Test_Regex_Path",
-  path: "/svelte-client-router/v2/:testParam/testRegexPath",
-  lazyLoadComponent: () =&gt; import("../../pages/v2/SCR_TestRegexPath.svelte"),
-  title: "SCR - Test Regex Path - Version 2",
-  beforeEnter: [setVersion2],
+  name: "testRegexPathRoute",
+  path: "/svelte-client-router/:testParam/testRegexPathParam",
+  lazyLoadComponent: () =&gt import("./docs/pages/SCR_TestRegexPath.svelte"),
+  title: "SCR - Test 1",
+  forceReload: true
 &#125;
 </pre>
 </SCR_Page>

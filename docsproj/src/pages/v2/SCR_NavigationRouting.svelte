@@ -7,7 +7,7 @@
     name: "v2_Route_Component_Components",
     text: "Route Component Components",
   }}
-  forward={{ name: "v2_Navigation_Store", text: "Navigation Store" }}
+  forward={{ name: "v2_Router_Link", text: "Router Link" }}
 >
 <div class="scr-page">
   <h4 class="scr-h4">Navigation - Routing</h4>
