@@ -62,7 +62,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
 ```
 
 ### SCR - Documentation and Test It!
-<a href="https://arthurgermano.github.io/svelte-client-router/" target="_blank">Click here to see Svelte Client Router - In Action!</a>
+<a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/presentation" target="_blank">Click here to see Svelte Client Router - In Action!</a>
 
 
 ### SCR - Example
@@ -912,7 +912,7 @@ Let's see it:
 are updated and controlled. You can check real time what is happening.
 
 Let's see it:
-<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routerStoreProperties" target="_blank">Router Store Properties</a><br />
+<br /><a href="https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v1/routesStore" target="_blank">Router Store Properties</a><br />
 
 ```javascript
 // < -- You Svelte Component Definition-- >
