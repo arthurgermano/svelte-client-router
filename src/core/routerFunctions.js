@@ -12,11 +12,12 @@ import {
   setPathQueryParameters,
 } from "./baseFunctions.js";
 
+const HASH_PARAM_CHAR = "#/";
 const PATH_PARAM_CHAR = "/:";
 const ANY_ROUTE_PARAM_CHAR = "*";
 let BEF_PAYLOAD = {};
 let NOT_FOUND;
-let MODE = "NEW";
+let MODE = "NEW"; // this variable helps to define history in the browser
 
 // ------------------------------------------------------------------------------------------------
 
@@ -33,7 +34,6 @@ export async function onMountComponent(params = {}) {
       coreStore.setDefaultLoadingComponent(params.defaultLoadingComponent);
       coreStore.setDefaultLoadingParams(params.defaultLoadingParams);
     }
-
     await loadRoute(getRouteObjectFromPath(location.href));
   } catch (error) {
     await throwError(error);
@@ -525,10 +525,10 @@ export function getOrderedBeforeEnterFunctionList(routeObj) {
 export function getRouteObjectFromPath(path) {
   try {
     if (!path || typeof path !== "string") {
-      path = '/'
+      path = "/";
     }
     const hash = getHashFromPath(path);
-    if (configStore.getHashMode()) {
+    if (configStore.getHashMode() && path.includes(HASH_PARAM_CHAR) && hash) {
       path = hash.replace("/#", "");
       path = path.replace("#", "");
     }
@@ -653,7 +653,9 @@ export function generateRouteId(routeId = "scr") {
 export function setHistory(routeObj, fromRoute) {
   try {
     const isHashMode = configStore.getHashMode();
-    const fullPath = (isHashMode ? `${location.pathname}#/` : "/") + routeObj.fullPath.slice(1);
+    const fullPath =
+      (isHashMode ? `${location.pathname}#/` : "/") +
+      routeObj.fullPath.slice(1);
     if (MODE == "NEW") {
       history.pushState(
         {

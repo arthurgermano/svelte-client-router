@@ -187,6 +187,7 @@ const routes = [
     lazyLoadComponent: () =>
       import("../../pages/v2/SCR_TestAnyRouteWildcard.svelte"),
     title: "SCR - Test - Any Route Wildcard - Version 2",
+    beforeEnter: [setVersion2],
   },
 ];
 

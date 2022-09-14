@@ -5,7 +5,8 @@
   import SCR_DefaultLayout from "./layout/SCR_DefaultLayout.svelte";
   import routes from "./js/routes/index.js";
 
-  configStore.setBeforeEnter(({ resolve }) => {
+  configStore.setBeforeEnter(({ resolve, routeTo }) => {
+    console.log(routeTo)
     appStore.setVersion(0);
     resolve(true);
   });

@@ -1,13 +1,26 @@
 # Svelte Client Router Changelog
 
+## 2.0.2
+
+- Fixed bug on hash routing
+- Added tests with playwright
+
 ## 2.0.1
+
 - Improved NPM package exporting
+- 
+## 2.0.1
+
+- Improved NPM package exporting
+- 
 ## 2.0.0
+
 - New version design from the ground
 - 100% unit tested
 - Several performance enhancements
 
 ## 1.3.10
+
 - Several bug fixing
 
 ## 1.3.1

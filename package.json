@@ -1,6 +1,6 @@
 {
   "name": "svelte-client-router",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": "Arthur José Germano",
   "license": "MIT",
   "main": "src/index.js",
@@ -24,12 +24,19 @@
     "coverage": "vitest run --coverage --globals --environment happy-dom",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "play": "npx playwright codegen http://localhost:5173",
+    "pwtest": "npx playwright test /pwTests",
+    "pwtesthead": "npx playwright test /pwTests --headed",
+    "pwtestdebug": "npx playwright test /pwTests --debug",
+    "pwreport": "npx playwright show-report"
   },
   "devDependencies": {
+    "@playwright/test": "^1.25.2",
     "@sveltejs/vite-plugin-svelte": "^1.0.2",
     "@vitest/coverage-c8": "^0.22.1",
     "happy-dom": "^6.0.4",
+    "playwright": "^1.25.2",
     "svelte": "^3.49.0",
     "vite": "^3.0.9",
     "vitest": "^0.22.1"

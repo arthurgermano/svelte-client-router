@@ -4,6 +4,7 @@
 /public/
 /coverage/
 /tests/
+/pwTests/
 eng.traineddata
 .DS_Store
 .idea

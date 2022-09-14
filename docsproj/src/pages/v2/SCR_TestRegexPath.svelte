@@ -14,7 +14,7 @@
 </script>
 
 <SCR_Page
-  back={{ name: "v2_Router_Store", text: "Router Store" }}
+  back={{ name: "v2_Routes_Store", text: "Routes Store" }}
   forward={{ name: "v2_Test_Regex_Path_2", text: "Test - Regex Path 2" }}
 >
 <div class="scr-page">
