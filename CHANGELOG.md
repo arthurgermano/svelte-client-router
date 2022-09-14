@@ -1,5 +1,7 @@
 # Svelte Client Router Changelog
 
+## 2.0.1
+- Improved NPM package exporting
 ## 2.0.0
 - New version design from the ground
 - 100% unit tested
