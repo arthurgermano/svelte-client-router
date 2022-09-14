@@ -1,6 +1,6 @@
 {
   "name": "svelte-client-router",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "Arthur José Germano",
   "license": "MIT",
   "main": "src/index.js",
@@ -35,6 +35,6 @@
     "vitest": "^0.22.1"
   },
   "dependencies": {
-    "spa-storage": "^2.0.1"
+    "spa-storage": "^2.0.2"
   }
 }
