@@ -98,7 +98,7 @@ In a default Svelte installation you need to edit your package.json and add _-s_
     console.log("GLOBAL ERROR CONFIG", error);
   });
 
-  // Setting a single global error function - you can set an array as well.
+  // Setting a single before enter function - you can set an array as well.
   // https://arthurgermano.github.io/svelte-client-router/#/svelte-client-router/v2/configurationGlobalOnError
   configStore.setBeforeEnter(({ resolve }) => {
     console.log("GLOBAL Before Enter", error);
