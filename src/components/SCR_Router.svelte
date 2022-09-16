@@ -40,11 +40,14 @@
 
   // -------------------------  consumeRoute Function  --------------------------------------------
 
+  // when some route is pushed using navigation it uses this function
   async function consumeRoute() {
     try {
+      // protecting from several pushes at the same time - just ignore other until resolve this request
       if (isConsumingActivated) {
         return;
       }
+
       let routeObj;
       if ($navigateStore.isConsuming == "PATH") {
         routeObj = getRouteObjectFromPath($navigateStore.path);
@@ -62,8 +65,10 @@
       navigateStore.setIsConsuming(false);
       isConsumingActivated = false;
     } catch (error) {
-      navigateStore.setIsConsuming(false);
       isConsumingActivated = false;
+      navigateStore.setIsConsuming(false);
+
+      // if navigateStore has a defined onError for this request
       try {
         if (navigateStore.getOnError) {
           return await navigateStore.getOnError()(error);
@@ -96,10 +101,12 @@
 
   // -------------------------  svelte_reactive - $coreStore  -------------------------------------
 
+  // controlling the loading screen by reacting to coreStore - isLoading
   $: if ($coreStore.isLoading) {
     loading = coreStore.getWaiting();
     loadingComponent = coreStore.getLoadingComponent();
   } else {
+    loadingComponent = false;
     currentComponent = coreStore.getCurrentComponent();
     loading = false;
   }
@@ -120,6 +127,7 @@
 
   // -------------------------  svelte_reactive - $naviagateStore  --------------------------------
 
+  // reacting when some route was pushed
   $: if ($navigateStore.isConsuming && !isConsumingActivated) {
     consumeRoute();
   }

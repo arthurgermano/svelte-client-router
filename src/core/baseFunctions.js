@@ -2,6 +2,10 @@ import { configStore } from "../stores/index.js";
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - function to retrieve the query params of an URL or path
+/ @Returns - All the params as object
+*/
 export function getQueryParameters(url) {
   try {
     if (!url || typeof url !== "string") {
@@ -19,6 +23,10 @@ export function getQueryParameters(url) {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - function to set in the path all the query params informed
+/ @Returns - A path with all the query params 
+*/
 export function setPathQueryParameters(path, queryParams) {
   try {
     if (!path || typeof path !== "string") {
@@ -46,6 +54,10 @@ export function setPathQueryParameters(path, queryParams) {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - To return or not a trailing slash depending of what is configured
+/ @Returns - A string "" or "/"
+*/
 export function getTrailingSlash() {
   try {
     return configStore.getConsiderTrailingSlashOnMatchingRoute() ? "/" : "";
@@ -56,6 +68,10 @@ export function getTrailingSlash() {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - Retrieve the real path part only, removing query params, origin, etc.
+/ @Returns - A path as string
+*/
 export function getRealPath(path) {
   try {
     if (!path || typeof path != "string" || !path.includes("/")) {
@@ -77,6 +93,10 @@ export function getRealPath(path) {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - Retrieve the hash part only
+/ @Returns - A hash as string
+*/
 export function getHashFromPath(path) {
   try {
     if (!path || typeof path !== "string" || !path.includes("#")) {
@@ -91,14 +111,21 @@ export function getHashFromPath(path) {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - Retrieve the path part of a given path from origin or declared route inside routes object
+/ @Returns - Returns a path part as string
+*/
 export function getPath(path) {
   try {
     if (!path || typeof path !== "string") {
       return "/";
     }
 
+    // if it has http://xxxxx..
     if (path.includes(":/")) {
       path = path.split("/").slice(3);
+
+      // else /just/path
     } else {
       path = path.split("/").slice(1);
     }
@@ -117,6 +144,10 @@ export function getPath(path) {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - Retrieves all the location properties given a path
+/ @Returns - Returns an object with location properties
+*/
 export function getLocationProperties(path) {
   try {
     let protocol = location.protocol.replace(":", "");
@@ -165,6 +196,10 @@ export function getLocationProperties(path) {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - Retrieves a path with injected path params in it
+/ @Returns - Returns a path with all path params inside of it as string
+*/
 export function treatRoutePathParams(path, pathParams) {
   try {
     if (!pathParams || typeof pathParams != "object") {
@@ -181,6 +216,10 @@ export function treatRoutePathParams(path, pathParams) {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - Retrieves a path with injected any route params in it
+/ @Returns - Returns a path with all any route params inside of it as string
+*/
 export function treatRouteAnyRouteParams(path, anyRouteParams) {
   try {
     if (!anyRouteParams || !Array.isArray(anyRouteParams)) {
@@ -203,19 +242,27 @@ export function treatRouteAnyRouteParams(path, anyRouteParams) {
 
 // ------------------------------------------------------------------------------------------------
 
+/*
+/ @Summary - Load the first component async of a list of components or else a default component
+/ @Returns - Returns the component loaded or a default component to be loaded if any component was loaded
+*/
 export async function asyncLoadComponentsFunc(
   listComponents,
   defaultComponent
 ) {
   try {
+    // not an array return default component
     if (!Array.isArray(listComponents)) {
       return defaultComponent;
     }
+
     for (let component of listComponents) {
-      // if is lazy loading component now is the time to load
+      // skipping not async loading components or params
       if (typeof component !== "function") {
         continue;
       }
+      
+      // if is lazy loading component now is the time to load
       const loadedComponent = await component();
       if (loadedComponent && loadedComponent.default) {
         return loadedComponent.default;

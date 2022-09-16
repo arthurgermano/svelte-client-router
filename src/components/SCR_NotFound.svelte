@@ -1,5 +1,9 @@
 <script>
+  // receiving route information
   export let notFound;
+
+  // ----------------------------------------------------------------------------------------------
+
   function back() {
     history.back();
   }

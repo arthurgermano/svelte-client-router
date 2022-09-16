@@ -26,9 +26,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "play": "npx playwright codegen http://localhost:5173",
-    "pwtest": "npx playwright test /pwTests",
-    "pwtesthead": "npx playwright test /pwTests --headed",
-    "pwtestdebug": "npx playwright test /pwTests --debug",
+    "pwtest": "npx playwright test /pwTests/testV2Flow.spec.js",
+    "pwtesthead": "npx playwright test /pwTests/testV2Flow.spec.js --headed",
+    "pwtestdebug": "npx playwright test /pwTests/testV2Flow.spec.js --debug",
     "pwreport": "npx playwright show-report"
   },
   "devDependencies": {

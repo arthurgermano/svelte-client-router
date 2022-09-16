@@ -1,10 +1,15 @@
 <script>
   import navigateStore from "../stores/navigate.js";
 
+  // ----------------------------------------------------------------------------------------------
+
+  // exported params
   export let params = undefined;
   export let onError = undefined;
   export let elementProps = undefined;
 
+  // ----------------------------------------------------------------------------------------------
+  
   function onClick() {
     if (!params) {
       throw new Error("SCR: Router Link param property is not defined.");
