@@ -20,6 +20,7 @@ const store = writable(assign({}, storeTemplate));
 let loadingComponent;
 let currentComponent;
 let defaultLoadingComponent;
+let defaultNotFoundComponent;
 
 // ------------------------------------------------------------------------------------------------
 // ---------------------------  isLoading Property  -----------------------------------------------
@@ -134,6 +135,16 @@ function getDefaultLoadingComponent() {
   return defaultLoadingComponent;
 }
 
+// ------------------------------------------------------------------------------------------------
+// ---------------------------  defautNotFoundComponent  -------------------------------------------
+
+function setDefaultNotFoundComponent(defaultNotFoundComponentParam) {
+  defaultNotFoundComponent = defaultNotFoundComponentParam;
+}
+
+function getDefaultNotFoundComponent() {
+  return defaultNotFoundComponent;
+}
 
 // ------------------------------------------------------------------------------------------------
 
@@ -158,6 +169,8 @@ export default {
   getCurrentComponent,
   setDefaultLoadingComponent,
   getDefaultLoadingComponent,
+  setDefaultNotFoundComponent,
+  getDefaultNotFoundComponent,
   waiting,
   loadingComponent,
   currentComponent,

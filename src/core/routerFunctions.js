@@ -47,6 +47,9 @@ export async function onMountComponent(params = {}) {
       coreStore.setDefaultLoadingComponent(params.defaultLoadingComponent);
       coreStore.setDefaultLoadingParams(params.defaultLoadingParams);
     }
+    if (params.defaultNotFoundComponent) {
+      coreStore.setDefaultNotFoundComponent(params.defaultNotFoundComponent);
+    }
     await loadRoute(getRouteObjectFromPath(location.href));
   } catch (error) {
     await throwError(error);
@@ -194,10 +197,15 @@ export async function finishLoadingRoute(routeObj, fromRoute) {
         false
       );
     } else {
-      component = await asyncLoadComponentsFunc(
-        [() => import("../components/SCR_NotFound.svelte")],
-        false
-      );
+      const defaultNotFoundComponent = coreStore.getDefaultNotFoundComponent();
+      if (defaultNotFoundComponent) {
+        component = defaultNotFoundComponent;
+      } else {
+        component = await asyncLoadComponentsFunc(
+          [() => import("../components/SCR_NotFound.svelte")],
+          false
+        );
+      }
     }
     coreStore.setCurrentParams({
       toRoute: routeObj,
@@ -771,7 +779,7 @@ export function setHistory(routeObj, fromRoute) {
 
     // if mode is new the user is pushing or navigating using the router
     // the event that generated this routing came from SCR so we should push
-    // the state inside the history object  
+    // the state inside the history object
     if (MODE == "NEW") {
       history.pushState(
         {
@@ -820,7 +828,7 @@ window.addEventListener("popstate", async (event) => {
 
   // we don't know if the route of this event were pushed by SCR or user coming from somewhere else
   let navigateRoute = location.href;
-  
+
   // if state is defined it is route pushed by SCR and we can safely return to it
   // by doing this we have all the information with path and query params
   if (state) {

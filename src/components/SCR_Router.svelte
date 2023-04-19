@@ -22,6 +22,7 @@
 
   // default components
   export let defaultLoadingComponent;
+  export let defaultNotFoundComponent;
   export let defaultLoadingParams;
 
   // ----------------------------------------------------------------------------------------------
@@ -96,6 +97,7 @@
       routes,
       defaultLoadingComponent,
       defaultLoadingParams,
+      defaultNotFoundComponent
     })
   );
 
