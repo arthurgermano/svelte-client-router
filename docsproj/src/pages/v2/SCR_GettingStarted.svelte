@@ -85,6 +85,7 @@ const routes = [
   &#123;routes&#125;
     defaultLoadingComponent=&#123;SCR_Loading&#125;
     defaultLoadingParams=&#123;&#123; subLoadingText: "SubLoading Text Via Param" &#125;&#125;
+    defaultNotFoundComponent=&#123;SCR_NotFound&#125;
 /&gt;
 
 OR 
@@ -93,6 +94,7 @@ OR
   &#123;routes&#125;
     defaultLoadingComponent=&#123;SCR_Loading&#125;
     defaultLoadingParams=&#123;&#123; subLoadingText: "SubLoading Text Via Param" &#125;&#125;
+    defaultNotFoundComponent=&#123;SCR_NotFound&#125;
 /&gt;
 </pre>
     <p class="scr-text-justify">
@@ -180,6 +182,7 @@ const routes = [
   &#123;routes&#125;
     defaultLoadingComponent=&#123;SCR_Loading&#125;
     defaultLoadingParams=&#123;&#123; subLoadingText: "SubLoading Text Via Param" &#125;&#125;
+    defaultNotFoundComponent=&#123;SCR_NotFound&#125;
 /&gt;
 </pre>
     <center>

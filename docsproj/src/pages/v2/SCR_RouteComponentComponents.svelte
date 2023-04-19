@@ -15,20 +15,19 @@
     <p class="scr-text-justify">
       In the first version, SCR had a lot of default components to facilitate
       usage, like layout components, error and not found components that would
-      pop up to a given case. 
+      pop up to a given case.
       <br /><br />
-      The second version is very succinct in that
-      matter, it is focused to deliver routing leaving to you to specify a the
-      components. Layout, Error and Not Found components must be set by you in
-      this version.
+      The second version is very succinct in that matter, it is focused to deliver
+      routing leaving to you to specify a the components. Layout, Error and Not Found
+      components must be set by you in this version.
       <br />
       So now in this version we have only one component we can set. Let's check it:
     </p>
     <hr class="scr-hr" />
     <h4 class="scr-h4">Default Loading Component</h4>
     <p class="scr-text-justify">
-      The Default Loading Component is the default loading screen used to show when before enter
-      routes are been processed.
+      The Default Loading Component is the default loading screen used to show
+      when before enter routes are been processed.
       <br />
       It will receive <b>defaultLoadingParams</b> declared and any route object
       <b>loadingParams</b> defined.
@@ -78,6 +77,32 @@ const routes = [
   &lt;/div&gt;
   &lt;h1 class="scr-h1"&gt;&#123;loadingText&#125;&lt;/h1&gt;
 &lt;/center&gt;
+</pre>
+
+    <hr class="scr-hr" />
+    <h4 class="scr-h4">Default Not Found Component</h4>
+    <p class="scr-text-justify">
+      The Default Not Found Component is the default not found component screen
+      used to show when before enter routes that does not exist.
+      <br />
+      It will receive <b>notFound</b> object.
+    </p>
+    <pre class="scr-pre"><b class="scr-b">// Importing your components</b>
+import &#123; SCR_Router &#125; from "svelte-client-router"
+import SCR_NotFound from "../testComponents/SCR_NotFound.svelte";
+
+<b class="scr-b">// Define the router object array</b>
+const routes = [
+  &#123;
+    ... <b class="scr-b">// Your routes definitions</b>
+  &#125;
+]
+
+<b class="scr-b">// Example of usage</b>
+&lt;SCR_Router 
+  bind:routes 
+  defaultNotFoundComponent=&#123;SCR_NotFound&#125;
+/&gt;
 </pre>
     <center>
       <small class="scr-small">The configuration for this route.</small>

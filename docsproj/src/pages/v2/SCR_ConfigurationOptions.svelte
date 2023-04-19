@@ -125,7 +125,7 @@ configStore.setNotFoundRoute("/notFound");
 // ## Default value: true
 </b>
 &#123;
-  consoleLogStores: true, 
+consoleLogErrorMessages: true, 
 &#125;
 
 <b class="scr-b">// How to set in the store</b>
@@ -146,10 +146,10 @@ configStore.setConsoleLogErrorMessages(true);
         >// ## Console Log Stores logs in the console 
 // ## any changes in the Router Store for debugging purposes
 // ## Boolean
-// ## Default value: true
+// ## Default value: false
 </b>
 &#123;
-  setConsoleLogStores: true, 
+  setConsoleLogStores: false, 
 &#125;
 
 <b class="scr-b">// How to set in the store</b>

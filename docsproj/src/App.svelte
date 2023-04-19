@@ -6,7 +6,7 @@
   import routes from "./js/routes/index.js";
 
   configStore.setBeforeEnter(({ resolve, routeTo }) => {
-    console.log(routeTo)
+    console.log(routeTo);
     appStore.setVersion(0);
     resolve(true);
   });
