@@ -3,6 +3,7 @@
   import { SCR_Router, configStore } from "../../src/index.js";
   import SCR_Loading from "./components/SCR_Loading.svelte";
   import SCR_DefaultLayout from "./layout/SCR_DefaultLayout.svelte";
+  import SCR_NotFound from "./components/SCR_NotFound.svelte";
   import routes from "./js/routes/index.js";
 
   configStore.setBeforeEnter(({ resolve, routeTo }) => {
