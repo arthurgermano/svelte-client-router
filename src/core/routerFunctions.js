@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { assign } from "../helpers/index.js";
 import { routesStore, configStore, coreStore } from "../stores/index.js";
 import {
@@ -181,7 +182,16 @@ export async function finishLoadingRoute(routeObj, fromRoute) {
       routeObj.definition.afterEnter &&
       typeof routeObj.definition.afterEnter === "function"
     ) {
-      await routeObj.definition.afterEnter(assign({}, params));
+      await routeObj.definition.afterEnter(
+        assign(
+          {},
+          {
+            toRoute: routeObj,
+            fromRoute,
+            payload: BEF_PAYLOAD,
+          }
+        )
+      );
     }
 
     const routeId = generateRouteId(routeObj.name);
@@ -212,7 +222,7 @@ export async function finishLoadingRoute(routeObj, fromRoute) {
       fromRoute,
       queryParams: routeObj.queryParams,
       pathParams: routeObj.pathParams,
-      params: routeObj.params,
+      params: { ...routeObj.params, payload: { ...BEF_PAYLOAD } },
       notFound: NOT_FOUND ? NOT_FOUND : undefined,
     });
     coreStore.setCurrentComponent(component);
