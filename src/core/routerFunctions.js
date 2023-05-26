@@ -171,12 +171,10 @@ export async function verifyRouteBEF(routeObj, fromRoute) {
 */
 export async function finishLoadingRoute(routeObj, fromRoute) {
   try {
-    const params = {
-      toRoute: routeObj,
-      fromRoute,
-      payload: BEF_PAYLOAD,
-    };
-
+    // resolved as false - do not continue to load route!
+    if (routeObj) {
+      return false;
+    }
     // if user defined some action before finalizeRoute
     if (
       routeObj.definition.afterEnter &&
