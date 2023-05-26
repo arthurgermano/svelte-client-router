@@ -172,7 +172,7 @@ export async function verifyRouteBEF(routeObj, fromRoute) {
 export async function finishLoadingRoute(routeObj, fromRoute) {
   try {
     // resolved as false - do not continue to load route!
-    if (routeObj) {
+    if (!routeObj) {
       return false;
     }
     // if user defined some action before finalizeRoute
