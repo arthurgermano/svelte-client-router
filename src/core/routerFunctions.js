@@ -440,6 +440,9 @@ export async function checkBEFList(routeObj, routeFrom) {
         routeFrom
       );
     }
+    if (retCode.isToRedirect || !retCode.isToContinue) {
+      return retCode;
+    }
     if (befExecList.then.length > 0) {
       retCode = await executeBEFunctionList(
         routeObj,
