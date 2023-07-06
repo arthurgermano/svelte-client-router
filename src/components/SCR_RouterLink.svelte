@@ -18,6 +18,6 @@
   }
 </script>
 
-<div {...elementProps} on:click={onClick}>
+<div {...elementProps} on:click={onClick} role="button" tabindex="0">
   <slot />
 </div>
