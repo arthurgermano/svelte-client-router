@@ -1,6 +1,6 @@
 {
   "name": "svelte-client-router",
-  "version": "2.0.8",
+  "version": "2.1.0",
   "author": "Arthur José Germano",
   "license": "MIT",
   "main": "src/index.js",
@@ -37,7 +37,7 @@
     "@vitest/coverage-c8": "^0.22.1",
     "happy-dom": "^6.0.4",
     "playwright": "^1.25.2",
-    "svelte": "^3.49.0",
+    "svelte": "^4.2.12",
     "vite": "^3.0.9",
     "vitest": "^0.22.1"
   },
