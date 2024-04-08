@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "sirv dist --no-clear --single"
+    "start": "sirv dist --no-clear --single",
+    "generate": "vite build && rm -R ../docs || true && cp -R ./dist ../docs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.1",

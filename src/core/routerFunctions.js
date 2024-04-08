@@ -180,16 +180,11 @@ export async function finishLoadingRoute(routeObj, fromRoute) {
       routeObj.definition.afterEnter &&
       typeof routeObj.definition.afterEnter === "function"
     ) {
-      await routeObj.definition.afterEnter(
-        assign(
-          {},
-          {
-            toRoute: routeObj,
-            fromRoute,
-            payload: BEF_PAYLOAD,
-          }
-        )
-      );
+      await routeObj.definition.afterEnter({
+        toRoute: routeObj,
+        fromRoute,
+        payload: BEF_PAYLOAD,
+      });
     }
 
     const routeId = generateRouteId(routeObj.name);
